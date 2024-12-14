@@ -8,6 +8,11 @@ use Laravel\Sanctum\HasApiTokens;
 
 class Receiver extends Model
 {
-    use HasFactory,HasApiTokens;
+    use HasFactory, HasApiTokens;
     protected $guarded = [];
+    public function stockInvoices()
+    {
+        return $this->hasMany(StockInvoice::class);
+    }
+
 }

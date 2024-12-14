@@ -50,21 +50,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-    public function isCMP()
+    public function isAdmin()
     {
         return $this->role == 1;
     }
-    public function isAdmin()
+    public function isSupervisor()
     {
         return $this->role == 2;
     }
-    public function isSupervisor()
-    {
-        return $this->role == 3;
-    }
     public function isOperator()
     {
-        return $this->role == 4;
+        return $this->role == 3;
     }
 
 }

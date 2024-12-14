@@ -10,5 +10,10 @@ class Supplier extends Model
 {
     use HasFactory,HasApiTokens;
     protected $guarded = [];
+    public function stockInvoices()
+{
+    return $this->hasMany(StockInvoice::class);
+}
+
 
 }

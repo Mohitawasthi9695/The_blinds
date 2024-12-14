@@ -2,47 +2,84 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
-class UserController extends Controller
+class UserController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-
+        $users = User::all();
+        return $this->successResponse($users, 'Users retrieved successfully.', 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255|unique:users,username',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'phone' => 'required|string|max:15',
+            'password' => 'required|string|min:8',
+            'role' => 'required|integer'
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'password' => Hash::make($validated['password']),
+            'role' => $validated['role'],
+        ]);
+
+        return $this->successResponse($user, 'User created successfully.', 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $user = User::find($id);
+        if (!$user) {
+            return $this->errorResponse('User not found.', 404);
+        }
+        return $this->successResponse($user, 'User retrieved successfully.', 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $user = User::find($id);
+        if (!$user) {
+            return $this->errorResponse('User not found.', 404);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|max:255|unique:users,username,' . $id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
+            'phone' => 'sometimes|required|string|max:15',
+            'password' => 'sometimes|required|string|min:8',
+            'role' => 'sometimes|required|integer'
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return $this->successResponse($user, 'User updated successfully.', 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $user = User::find($id);
+        if (!$user) {
+            return $this->errorResponse('User not found.', 404);
+        }
+
+        $user->delete();
+
+        return $this->successResponse(null, 'User deleted successfully.', 200);
     }
 }

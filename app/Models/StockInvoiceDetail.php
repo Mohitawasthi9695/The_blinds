@@ -8,6 +8,15 @@ use Laravel\Sanctum\HasApiTokens;
 
 class StockInvoiceDetail extends Model
 {
-    use HasFactory,HasApiTokens;
+    use HasFactory, HasApiTokens;
     protected $guarded = [];
+    public function invoice()
+    {
+        return $this->belongsTo(StockInvoice::class, 'stock_invoice_id');
+    }
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
+
 }
