@@ -20,8 +20,7 @@ class StockInvoiceController extends ApiController
     {
         // Get validated data
         $validatedData = $request->validated();
-        // Create the Stock Invoice
-        dd($validatedData);
+
         $stockInvoice = StockInvoice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'supplier_id' => $validatedData['supplier_id'],
@@ -77,13 +76,10 @@ class StockInvoiceController extends ApiController
     // PUT /StockInvoices/{id} - Update a StockInvoice
     public function update(StockInvoiceRequest $request, $id)
     {
-        // Find the StockInvoice by ID
         $stockInvoice = StockInvoice::findOrFail($id);
 
-        // Get validated data
         $validatedData = $request->validated();
 
-        // Update StockInvoice data
         $stockInvoice->update([
             'supplier_id' => $validatedData['supplier_id'],
             'date' => $validatedData['date'],
@@ -107,7 +103,6 @@ class StockInvoiceController extends ApiController
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
 
-        // Sync products (delete old and insert new)
         $stockInvoice->products()->delete(); // Delete existing products
         foreach ($validatedData['products'] as $product) {
             $stockInvoice->products()->create([

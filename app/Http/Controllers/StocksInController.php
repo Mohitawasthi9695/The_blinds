@@ -32,7 +32,7 @@ class StocksInController extends ApiController
     {
 
         $validatedData = $request->validated();
-
+         dd($validatedData);
         $createdItems = [];
 
         try {

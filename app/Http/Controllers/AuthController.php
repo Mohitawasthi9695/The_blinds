@@ -30,10 +30,12 @@ class AuthController extends ApiController
 
             $token = $user->createToken("{$user->role}_token")->plainTextToken;
 
-            return $this->successResponse([
-                'token' => $token,
+            return response()->json([
+                'message' => "Login successful",
                 'user' => $user,
-            ], "Login successful",200);
+                'access_token' => $token,
+            ], 200);
+
         } catch (\Throwable $e) {
             return $this->errorResponse("An unexpected error occurred. Please try again later.", 500);
         }
@@ -43,7 +45,7 @@ class AuthController extends ApiController
         try {
             $request->user()->currentAccessToken()->delete();
 
-            return $this->successResponse([], "Logout successful");
+            return response()->json(['message'=>"Logout successful"],200);
         } catch (\Throwable $e) {
             return $this->errorResponse("An error occurred during logout. Please try again later.", 500);
         }
