@@ -59,7 +59,8 @@ class UserController extends ApiController
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
             'phone' => 'sometimes|required|string|max:15',
             'password' => 'sometimes|required|string|min:8',
-            'role' => 'sometimes|required|integer'
+            'role' => 'sometimes|required|integer',
+            
         ]);
 
         if (isset($validated['password'])) {
