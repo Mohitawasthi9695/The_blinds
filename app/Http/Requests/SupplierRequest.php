@@ -34,7 +34,7 @@ class SupplierRequest extends FormRequest
             'tel_no' => 'nullable|string|max:20',
             'email' => 'nullable|string|max:40|email|unique:suppliers,email,' . $this->id,
             'owner_mobile' => 'nullable|digits:10',
-            'logo' => 'nullable|string',
+            'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'boolean',
         ];
 

@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ReceiverRequest extends FormRequest
+class SupplierUpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -21,22 +21,25 @@ class ReceiverRequest extends FormRequest
      */
     public function rules(): array
     {
+        $supplierId = $this->route('supplier');
+
         $rules = [
-            'name' => 'required|string|max:200|unique:suppliers,name,' . $this->id,
+            'name' => 'required|string|max:200|unique:suppliers,name,' . $supplierId,
             'code' => 'nullable|string|max:10',
-            'gst_no' => 'nullable|string|max:100|unique:suppliers,gst_no,' . $this->id,
-            'cin_no' => 'nullable|string|max:100|unique:suppliers,cin_no,' . $this->id,
-            'pan_no' => 'nullable|string|max:10|unique:suppliers,pan_no,' . $this->id,
-            'msme_no' => 'nullable|string|max:100|unique:suppliers,msme_no,' . $this->id,
+            'gst_no' => 'nullable|string|max:100|unique:suppliers,gst_no,' . $supplierId,
+            'cin_no' => 'nullable|string|max:100|unique:suppliers,cin_no,' . $supplierId,
+            'pan_no' => 'nullable|string|max:10|unique:suppliers,pan_no,' . $supplierId,
+            'msme_no' => 'nullable|string|max:100|unique:suppliers,msme_no,' . $supplierId,
             'reg_address' => 'nullable|string|max:255',
             'work_address' => 'nullable|string|max:255',
             'area' => 'nullable|string|max:50',
             'tel_no' => 'nullable|string|max:20',
-            'email' => 'nullable|string|max:40|email|unique:suppliers,email,' . $this->id,
+            'email' => 'nullable|string|max:40|email|unique:suppliers,email,' . $supplierId,
             'owner_mobile' => 'nullable|digits:10',
-            // 'logo' => 'nullable|string',
+            // 'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'boolean',
         ];
+
         return $rules;
     }
 }

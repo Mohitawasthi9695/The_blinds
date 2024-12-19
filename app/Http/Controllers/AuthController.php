@@ -6,11 +6,6 @@ use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Mail;
-use App\Models\PasswordReset;
-use Illuminate\Support\Facades\DB;
-
 class AuthController extends ApiController
 {
     public function login(LoginRequest $request)
@@ -24,9 +19,9 @@ class AuthController extends ApiController
                 return $this->errorResponse('The login credentials are incorrect.', 401);
             }
 
-            if ($user->tokens()->count() > 0) {
-                return $this->errorResponse('You are already logged in on another device.', 403);
-            }
+            // if ($user->tokens()->count() > 0) {
+            //     return $this->errorResponse('You are already logged in on another device.', 403);
+            // }
 
             $token = $user->createToken("{$user->role}_token")->plainTextToken;
 
