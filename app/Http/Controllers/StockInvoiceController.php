@@ -50,7 +50,7 @@ class StockInvoiceController extends ApiController
                 'stock_invoice_id' => $stockInvoice->id,
                 'product_id' => $product['product_id'],
                 'total_product' => $product['total_product'],
-                'total_type' => $product['total_type'],
+                'product_type' => $product['total_type'] ?? null,
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'quantity' => $product['quantity'],
                 'unit' => $product['unit'] ?? null,
