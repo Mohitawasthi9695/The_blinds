@@ -15,10 +15,11 @@ return new class extends Migration {
             $table->string('lot_no');
             $table->unsignedBigInteger('stock_invoice_details_id')->nullable();
             $table->unsignedBigInteger('invoice_id')->nullable();
-            $table->string('width')->nullable();
-            $table->string('length')->nullable();
+            $table->decimal('length', 10, 5)->nullable();
+            $table->decimal('width', 10, 5)->nullable();
             $table->string('unit')->nullable();
-            $table->string('qty')->nullable(); 
+            $table->string('type')->nullable();
+            $table->integer('qty')->nullable(); 
             $table->boolean('status')->default(1);
             $table->timestamps();
 

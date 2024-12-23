@@ -22,13 +22,14 @@ class StockInRequest extends FormRequest
     public function rules(): array
     {
         return [
-            '*.lot_no' => 'required|string|max:255',  // Validate each item's lot_no field
+            '*.lot_no' => 'nullable|string|max:255', 
             '*.stock_invoice_details_id' => 'nullable|exists:stock_invoice_details,id',
             '*.invoice_id' => 'nullable|exists:stock_invoices,id',
-            '*.invoice_no' => 'nullable|string|max:255',
-            '*.width' => 'nullable|string|max:255',
-            '*.length' => 'nullable|string|max:255',
+            '*.invoice_no' => 'required|string|max:255',
+            '*.width' => 'nullable|numeric|min:0',
+            '*.length' => 'nullable|numeric|min:0',
             '*.unit' => 'nullable|string|max:255',
+            '*.type' => 'nullable|string|max:255',
             '*.qty' => 'nullable|numeric|min:0',
         ];
     }
