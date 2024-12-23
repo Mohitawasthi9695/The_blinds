@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('stock_invoice_id')->constrained('stock_invoices')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('total_product');
-            $table->string('product_type');
+            $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->float('quantity')->nullable();
             $table->string('length')->nullable();
