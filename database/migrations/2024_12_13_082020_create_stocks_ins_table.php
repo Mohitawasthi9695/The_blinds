@@ -14,7 +14,9 @@ return new class extends Migration {
             $table->id();
             $table->string('lot_no');
             $table->unsignedBigInteger('stock_invoice_details_id')->nullable();
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->unsignedBigInteger('invoice_id')->nullable();
+            $table->string('invoice_no');
             $table->decimal('length', 10, 5)->nullable();
             $table->decimal('width', 10, 5)->nullable();
             $table->string('unit')->nullable();

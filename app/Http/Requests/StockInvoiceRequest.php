@@ -43,7 +43,7 @@ class StockInvoiceRequest extends FormRequest
             'qr_code' => 'nullable|string|max:255',
             'products' => 'array|min:1',
             'products.*.total_product' => 'numeric|min:1',
-            'products.*.total_type' => 'nullable|string|max:255',
+            'products.*.product_type' => 'nullable|string|max:255',
             'products.*.product_id' => 'exists:products,id',
             'products.*.hsn_sac_code' => 'nullable|string|max:255',
             'products.*.quantity' => 'numeric|min:0',
