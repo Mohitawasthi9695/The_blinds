@@ -40,9 +40,8 @@ class StockInvoiceController extends ApiController
             'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
             'bank_id' => $validatedData['bank_id'],
-            'receiver_signature' => $validatedData['receiver_signature'] ?? null,
-            'authorised_signatory' => $validatedData['authorised_signatory'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
+
         ]);
 
         // Insert product details
@@ -50,6 +49,7 @@ class StockInvoiceController extends ApiController
             StockInvoiceDetail::create([
                 'stock_invoice_id' => $stockInvoice->id,
                 'product_id' => $product['product_id'],
+                'total_product' => $product['total_product'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'quantity' => $product['quantity'],
                 'unit' => $product['unit'] ?? null,
