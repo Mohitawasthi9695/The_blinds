@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
-use Illuminate\Http\Request;
+
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\SupplierRequest;
 use App\Http\Requests\SupplierUpdateRequest;
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Str;
 class SupplierController extends ApiController
 {
 
@@ -23,7 +22,8 @@ class SupplierController extends ApiController
     {
         // Validate request data
         $validatedData = $request->validated();
-
+        $uniqueCode= Str::upper(Str::random(10));
+        $validatedData['code'] = $uniqueCode;
         // Handle logo file upload if it exists
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');

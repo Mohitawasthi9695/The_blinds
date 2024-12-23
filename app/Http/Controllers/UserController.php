@@ -60,7 +60,7 @@ class UserController extends ApiController
             'phone' => 'sometimes|required|string|max:15',
             'password' => 'sometimes|required|string|min:8',
             'role' => 'sometimes|required|integer',
-            
+            'status'=> 'boolean'
         ]);
 
         if (isset($validated['password'])) {

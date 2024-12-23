@@ -15,7 +15,6 @@ return new class extends Migration {
             $table->string('lot_no');
             $table->unsignedBigInteger('stock_invoice_details_id')->nullable();
             $table->unsignedBigInteger('invoice_id')->nullable();
-            $table->string('invoice_no')->nullable();
             $table->string('width')->nullable();
             $table->string('length')->nullable();
             $table->string('unit')->nullable();

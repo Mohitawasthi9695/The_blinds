@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name')->nullable();
+            $table->string('code')->unique();
             $table->string('shadeNo')->nullable();
             $table->string('purchase_shade_no')->nullable();
-            $table->string('color')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

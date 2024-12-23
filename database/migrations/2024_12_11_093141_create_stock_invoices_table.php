@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('invoice_no')->unique();
             $table->unsignedBigInteger('supplier_id');
             $table->date('date');
-            $table->string('place_of_supply');
+            $table->string('place_of_supply')->nullable();
             $table->string('vehicle_no')->nullable();
             $table->string('station')->nullable();
             $table->string('ewaybill')->nullable();
@@ -31,13 +31,9 @@ return new class extends Migration
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
             $table->unsignedBigInteger('bank_id');
-            $table->string('receiver_signature')->nullable();
-            $table->string('authorised_signatory')->nullable();
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
-
-            // Foreign key constraints
             $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('cascade');
             $table->foreign('receiver_id')->references('id')->on('receivers')->onDelete('cascade');
             $table->foreign('bank_id')->references('id')->on('banks')->onDelete('cascade');

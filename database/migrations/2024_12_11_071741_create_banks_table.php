@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('ifsc_code')->nullable();
             $table->string('account_number')->unique();
             $table->boolean('status')->default(1);
-
             $table->timestamps();
         });
     }

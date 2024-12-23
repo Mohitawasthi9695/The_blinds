@@ -13,9 +13,8 @@ class BankController extends ApiController
      */
     public function index()
     {
-       $banks = Bank::all();
-       return $this->successResponse($banks, 'Banks retrieved successfully.',200);
-
+        $banks = Bank::all();
+        return $this->successResponse($banks, 'Banks retrieved successfully.', 200);
     }
 
     /**
@@ -36,20 +35,34 @@ class BankController extends ApiController
         if (!$Bank) {
             return $this->errorResponse('Bank not found.', 404);
         }
-        return $this->successResponse($Bank, 'Bank retrieved successfully.',200);
+        return $this->successResponse($Bank, 'Bank retrieved successfully.', 200);
     }
 
     // PUT /Banks/{id} - Update a Bank
-    public function update(BankRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $Bank = Bank::find($id);
         if (!$Bank) {
             return $this->errorResponse('Bank not found.', 404);
         }
 
-        $Bank->update($request->validated());
-        return $this->successResponse($Bank, 'Bank updated successfully.',200);
+
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'branch'=>'string',
+            'ifsc_code' => [
+                'required',
+                'string',
+                'regex:/^[A-Za-z]{4}\d{7}$/',
+            ],
+            'account_number' => 'required|numeric|unique:banks,account_number,' . $id,
+        ]);
+
+        $Bank->update($validatedData);
+
+        return $this->successResponse($Bank, 'Bank updated successfully.', 200);
     }
+
 
     // DELETE /Banks/{id} - Delete a Bank
     public function destroy($id)
@@ -60,6 +73,6 @@ class BankController extends ApiController
         }
 
         $Bank->delete();
-        return $this->successResponse([], 'Bank deleted successfully.',200);
+        return $this->successResponse([], 'Bank deleted successfully.', 200);
     }
 }

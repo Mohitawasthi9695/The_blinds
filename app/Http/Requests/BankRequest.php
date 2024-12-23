@@ -23,6 +23,7 @@ class BankRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'branch'=>'string',
             'ifsc_code' => [
                 'required',
                 'string',
