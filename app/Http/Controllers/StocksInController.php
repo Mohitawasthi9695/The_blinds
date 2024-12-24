@@ -41,7 +41,7 @@ class StocksInController extends ApiController
 
     public function show($id)
     {
-        $stocks = StocksIn::with(['stockInvoice'])
+        $stocks = StocksIn::with(['stockProduct','stockInvoice'])
         ->where('invoice_id', $id)
         ->get();
         return response()->json($stocks);

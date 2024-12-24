@@ -26,6 +26,6 @@ class StockInvoice extends Model
     }
     public function products()
     {
-        return $this->hasMany(StockInvoiceDetail::class);
+        return $this->hasMany(StockInvoiceDetail::class)->with('product');
     }
 }

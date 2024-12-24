@@ -11,4 +11,8 @@ class Product extends Model
   use HasFactory,HasApiTokens;
 
   protected $guarded = [];
+  public function products()
+  {
+      return $this->hasMany(StockInvoiceDetail::class);
+  }
 }

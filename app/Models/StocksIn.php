@@ -19,5 +19,9 @@ class StocksIn extends Model
     {
         return $this->belongsTo(StockInvoice::class, 'invoice_id');
     }
+    public function stockProduct()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 
 }

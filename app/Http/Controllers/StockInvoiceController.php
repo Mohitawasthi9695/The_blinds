@@ -11,7 +11,7 @@ class StockInvoiceController extends ApiController
 {
     public function index()
     {
-        $StockInvoices = StockInvoice::with(['supplier', 'receiver', 'bank','products'])->get();
+        $StockInvoices = StockInvoice::with(['supplier', 'receiver', 'bank', 'products.product'])->get();
         return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
 
