@@ -23,22 +23,28 @@ class StocksInController extends ApiController
     public function store(StockInRequest $request)
     {
         $validatedData = $request->validated();
+        if (!is_array($validatedData)) {
+            return $this->errorResponse('Invalid data format. Expected an array of records.', 422);
+        }
 
         try {
-            $createdItem = StocksIn::create($validatedData);    
-            return $this->successResponse($createdItem, 'Stock entry created successfully.', 201);
+            $createdItems = [];
+            foreach ($validatedData as $data) {
+                $createdItems[] = StocksIn::create($data);
+            }
+
+            return $this->successResponse($createdItems, 'Stock entries created successfully.', 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create stock entry.', 500, $e->getMessage());
+            return $this->errorResponse('Failed to create stock entries.', 500, $e->getMessage());
         }
     }
 
-        /**
-         * Display the specified resource.
-         */
     public function show($id)
     {
-        $stock = StocksIn::with(['stockInvoiceDetails', 'stockInvoice'])->findOrFail($id);
-        return response()->json($stock);
+        $stocks = StocksIn::with(['stockInvoice'])
+        ->where('invoice_id', $id)
+        ->get();
+        return response()->json($stocks);
     }
 
     public function update(StockInRequest $request, $id)
@@ -51,14 +57,11 @@ class StocksInController extends ApiController
         return $this->successResponse($stock, 'Stock entry updated successfully.', 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $stock = StocksIn::findOrFail($id);
         $stock->delete();
 
-        return $this->successResponse(['message' => 'Stock entry deleted successfully'],200);
+        return $this->successResponse(['message' => 'Stock entry deleted successfully'], 200);
     }
 }
