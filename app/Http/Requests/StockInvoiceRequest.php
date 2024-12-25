@@ -48,13 +48,12 @@ class StockInvoiceRequest extends FormRequest
             'products.*.hsn_sac_code' => 'nullable|string|max:255',
             'products.*.quantity' => 'numeric|min:0',
             'products.*.unit' => 'nullable|string|max:50',
+            'products.*.width' => 'numeric|min:0',
             'products.*.rate' => 'numeric|min:0',
             'products.*.amount' => 'numeric|min:0',
         ];
         if ($this->isMethod('put') || $this->isMethod('patch')) {
             $id = $this->route('invoice');
-
-            // Custom logic for existence check
             $rules['invoice_no'] = [
                 'required',
                 'string',

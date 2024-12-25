@@ -23,13 +23,28 @@ class StocksInController extends ApiController
     public function store(StockInRequest $request)
     {
         $validatedData = $request->validated();
+
         if (!is_array($validatedData)) {
             return $this->errorResponse('Invalid data format. Expected an array of records.', 422);
         }
 
         try {
             $createdItems = [];
+
             foreach ($validatedData as $data) {
+                if (isset($data['type']) && $data['type'] === 'roll') {
+                    if (isset($data['length']) && isset($data['width'])) {
+                        $data['area'] = $data['length'] * $data['width'];
+                        if (isset($data['unit']) && $data['unit'] === 'meter' && isset($data['qty'])) {
+                            $data['area_sq_ft'] = $data['area'] * 10.764; 
+                        }else {
+                            $data['area_sq_ft'] = null; 
+                        }
+                    } else {
+                        return $this->errorResponse('Length and width are required for type "roll".', 422);
+                    }
+                }
+
                 $createdItems[] = StocksIn::create($data);
             }
 
@@ -41,9 +56,9 @@ class StocksInController extends ApiController
 
     public function show($id)
     {
-        $stocks = StocksIn::with(['stockProduct','stockInvoice'])
-        ->where('invoice_id', $id)
-        ->get();
+        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])
+            ->where('invoice_id', $id)
+            ->get();
         return response()->json($stocks);
     }
 

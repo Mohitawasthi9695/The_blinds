@@ -30,7 +30,7 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])->group(function () {
 Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function () {
     Route::Resource('/supplier', SupplierController::class);
     Route::Resource('/receiver', ReceiverController::class);
-    Route::Resource('/product', ProductController::class);
+    Route::Resource('/products', ProductController::class);
     Route::get('/operator/bank', [BankController::class, 'index']);
     Route::Resource('/stockin/invoice', StockInvoiceController::class)->names('stockin.invoice');
     Route::Resource('/stocks', StocksInController::class);

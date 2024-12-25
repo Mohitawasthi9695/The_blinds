@@ -23,7 +23,7 @@ class StockInRequest extends FormRequest
     {
         $rules = [
             '*.lot_no' => 'nullable|string|max:255', 
-            // '*.stock_invoice_details_id' => 'nullable|exists:stock_invoice_details,id',
+            '*.stock_invoice_details_id' => 'nullable|exists:stock_invoice_details,id',
             '*.invoice_id' => 'nullable|exists:stock_invoices,id',
             '*.invoice_no' => 'nullable|exists:stock_invoices,invoice_no',
             '*.product_id' => 'nullable|exists:products,id',

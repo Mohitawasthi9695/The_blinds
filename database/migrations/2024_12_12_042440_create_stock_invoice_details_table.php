@@ -15,15 +15,14 @@ return new class extends Migration
             $table->id();
             $table->foreignId('stock_invoice_id')->constrained('stock_invoices')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('total_product')->nullable();  
+            $table->integer('total_product')->nullable();
             $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
-            $table->decimal('quantity')->nullable();
-            $table->decimal('length', 10, 5)->nullable();
             $table->decimal('width', 10, 5)->nullable();
+            $table->decimal('quantity', 15, 5)->nullable(); 
             $table->string('unit')->nullable();
             $table->decimal('rate', 10, 5)->nullable();
-            $table->decimal('amount', 10, 5)->nullable();
+            $table->decimal('amount', 15, 5)->nullable(); 
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

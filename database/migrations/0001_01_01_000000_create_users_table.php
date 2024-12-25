@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('username')->unique();
             $table->string('email')->unique();
-            $table->string('phone');
-            $table->integer('status')->default(0)->comment('0 for Active, 1 for Inactive');
+            $table->string('phone')->nullable();
+            $table->integer('status')->default(1)->comment('1 for Active,  for 0 Inactive');
             $table->integer('role')->nullable()->comment('Role ID from roles table or predefined constants');
             $table->string('ip')->nullable();
             $table->timestamp('email_verified_at')->nullable();

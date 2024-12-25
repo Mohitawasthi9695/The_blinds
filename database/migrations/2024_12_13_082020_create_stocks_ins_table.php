@@ -17,11 +17,14 @@ return new class extends Migration {
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->unsignedBigInteger('invoice_id')->nullable();
             $table->string('invoice_no');
-            $table->decimal('length', 10, 5)->nullable();
-            $table->decimal('width', 10, 5)->nullable();
-            $table->string('unit')->nullable();
+            $table->decimal('length', 15, 5)->nullable();
+            $table->decimal('width', 15, 5)->nullable();
+            $table->string('unit')->default('meter');
+            $table->decimal('area',15,5)->nullable();
+            $table->decimal('area_sq_ft',15,5)->nullable();
             $table->string('type')->nullable();
             $table->integer('qty')->nullable(); 
+            $table->string('rack')->nullable(); 
             $table->boolean('status')->default(1);
             $table->timestamps();
 

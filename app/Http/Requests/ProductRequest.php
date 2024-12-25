@@ -23,6 +23,7 @@ class ProductRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|string|max:200|unique:products,name,' . $this->id,
+            'code' => 'string|max:200|unique:products,code,' . $this->id,
             'shadeNo'=>'string|max:200|unique:products,shadeNo,' . $this->id,
             'purchase_shade_no'=> 'string|max:200|unique:products,purchase_shade_no,' . $this->id,
 
