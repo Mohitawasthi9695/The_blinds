@@ -13,7 +13,7 @@ class StocksInController extends ApiController
      */
     public function index()
     {
-        $stocks = StocksIn::with(['stockInvoiceDetails', 'stockInvoice'])->get();
+        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
         return response()->json($stocks);
     }
 
