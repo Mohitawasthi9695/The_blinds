@@ -60,14 +60,6 @@ class StocksInController extends ApiController
     {
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt',
-            'invoice_no' => 'required|exists:stock_invoices,invoice_no',
-            'shadeNo' => 'required|exists:products,shadeNo',
-            'type' => 'nullable|string',
-            'lot_no' => 'nullable|string',
-            'length' => 'nullable|numeric',
-            'width' => 'nullable|numeric',
-            'qty' => 'nullable|numeric',
-            'unit' => 'nullable|string',
         ]);
 
         try {
@@ -112,7 +104,8 @@ class StocksInController extends ApiController
                 $data = [
                     'product_id' => $product->id,
                     'invoice_id' => $Invoice->id,
-                    'invoice_no' => $row['invoice_no'],
+                    'invoice_no' => $row['invoice_no'] ?? null,  
+                    'lot_no'  => $row['lot_no'] ?? null,
                     'type'       => $row['type'] ?? null,
                     'length'     => $row['length'] ?? null,
                     'width'      => $row['width'] ?? null,
