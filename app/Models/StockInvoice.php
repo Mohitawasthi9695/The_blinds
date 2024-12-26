@@ -15,6 +15,7 @@ class StockInvoice extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+
     public function receiver()
     {
         return $this->belongsTo(Receiver::class);
@@ -26,6 +27,6 @@ class StockInvoice extends Model
     }
     public function products()
     {
-        return $this->hasMany(StockInvoiceDetail::class)->with('product');
+        return $this->hasMany(StockInvoiceDetail::class)->with('product'); 
     }
 }

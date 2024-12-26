@@ -93,7 +93,7 @@ class StocksInController extends ApiController
                         $row['area'] = $row['length'] * $row['width'];
 
                         if (isset($row['unit']) && $row['unit'] === 'meter' && isset($row['qty'])) {
-                            $row['area_sq_ft'] = $row['area'] * 10.764;
+                            $row['area_sq_ft'] = $row['area'] * $row['qty'] * 10.764;
                         } else {
                             $row['area_sq_ft'] = null;
                         }

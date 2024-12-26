@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BankController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
@@ -30,6 +31,10 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])->group(function () {
 Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function () {
     Route::Resource('/supplier', SupplierController::class);
     Route::Resource('/receiver', ReceiverController::class);
+    Route::Resource('/customer', CustomerController::class);
+    Route::get('/data', [SupplierController::class,'supplierStocks']);   
+    Route::get('/recent-suppliers', [SupplierController::class,'RecentSuppliers']);   
+    
     Route::Resource('/products', ProductController::class);
     Route::get('/operator/bank', [BankController::class, 'index']);
     Route::Resource('/stockin/invoice', StockInvoiceController::class)->names('stockin.invoice');

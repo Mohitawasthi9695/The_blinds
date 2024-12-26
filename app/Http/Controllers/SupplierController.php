@@ -9,6 +9,7 @@ use App\Http\Requests\SupplierRequest;
 use App\Http\Requests\SupplierUpdateRequest;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+
 class SupplierController extends ApiController
 {
 
@@ -17,16 +18,28 @@ class SupplierController extends ApiController
         $suppliers = Supplier::all();
         return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
     }
+    public function supplierStocks()
+    {
+        $supplier = Supplier::with('stockInvoices.products')->select('id','name')->find(5);
 
+        return $this->successResponse($supplier, 'Suppliers retrieved successfully.', 200);
+    }
+    public function RecentSuppliers()
+    {
+        $suppliers = Supplier::whereHas('RecentInvoice')
+                         ->with('RecentInvoice')->select( 'id','name','gst_no','owner_mobile','reg_address')    
+                         ->get();
+        return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
+    }
     public function store(SupplierRequest $request)
     {
         $validatedData = $request->validated();
-        $uniqueCode= Str::upper(Str::random(10));
+        $uniqueCode = Str::upper(Str::random(10));
         $validatedData['code'] = $uniqueCode;
         if ($request->hasFile('logo')) {
             $file = $request->file('logo');
             $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('logos', $fileName, 'public'); 
+            $filePath = $file->storeAs('logos', $fileName, 'public');
             $validatedData['logo'] = $filePath;
         }
         $supplier = Supplier::create($validatedData);
@@ -44,26 +57,26 @@ class SupplierController extends ApiController
     }
 
     public function update(SupplierRequest $request, $id)
-{
-    $supplier = Supplier::find($id);
-    if (!$supplier) {
-        return $this->errorResponse('Supplier not found.', 404);
-    }
-    $validatedData = $request->validated();
-
-    if ($request->hasFile('logo')) {
-        if ($supplier->logo && Storage::disk('public')->exists($supplier->logo)) {
-            Storage::disk('public')->delete($supplier->logo);
+    {
+        $supplier = Supplier::find($id);
+        if (!$supplier) {
+            return $this->errorResponse('Supplier not found.', 404);
         }
-        $file = $request->file('logo');
-        $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-        $filePath = $file->storeAs('logos', $fileName, 'public');
-        $validatedData['logo'] = $filePath;
-    }
-    $supplier->update($validatedData);
+        $validatedData = $request->validated();
 
-    return $this->successResponse($supplier, 'Supplier updated successfully.', 200);
-}
+        if ($request->hasFile('logo')) {
+            if ($supplier->logo && Storage::disk('public')->exists($supplier->logo)) {
+                Storage::disk('public')->delete($supplier->logo);
+            }
+            $file = $request->file('logo');
+            $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
+            $filePath = $file->storeAs('logos', $fileName, 'public');
+            $validatedData['logo'] = $filePath;
+        }
+        $supplier->update($validatedData);
+
+        return $this->successResponse($supplier, 'Supplier updated successfully.', 200);
+    }
 
 
     public function destroy($id)
