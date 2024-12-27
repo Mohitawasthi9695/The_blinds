@@ -14,14 +14,16 @@ return new class extends Migration
         Schema::create('stock_out_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stockout_invoice_id')->constrained('stockout_invoices')->onDelete('cascade');
+            $table->foreignId('stock_available_id')->constrained('stock_available')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->integer('total_product')->nullable();
             $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->decimal('out_width', 10, 5)->nullable();
             $table->decimal('out_length', 10, 5)->nullable();
             $table->decimal('out_quantity', 15, 5)->nullable(); 
             $table->string('unit')->nullable();
+            $table->decimal('area',15,5)->nullable();
+            $table->decimal('area_sq_ft',15,5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable(); 
             $table->boolean('status')->default(1);
