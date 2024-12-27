@@ -20,8 +20,6 @@ return new class extends Migration
             $table->string('unit')->default('meter');
             $table->decimal('area',15,5)->nullable();
             $table->decimal('area_sq_ft',15,5)->nullable();
-            $table->string('waste_area')->nullable();
-            $table->string('waste_area_sq_ft')->nullable();
             $table->string('type')->nullable();
             $table->integer('qty')->nullable(); 
             $table->string('rack')->nullable(); 

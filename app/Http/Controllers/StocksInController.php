@@ -48,37 +48,21 @@ class StocksInController extends ApiController
                     }
                 }
 
-                $createdStockIn = StocksIn::create($data); // Capture the created StocksIn object
+                $createdStockIn = StocksIn::create($data);
                 $createdItems[] = $createdStockIn;
-                $existingStock = AvailableStock::where('product_id', $data['product_id'])
-                    ->where('type', $data['type'])
-                    ->where('length', $data['length'])
-                    ->where('width', $data['width'])
-                    ->where('unit', $data['unit'])
-                    ->first();
-
-                if ($existingStock) {
-                    // Update the existing record's quantity and area
-                    $existingStock->update([
-                        'qty' => $existingStock->qty + $data['qty'],
-                        'area' => $existingStock->area + $data['area'],
-                        'area_sq_ft' => $existingStock->area_sq_ft + $data['area_sq_ft'],
-                    ]);
-                } else {
-                    // Create a new record in AvailableStock
-                    AvailableStock::create([
-                        'stock_ins_id'=> $createdStockIn->id,
-                        'product_id' => $data['product_id'],
-                        'type' => $data['type'],
-                        'length' => $data['length'],
-                        'width' => $data['width'],
-                        'area' => $data['area'],
-                        'area_sq_ft' => $data['area_sq_ft'],
-                        'qty' => $data['qty'],
-                        'unit' => $data['unit'],
-                        'rack' => $data['rack'] ?? null,
-                    ]);
-                }
+                AvailableStock::create(
+                    [
+                        'stock_ins_id' => $createdStockIn->id,
+                        'product_id' => $createdStockIn->product_id,
+                        'length' => $createdStockIn->length,
+                        'width' => $createdStockIn->width,
+                        'unit' => $createdStockIn->unit,
+                        'area' => $createdStockIn->area,
+                        'area_sq_ft' => $createdStockIn->area_sq_ft,
+                        'qty' => $createdStockIn->qty,
+                        'rack' => $createdStockIn->rack,
+                    ]
+                );
             }
 
             return $this->successResponse($createdItems, 'Stock entries created successfully.', 201);
@@ -148,35 +132,19 @@ class StocksInController extends ApiController
 
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;
-                $existingStock = AvailableStock::where('product_id', $data['product_id'])
-                    ->where('type', $data['type'])
-                    ->where('length', $data['length'])
-                    ->where('width', $data['width'])
-                    ->where('unit', $data['unit'])
-                    ->first();
-
-                if ($existingStock) {
-                    // Update the existing record's quantity and area
-                    $existingStock->update([
-                        'qty' => $existingStock->qty + $data['qty'],
-                        'area' => $existingStock->area + $data['area'],
-                        'area_sq_ft' => $existingStock->area_sq_ft + $data['area_sq_ft'],
-                    ]);
-                } else {
-                    // Create a new record in AvailableStock
-                    AvailableStock::create([
-                        'stock_ins_id'=> $createdItem->id,
-                        'product_id' => $data['product_id'],
-                        'type' => $data['type'],
-                        'length' => $data['length'],
-                        'width' => $data['width'],
-                        'area' => $data['area'],
-                        'area_sq_ft' => $data['area_sq_ft'],
-                        'qty' => $data['qty'],
-                        'unit' => $data['unit'],
-                        'rack' => $data['rack'] ?? null,
-                    ]);
-                }
+                AvailableStock::create(
+                     [
+                        'stock_ins_id' => $createdItem->id,
+                        'product_id' => $createdItem->product_id,
+                        'length' => $createdItem->length,
+                        'width' => $createdItem->width,
+                        'unit' => $createdItem->unit,
+                        'area' => $createdItem->area,
+                        'area_sq_ft' => $createdItem->area_sq_ft,
+                        'qty' => $createdItem->qty,
+                        'rack' => $createdItem->rack,
+                    ]
+                );
             }
 
             return response()->json(['success' => 'Stock entries created successfully', 'data' => $createdItems], 201);
