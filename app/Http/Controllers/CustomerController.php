@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CustomerRequest;
 use App\Models\Customer;
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CustomerController extends ApiController
 {
@@ -17,12 +17,8 @@ class CustomerController extends ApiController
     public function store(CustomerRequest $request)
     {
         $validatedData = $request->validated();
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-            $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('logos', $fileName, 'public'); 
-            $validatedData['logo'] = $filePath;
-        }
+        $uniqueCode = Str::upper(Str::random(10));
+        $validatedData['code'] = $uniqueCode;
         $Customer = Customer::create($validatedData);
         return $this->successResponse($Customer, 'Customer created successfully.', 201);
     }

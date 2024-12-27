@@ -31,7 +31,7 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])->group(function () {
 Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function () {
     Route::Resource('/supplier', SupplierController::class);
     Route::Resource('/receiver', ReceiverController::class);
-    Route::Resource('/customer', CustomerController::class);
+    Route::Resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class,'supplierStocks']);   
     Route::get('/recent-suppliers', [SupplierController::class,'RecentSuppliers']);   
     

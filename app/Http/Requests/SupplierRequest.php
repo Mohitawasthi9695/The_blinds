@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SupplierRequest extends FormRequest
 {
@@ -21,43 +22,55 @@ class SupplierRequest extends FormRequest
      */
     public function rules(): array
     {
-        if ($this->id) {
-            // Update rules
-            $rules = [
-                'name' => 'required|string|max:200|unique:suppliers,name,' . $this->id,
-                'code' => 'nullable|string|max:10',
-                'gst_no' => 'nullable|string|max:100|unique:suppliers,gst_no,' . $this->id,
-                'cin_no' => 'nullable|string|max:100|unique:suppliers,cin_no,' . $this->id,
-                'pan_no' => 'nullable|string|max:10|unique:suppliers,pan_no,' . $this->id,
-                'msme_no' => 'nullable|string|max:100|unique:suppliers,msme_no,' . $this->id,
-                'reg_address' => 'nullable|string|max:255',
-                'work_address' => 'nullable|string|max:255',
-                'area' => 'nullable|string|max:50',
-                'tel_no' => 'nullable|string|max:20',
-                'email' => 'nullable|string|max:40|email|unique:suppliers,email,' . $this->id,
-                'owner_mobile' => 'nullable|digits:10',
-                // 'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
-                'status' => 'boolean',
-            ];
-        } else {
-            $rules = [
-                'name' => 'required|string|max:200|unique:suppliers,name',
-                'code' => 'nullable|string|max:10',
-                'gst_no' => 'nullable|string|max:100|unique:suppliers,gst_no',
-                'cin_no' => 'nullable|string|max:100|unique:suppliers,cin_no',
-                'pan_no' => 'nullable|string|max:10|unique:suppliers,pan_no',
-                'msme_no' => 'nullable|string|max:100|unique:suppliers,msme_no',
-                'reg_address' => 'nullable|string|max:255',
-                'work_address' => 'nullable|string|max:255',
-                'area' => 'nullable|string|max:50',
-                'tel_no' => 'nullable|string|max:20',
-                'email' => 'nullable|string|max:40|email|unique:suppliers,email',
-                'owner_mobile' => 'nullable|digits:10',
-                'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
-                'status' => 'boolean',
-            ];
-        }
-        
+        $id = $this->route('supplier');
+
+        $rules = [
+            'name' => [
+                'required',
+                'string',
+                'max:200',
+                Rule::unique('suppliers', 'name')->ignore($id),
+            ],
+            'code' => 'nullable|string|max:10',
+            'gst_no' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('suppliers', 'gst_no')->ignore($id),
+            ],
+            'cin_no' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('suppliers', 'cin_no')->ignore($id),
+            ],
+            'pan_no' => [
+                'nullable',
+                'string',
+                'max:10',
+                Rule::unique('suppliers', 'pan_no')->ignore($id),
+            ],
+            'msme_no' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('suppliers', 'msme_no')->ignore($id),
+            ],
+            'reg_address' => 'nullable|string|max:255',
+            'work_address' => 'nullable|string|max:255',
+            'area' => 'nullable|string|max:50',
+            'tel_no' => 'nullable|string|max:20',
+            'email' => [
+                'nullable',
+                'string',
+                'max:40',
+                'email',
+                Rule::unique('suppliers', 'email')->ignore($id),
+            ],
+            'owner_mobile' => 'nullable|digits:10',
+            'logo' => 'nullable|file|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'boolean',
+        ];
 
         return $rules;
     }

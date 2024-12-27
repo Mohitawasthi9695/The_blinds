@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ReceiverRequest;
 use App\Models\Receiver;
-use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ReceiverController extends ApiController
 {
@@ -17,25 +17,10 @@ class ReceiverController extends ApiController
     // POST /Receivers - Create a new Receiver
     public function store(ReceiverRequest $request)
     {
-        // Validate request data
         $validatedData = $request->validated();
-
-        // Handle logo file upload if it exists
-        if ($request->hasFile('logo')) {
-            $file = $request->file('logo');
-
-            // Generate a unique file name for the uploaded logo
-            $fileName = time() . '_' . preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $filePath = $file->storeAs('logos', $fileName, 'public'); // Store file in 'storage/app/public/logos'
-
-            // Add the file path to the validated data
-            $validatedData['logo'] = $filePath;
-        }
-
-        // Create a new Receiver with the validated data
+        $uniqueCode = Str::upper(Str::random(10));
+        $validatedData['code'] = $uniqueCode;
         $Receiver = Receiver::create($validatedData);
-
-        // Return a success response with the created Receiver
         return $this->successResponse($Receiver, 'Receiver created successfully.', 201);
     }
 
