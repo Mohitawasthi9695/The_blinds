@@ -15,4 +15,8 @@ class Product extends Model
   {
       return $this->hasMany(StockInvoiceDetail::class);
   }
+  public function stockIns()
+    {
+        return $this->hasMany(StocksIn::class, 'product_id', 'id')->where('status', 1);
+    }
 }

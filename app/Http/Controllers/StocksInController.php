@@ -19,7 +19,6 @@ class StocksInController extends ApiController
         $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
         return response()->json($stocks);
     }
-
     /**
      * Store a newly created resource in storage.
      */

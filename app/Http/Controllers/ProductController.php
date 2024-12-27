@@ -17,7 +17,19 @@ class ProductController extends ApiController
         $products = Product::all();
         return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
-
+    public function CheckStocks($product_id)
+    {
+        $product = Product::find($product_id);
+        if (!$product) {
+            return $this->errorResponse('Product not found.', 404);
+        }
+        $stocks = $product->stockIns->where('status', 1);
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No active stocks found for this product.', 404);
+        }
+        return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
+    }
+    
     /**
      * Show the form for creating a new resource.
      */
