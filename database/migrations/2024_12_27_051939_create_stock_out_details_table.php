@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stock_out_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stockout_invoice_id')->constrained('stockout_invoices')->onDelete('cascade');
+            $table->foreignId('stockout_inovices_id')->constrained('stockout_inovices')->onDelete('cascade');
             $table->foreignId('stock_available_id')->constrained('stock_available')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('product_type')->nullable();
