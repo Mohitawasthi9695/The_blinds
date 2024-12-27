@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 
-class StockoutInovice extends Model
-{ 
+class AvailableStock extends Model
+{
     use HasFactory, HasApiTokens;
-    protected $guarded=[''];
+    protected $guarded = [];
+   protected $table = 'stock_available';
 }

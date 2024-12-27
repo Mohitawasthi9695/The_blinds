@@ -23,7 +23,7 @@ class ProductController extends ApiController
         if (!$product) {
             return $this->errorResponse('Product not found.', 404);
         }
-        $stocks = $product->stockIns->where('status', 1);
+        $stocks = $product->stockAvaible->where('status', 1);
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
         }
