@@ -21,7 +21,7 @@ class StockOutRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
+        $rules = [
             'invoice_no' => 'required|string|max:255',
             'date' => 'required|date',
             'customer_id' => 'required|integer|exists:customers,id',
@@ -65,6 +65,24 @@ class StockOutRequest extends FormRequest
             'out_products.*.status' => 'nullable|boolean',
             'out_products.*.created_at' => 'nullable|date',
         ];
+
+        if ($this->isMethod('patch') || $this->isMethod('put')) {
+            $rules['invoice_no'] = 'sometimes|required|string|max:255';
+            $rules['date'] = 'sometimes|required|date';
+            $rules['customer_id'] = 'sometimes|required|integer|exists:customers,id';
+            $rules['total_amount'] = 'sometimes|required|numeric|min:0';
+            $rules['out_products'] = 'sometimes|required|array';
+            $rules['out_products.*.stock_available_id'] = 'sometimes|required|integer|exists:stock_available,id';
+            $rules['out_products.*.product_id'] = 'sometimes|required|integer|exists:products,id';
+            $rules['out_products.*.out_width'] = 'sometimes|required|numeric|min:0';
+            $rules['out_products.*.out_length'] = 'sometimes|required|numeric|min:0';
+            $rules['out_products.*.out_quantity'] = 'sometimes|required|numeric|min:0';
+            $rules['out_products.*.unit'] = 'sometimes|required|string|max:50';
+            $rules['out_products.*.rate'] = 'sometimes|required|numeric|min:0';
+            $rules['out_products.*.amount'] = 'sometimes|required|numeric|min:0';
+        }
+
+        return $rules;
     
     }
 }

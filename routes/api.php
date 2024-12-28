@@ -41,6 +41,7 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
     Route::Resource('/stockin/invoice', StockInvoiceController::class)->names('stockin.invoice');
     Route::Resource('/stocks', StocksInController::class);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
+    Route::get('/available', [ProductController::class, 'AvaibleProducts']);
     Route::Resource('stockout', StockoutInoviceController::class);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
     Route::Resource('/admin/bank', BankController::class)->names('admin.bank');

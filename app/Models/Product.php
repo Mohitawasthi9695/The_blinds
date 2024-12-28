@@ -19,4 +19,8 @@ class Product extends Model
     {
         return $this->hasMany(AvailableStock::class, 'product_id', 'id')->where('status', 1);
     }
+    public function AvaibleProducts()
+    {
+        return $this->whereHas('stockAvaible')->get();
+    }
 }
