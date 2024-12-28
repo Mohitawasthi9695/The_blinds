@@ -34,7 +34,27 @@ class ProductController extends ApiController
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
         }
-        return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
+        $responseData = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'stock_ins_id' => $stock->stock_ins_id,
+                'product_id' => $stock->product_id,
+                'length' => $stock->length,
+                'width' => $stock->width,
+                'unit' => $stock->unit,
+                'area' => $stock->area,
+                'area_sq_ft' => $stock->area_sq_ft,
+                'type' => $stock->type,
+                'qty' => $stock->qty,
+                'rack' => $stock->rack,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name,
+                'product_code' => $stock->products->code,
+                'product_shadeNo' => $stock->products->shadeNo,
+                'product_purchase_shade_no' => $stock->products->purchase_shade_no,
+            ];
+        });
+        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
     }
     
     /**
