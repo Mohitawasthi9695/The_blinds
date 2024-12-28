@@ -76,21 +76,17 @@ class StockoutInoviceController extends ApiController
             $remainingArea = round($availableStock->area - $actualOutArea, 5);
             $remainingAreaSqFt = round($remainingArea * 10.764, 5);
 
-            // Update the existing record
             $availableStock->update([
                 'qty' => $availableStock->qty - $product['out_quantity'],
                 'area' => $remainingArea,
                 'area_sq_ft' => $remainingAreaSqFt,
             ]);
-
-            // If the remaining quantity is zero, update the status
             if ($availableStock->qty == 0) {
                 $availableStock->update([
                     'status' => 0
                 ]);
             }
 
-            // Check if we need to insert a new AvailableStock record for the remaining stock
             $newStock = AvailableStock::where('product_id', $product['product_id'])
                 ->where('length', $outLength)
                 ->where('width', $outWidth)
@@ -109,7 +105,6 @@ class StockoutInoviceController extends ApiController
                     'status' => 1,
                 ]);
             } else {
-                // If the record exists, update the quantity of the available stock
                 $newStock->update([
                     'qty' => $newStock->qty + $product['out_quantity'],
                     'area' => $newStock->area + $sellArea,
@@ -117,7 +112,6 @@ class StockoutInoviceController extends ApiController
                 ]);
             }
 
-            // Insert into StockOutDetail
             StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_available_id' => $product['stock_available_id'],
