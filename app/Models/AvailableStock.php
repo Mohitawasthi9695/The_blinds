@@ -11,4 +11,9 @@ class AvailableStock extends Model
     use HasFactory, HasApiTokens;
     protected $guarded = [];
    protected $table = 'stock_available';
+   
+   public function products()
+   {
+       return $this->belongsTo(Product::class, 'product_id', 'id');
+   }
 }
