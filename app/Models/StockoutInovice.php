@@ -10,4 +10,5 @@ class StockoutInovice extends Model
 { 
     use HasFactory, HasApiTokens;
     protected $guarded=[''];
+    protected $table = 'stockout_inovices';
 }

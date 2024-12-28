@@ -10,4 +10,5 @@ class StockOutDetail extends Model
 {
     use HasApiTokens, HasFactory;
     protected $guarded = [];
+    protected $table = 'stock_out_details';
 }

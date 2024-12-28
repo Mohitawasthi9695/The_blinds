@@ -7,6 +7,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
 use App\Http\Controllers\StockInvoiceController;
+use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -40,6 +41,7 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
     Route::Resource('/stockin/invoice', StockInvoiceController::class)->names('stockin.invoice');
     Route::Resource('/stocks', StocksInController::class);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
+    Route::Resource('stockout', StockoutInoviceController::class);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
     Route::Resource('/admin/bank', BankController::class)->names('admin.bank');
     Route::Resource('/admin/users', UserController::class)->names('admin.users');

@@ -10,19 +10,14 @@ use Illuminate\Http\Request;
 
 class StockoutInoviceController extends ApiController
 {
-   
+
     public function index()
-    {
-        //
-    }
-    public function create()
     {
         //
     }
     public function store(StockOutRequest $request)
     {
         $validatedData = $request->validated();
-
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
@@ -38,6 +33,7 @@ class StockoutInoviceController extends ApiController
             'irn' => $validatedData['irn'] ?? null,
             'ack_no' => $validatedData['ack_no'] ?? null,
             'ack_date' => $validatedData['ack_date'] ?? null,
+            'bank_id' => $validatedData['bank_id'] ?? 1,
             'total_amount' => $validatedData['total_amount'],
             'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
@@ -53,40 +49,53 @@ class StockoutInoviceController extends ApiController
 
         ]);
 
-        foreach ($validatedData['products'] as $product) {
+        foreach ($validatedData['out_products'] as $product) {
+            // Check if stock is available and meets the required conditions
             $availableStock = AvailableStock::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
+        
             if (!$availableStock) {
                 return response()->json(['error' => 'Stock not available for the specified product requirements.'], 422);
             }
+        
             if ($availableStock->qty < $product['out_quantity']) {
                 return response()->json(['error' => 'Insufficient quantity available in stock.'], 422);
             }
-            $sellArea = 0;
-            $wasteArea = 0;
-
-            if (isset($product['out_length']) && isset($product['out_width'])) {
-                $sellArea = $product['out_length'] * $product['out_width'] * $product['out_quantity'];
-                if ($product['unit'] === 'meter') {
-                    $sellArea *= 10.764; 
-                } elseif ($product['unit'] === 'inches') {
-                    $sellArea /= 144; 
-                }
+        
+            // Convert out_length and out_width to meters if needed
+            $outLength = $product['out_length'];
+            $outWidth = $product['out_width'];
+        
+            if ($product['unit'] === 'inches') {
+                $outLength *= 0.0254; // Convert inches to meters
+                $outWidth *= 0.0254;
+            } elseif ($product['unit'] === 'feet') {
+                $outLength *= 0.3048; // Convert feet to meters
+                $outWidth *= 0.3048;
             }
-
-            $remainingAreaSqFt = $availableStock->area_sq_ft - $sellArea;
-            $wasteArea = max(0, $remainingAreaSqFt);
-
-            // Update the available stock
+        
+            // Calculate sellable area (in square meters)
+            $sellArea = $outLength * $outWidth * $product['out_quantity'];
+        
+            // Calculate actual out area (in square meters)
+            $actualOutArea = $outLength * $availableStock->width * $product['out_quantity'];
+        
+            // Calculate waste area (in square meters)
+            $wasteArea = $actualOutArea - $sellArea;
+        
+            // Update stock values
+            $remainingArea = round($availableStock->area - $actualOutArea, 5);
+            $remainingAreaSqFt = round($remainingArea * 10.764, 5); // Convert remaining area to square feet for reference
+        
             $availableStock->update([
                 'qty' => $availableStock->qty - $product['out_quantity'],
-                'area' => max(0, $availableStock->area - $sellArea),
-                'area_sq_ft' => $wasteArea,
-                'status' => ($availableStock->qty > 0) ? 'Available' : 'Depleted',
+                'area' => $remainingArea,
+                'area_sq_ft' => $remainingAreaSqFt,
+                'status' => ($availableStock->qty - $product['out_quantity'] > 0) ? 1 : 0, // Active if stock remains
             ]);
-
-            // Insert the stock out record
+        
+            // Record stock-out details
             StockOutDetail::create([
                 'stockout_inovices_id' => $stockOutInvoice->id,
                 'stock_available_id' => $product['stock_available_id'],
@@ -94,65 +103,21 @@ class StockoutInoviceController extends ApiController
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'out_quantity' => $product['out_quantity'],
-                'out_width' => $product['out_width'] ?? null,
-                'out_length' => $product['out_length'] ?? null,
-                'unit' => $product['unit'] ?? null,
-                'area' => $sellArea,
-                'area_sq_ft' => $sellArea,
+                'out_width' => round($outWidth, 5), 
+                'out_length' => round($outLength, 5), 
+                'unit' => $product['unit']?? null, 
+                'area' => round($sellArea, 5),
+                'area_sq_ft' => round($sellArea * 10.764, 5), // Convert to square feet for reference
+                'waste_width' => round($availableStock->width - $outWidth, 5),
+                'waste_area' => round($wasteArea, 5),
+                'waste_area_sq_ft' => round($wasteArea * 10.764, 5), // Convert to square feet for reference
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
             ]);
-
-            // Log wastage if any
-            if ($wasteArea > 0) {
-                AvailableStock::create([
-                    'stock_ins_id' => $availableStock->stock_ins_id,
-                    'product_id' => $product['product_id'],
-                    'length' => $availableStock->length,
-                    'width' => $availableStock->width,
-                    'unit' => $availableStock->unit,
-                    'waste_area_sq_ft	' => $remainingAreaSqFt,
-                    'area' => $wasteArea,
-                    'qty' => 0,
-                    'rack' => $availableStock->rack,
-                    'status' => 'Wastage',
-                ]);
-            }
         }
-
+        
 
         // Return success response
         return $this->successResponse($stockOutInvoice, 'StockInvoice created successfully.', 201);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(StockOutRequest $stockoutInovice)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(StockOutRequest $StockOutRequest)
-    {
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, StockOutRequest $StockOutRequest)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(StockOutRequest $StockOutRequest)
-    {
-        //
     }
 }
