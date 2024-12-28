@@ -14,5 +14,9 @@ class Receiver extends Model
     {
         return $this->hasMany(StockInvoice::class);
     }
+    public function stockOutInvoices()
+    {
+        return $this->hasMany(StockoutInovice::class);
+    }
 
 }

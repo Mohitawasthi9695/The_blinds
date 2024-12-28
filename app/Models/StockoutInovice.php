@@ -11,4 +11,17 @@ class StockoutInovice extends Model
     use HasFactory, HasApiTokens;
     protected $guarded=[''];
     protected $table = 'stockout_inovices';
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
+    }
+    public function receiver()
+    {
+        return $this->belongsTo(Receiver::class);
+    }
+    public function stockOutDetails()
+    {
+        return $this->hasMany(StockOutDetail::class);
+    }
 }

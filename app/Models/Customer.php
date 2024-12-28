@@ -10,4 +10,9 @@ class Customer extends Model
 {
     use HasFactory, HasApiTokens;
     protected $guarded = [];
+   
+    public function stockOutInvoices()
+    {
+        return $this->hasMany(StockoutInovice::class);
+    }
 }

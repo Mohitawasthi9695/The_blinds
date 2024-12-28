@@ -11,4 +11,8 @@ class StockOutDetail extends Model
     use HasApiTokens, HasFactory;
     protected $guarded = [];
     protected $table = 'stock_out_details';
+    public function stockOutInvoice()
+    {
+        return $this->belongsTo(StockoutInovice::class);
+    }
 }

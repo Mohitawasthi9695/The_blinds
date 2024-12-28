@@ -30,19 +30,19 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2);
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
-            $table->unsignedBigInteger('bank_id');
             $table->string('payment_mode')->nullable();
             $table->string('payment_status')->nullable();
             $table->string('payment_date')->nullable();
             $table->string('payment_Bank')->nullable();
             $table->string('payment_account_no')->nullable();
             $table->string('payment_ref_no')->nullable();
-            $table->string('payment_amount')->nullable();
+            $table->decimal('payment_amount',10,5)->nullable();
             $table->string('payment_remarks')->nullable();
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
             $table->foreign('receiver_id')->references('id')->on('receivers')->onDelete('cascade');
+            $table->foreign('customer_id')->references('id')->on('customers')->onDelete('cascade');
         });
     }
 
