@@ -45,40 +45,79 @@ class StockoutInoviceController extends ApiController
             'payment_amount' => $validatedData['payment_amount'] ?? null,
             'payment_remarks' => $validatedData['payment_remarks'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
-
         ]);
+
         foreach ($validatedData['out_products'] as $product) {
             $availableStock = AvailableStock::where('id', $product['stock_available_id'])
-                ->where('status', '1')
-                ->first();
-        
+            ->where('status', '1')
+            ->first();
+
             if (!$availableStock) {
-                return response()->json(['error' => 'Stock not available for the specified product requirements.'], 422);
+                return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
-        
+
             if ($availableStock->qty < $product['out_quantity']) {
                 return response()->json(['error' => 'Insufficient quantity available in stock.'], 422);
             }
+
             $outLength = $product['out_length'];
             $outWidth = $product['out_width'];
             if ($product['unit'] === 'inches') {
                 $outLength *= 0.0254;
                 $outWidth *= 0.0254;
             } elseif ($product['unit'] === 'feet') {
-                $outLength *= 0.3048; 
+                $outLength *= 0.3048;
                 $outWidth *= 0.3048;
             }
+
             $sellArea = $outLength * $outWidth * $product['out_quantity'];
             $actualOutArea = $outLength * $availableStock->width * $product['out_quantity'];
             $wasteArea = $actualOutArea - $sellArea;
             $remainingArea = round($availableStock->area - $actualOutArea, 5);
-            $remainingAreaSqFt = round($remainingArea * 10.764, 5); 
-        
+            $remainingAreaSqFt = round($remainingArea * 10.764, 5);
+
+            // Update the existing record
             $availableStock->update([
                 'qty' => $availableStock->qty - $product['out_quantity'],
                 'area' => $remainingArea,
                 'area_sq_ft' => $remainingAreaSqFt,
             ]);
+
+            // If the remaining quantity is zero, update the status
+            if ($availableStock->qty == 0) {
+                $availableStock->update([
+                    'status' => 0
+                ]);
+            }
+
+            // Check if we need to insert a new AvailableStock record for the remaining stock
+            $newStock = AvailableStock::where('product_id', $product['product_id'])
+                ->where('length', $outLength)
+                ->where('width', $outWidth)
+                ->where('status', 0) 
+                ->first();
+
+            if (!$newStock) {
+                AvailableStock::create([
+                    'stock_ins_id '=>$availableStock->stock_ins_id,
+                    'product_id' => $product['product_id'],
+                    'length' => $outLength,
+                    'width' => $outWidth,
+                    'qty' => $product['out_quantity'],
+                    'area' => $sellArea,
+                    'area_sq_ft' => $sellArea * 10.764,
+                    'status' => 1,
+                ]);
+            } else {
+                // If the record exists, update the quantity of the available stock
+                $newStock->update([
+                    'qty' => $newStock->qty + $product['out_quantity'],
+                    'area' => $newStock->area + $sellArea,
+                    'area_sq_ft' => $newStock->area_sq_ft + ($sellArea * 10.764),
+                ]);
+            }
+
+            // Insert into StockOutDetail
             StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_available_id' => $product['stock_available_id'],
@@ -86,11 +125,11 @@ class StockoutInoviceController extends ApiController
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'out_quantity' => $product['out_quantity'],
-                'out_width' => round($outWidth, 5), 
-                'out_length' => round($outLength, 5), 
-                'unit' => $product['unit']?? null, 
+                'out_width' => round($outWidth, 5),
+                'out_length' => round($outLength, 5),
+                'unit' => $product['unit'] ?? null,
                 'area' => round($sellArea, 5),
-                'area_sq_ft' => round($sellArea * 10.764, 5), 
+                'area_sq_ft' => round($sellArea * 10.764, 5),
                 'waste_width' => round($availableStock->width - $outWidth, 5),
                 'waste_area' => round($wasteArea, 5),
                 'waste_area_sq_ft' => round($wasteArea * 10.764, 5),
@@ -98,6 +137,7 @@ class StockoutInoviceController extends ApiController
                 'amount' => $product['amount'],
             ]);
         }
+
         return $this->successResponse($stockOutInvoice, 'StockInvoice created successfully.', 201);
     }
     public function show($id)
@@ -108,7 +148,7 @@ class StockoutInoviceController extends ApiController
         }
         return $this->successResponse($stockOutInvoice, 'StockOutInvoice retrieved successfully.');
     }
-   
+
 
     public function destroy($id)
     {
@@ -118,7 +158,6 @@ class StockoutInoviceController extends ApiController
             return $this->errorResponse('StockOutInvoice not found.', 404);
         }
 
-        // Rollback previous stock changes
         foreach ($stockOutInvoice->stockOutDetails as $detail) {
             $availableStock = AvailableStock::find($detail->stock_available_id);
             if ($availableStock) {
