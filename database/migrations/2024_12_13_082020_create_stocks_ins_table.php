@@ -13,26 +13,17 @@ return new class extends Migration {
         Schema::create('stocks_ins', function (Blueprint $table) {
             $table->id();
             $table->string('lot_no');
-            $table->unsignedBigInteger('stock_invoice_details_id')->nullable();
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->unsignedBigInteger('invoice_id')->nullable();
-            $table->string('invoice_no');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->string('invoice_no')->nullable();
             $table->decimal('length', 15, 5)->nullable();
             $table->decimal('width', 15, 5)->nullable();
             $table->string('unit')->default('meter');
-            $table->decimal('area',15,5)->nullable();
-            $table->decimal('area_sq_ft',15,5)->nullable();
             $table->string('type')->nullable();
             $table->integer('qty')->nullable(); 
             $table->string('rack')->nullable(); 
             $table->boolean('status')->default(1);
             $table->timestamps();
-
-            $table->foreign('stock_invoice_details_id')
-                  ->references('id')
-                  ->on('stock_invoice_details')
-                  ->onDelete('cascade');
-
             $table->foreign('invoice_id')
                   ->references('id')
                   ->on('stock_invoices')

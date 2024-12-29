@@ -70,45 +70,34 @@ class StockoutInoviceController extends ApiController
                 $outWidth *= 0.3048;
             }
 
-            $sellArea = $outLength * $outWidth * $product['out_quantity'];
-            $actualOutArea = $outLength * $availableStock->width * $product['out_quantity'];
-            $wasteArea = $actualOutArea - $sellArea;
-            $remainingArea = round($availableStock->area - $actualOutArea, 5);
-            $remainingAreaSqFt = round($remainingArea * 10.764, 5);
-
             $availableStock->update([
                 'qty' => $availableStock->qty - $product['out_quantity'],
-                'area' => $remainingArea,
-                'area_sq_ft' => $remainingAreaSqFt,
             ]);
             if ($availableStock->qty == 0) {
                 $availableStock->update([
                     'status' => 0
                 ]);
             }
-
+            $restLength = $availableStock->length - $outLength;
+            $restWidth = $availableStock->width - $outWidth;
             $newStock = AvailableStock::where('product_id', $product['product_id'])
-                ->where('length', $outLength)
-                ->where('width', $outWidth)
-                ->where('status', 0) 
+                ->where('length', $restLength)
+                ->where('width', $availableStock->width)
+                ->where('unit', $availableStock->unit)
                 ->first();
 
-            if (!$newStock) {
+            if (!$newStock&&$restLength>0&&$restWidth>0) {
                 AvailableStock::create([
-                    'stock_ins_id '=>$availableStock->stock_ins_id,
                     'product_id' => $product['product_id'],
-                    'length' => $outLength,
-                    'width' => $outWidth,
+                    'length' => $restLength,
+                    'width' => $availableStock->width,
+                    'unit' => $availableStock->unit,
                     'qty' => $product['out_quantity'],
-                    'area' => $sellArea,
-                    'area_sq_ft' => $sellArea * 10.764,
                     'status' => 1,
                 ]);
             } else {
                 $newStock->update([
                     'qty' => $newStock->qty + $product['out_quantity'],
-                    'area' => $newStock->area + $sellArea,
-                    'area_sq_ft' => $newStock->area_sq_ft + ($sellArea * 10.764),
                 ]);
             }
 
@@ -122,16 +111,12 @@ class StockoutInoviceController extends ApiController
                 'out_width' => round($outWidth, 5),
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,
-                'area' => round($sellArea, 5),
-                'area_sq_ft' => round($sellArea * 10.764, 5),
-                'waste_width' => round($availableStock->width - $outWidth, 5),
-                'waste_area' => round($wasteArea, 5),
-                'waste_area_sq_ft' => round($wasteArea * 10.764, 5),
+                'waste_width' => $restWidth,
+                'waste_area' =>$outLength,
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
             ]);
         }
-
         return $this->successResponse($stockOutInvoice, 'StockInvoice created successfully.', 201);
     }
     public function show($id)

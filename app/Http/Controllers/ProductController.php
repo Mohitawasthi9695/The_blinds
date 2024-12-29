@@ -17,33 +17,38 @@ class ProductController extends ApiController
         $products = Product::all();
         return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
-    public function AvaibleProducts()
+    public function AvailableProducts()
     {
-        $products = Product::whereHas('stockAvaible', function ($query) {
+        $products = Product::whereHas('stockAvailable', function ($query) {
             $query->where('status', 1);
         })->get();
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
+    public function AvailableStocks()
+    {
+        $stocks = Product::whereHas('stockAvailable', function ($query) {
+            $query->where('status', 1);
+        })->with('stockAvailable')->get();
+        return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
+    }
+    
     public function CheckStocks($product_id)
     {
         $product = Product::find($product_id);
         if (!$product) {
             return $this->errorResponse('Product not found.', 404);
         }
-        $stocks = $product->stockAvaible->where('status', 1);
+        $stocks = $product->stockAvailable->where('status', 1);
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
         }
         $responseData = $stocks->map(function ($stock) {
             return [
                 'id' => $stock->id,
-                'stock_ins_id' => $stock->stock_ins_id,
                 'product_id' => $stock->product_id,
                 'length' => $stock->length,
                 'width' => $stock->width,
                 'unit' => $stock->unit,
-                'area' => $stock->area,
-                'area_sq_ft' => $stock->area_sq_ft,
                 'type' => $stock->type,
                 'qty' => $stock->qty,
                 'rack' => $stock->rack,

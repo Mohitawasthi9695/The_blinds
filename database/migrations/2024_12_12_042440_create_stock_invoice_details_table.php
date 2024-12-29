@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->decimal('width', 10, 5)->nullable();
+            $table->decimal('height', 10, 5)->nullable();
             $table->decimal('quantity', 15, 5)->nullable(); 
             $table->string('unit')->nullable();
             $table->decimal('rate', 10, 5)->nullable();

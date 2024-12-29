@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StockInRequest;
+use App\Http\Requests\StockInUpdate;
 use App\Models\AvailableStock;
 use App\Models\Product;
 use App\Models\StockInvoice;
 use App\Models\StocksIn;
-use League\Csv\Reader;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 
 class StocksInController extends ApiController
@@ -26,33 +27,15 @@ class StocksInController extends ApiController
     public function store(StockInRequest $request)
     {
         $validatedData = $request->validated();
-
-        if (!is_array($validatedData)) {
-            return $this->errorResponse('Invalid data format. Expected an array of records.', 422);
-        }
-
+  
         try {
             $createdItems = [];
 
             foreach ($validatedData as $data) {
-                if (isset($data['type']) && $data['type'] === 'roll') {
-                    if (isset($data['length']) && isset($data['width'])) {
-                        $data['area'] = $data['length'] * $data['width'];
-                        if (isset($data['unit']) && $data['unit'] === 'meter' && isset($data['qty'])) {
-                            $data['area_sq_ft'] = $data['area'] * 10.764;
-                        } else {
-                            $data['area_sq_ft'] = null;
-                        }
-                    } else {
-                        return $this->errorResponse('Length and width are required for type "roll".', 422);
-                    }
-                }
-
                 $createdStockIn = StocksIn::create($data);
                 $createdItems[] = $createdStockIn;
                 AvailableStock::create(
                     [
-                        'stock_ins_id' => $createdStockIn->id,
                         'product_id' => $createdStockIn->product_id,
                         'length' => $createdStockIn->length,
                         'width' => $createdStockIn->width,
@@ -70,89 +53,82 @@ class StocksInController extends ApiController
             return $this->errorResponse('Failed to create stock entries.', 500, $e->getMessage());
         }
     }
+
     public function storeFromCsv(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt',
+            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls',
         ]);
-
         try {
-            $csv = Reader::createFromPath($request->file('csv_file')->getRealPath(), 'r');
-            $csv->setHeaderOffset(0);
-
-            $records = $csv->getRecords();
-
+            $data = Excel::toArray([], $request->file('csv_file'));
+    
+            if (empty($data) || !isset($data[0])) {
+                return response()->json(['error' => 'File is empty or invalid'], 422);
+            }
+            $rows = $data[0];
             $createdItems = [];
-            foreach ($records as $row) {
-                if (!isset($row['shadeNo'])) {
-                    return response()->json(['error' => 'shadeNo is missing in a row'], 422);
+    
+            foreach ($rows as $index => $row) {
+                if ($index === 0) {
+                    continue;
                 }
-                if (!isset($row['invoice_no'])) {
-                    return response()->json(['error' => 'invoice_no is missing in a row'], 422);
+    
+                if (empty($row[1]) || empty($row[2])) {
+                    return response()->json(['error' => 'Required fields shadeNo or invoice_no are missing'], 422);
                 }
-
-                $product = Product::where('shadeNo', $row['shadeNo'])->first();
-                $Invoice = StockInvoice::where('invoice_no', $row['invoice_no'])->first();
-
+    
+                $shadeNo = $row[3];
+                $invoiceNo = $row[1];
+    
+                $product = Product::where('shadeNo', $shadeNo)->first();
+                $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
+    
                 if (!$product) {
-                    return response()->json(['error' => "Product with shadeNo {$row['shadeNo']} not found"], 422);
+                    return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
                 }
-                if (!$Invoice) {
-                    return response()->json(['error' => "Invoice with invoice_no {$row['invoice_no']} not found"], 422);
+                if (!$invoice) {
+                    return response()->json(['error' => "Invoice with invoice_no {$invoiceNo} not found"], 422);
                 }
-
-                // Calculate area for type "roll"
-                if (isset($row['type']) && $row['type'] === 'roll') {
-                    if (isset($row['length']) && isset($row['width'])) {
-                        $row['area'] = $row['length'] * $row['width'];
-
-                        if (isset($row['unit']) && $row['unit'] === 'meter' && isset($row['qty'])) {
-                            $row['area_sq_ft'] = $row['area'] * $row['qty'] * 10.764;
-                        } else {
-                            $row['area_sq_ft'] = null;
-                        }
-                    } else {
-                        return response()->json(['error' => 'Length and width are required for type "roll".'], 422);
-                    }
-                }
+    
                 $data = [
                     'product_id' => $product->id,
-                    'invoice_id' => $Invoice->id,
-                    'invoice_no' => $row['invoice_no'] ?? null,
-                    'lot_no'  => $row['lot_no'] ?? null,
-                    'type'       => $row['type'] ?? null,
-                    'length'     => $row['length'] ?? null,
-                    'width'      => $row['width'] ?? null,
-                    'area'       => $row['area'] ?? null,
-                    'area_sq_ft' => $row['area_sq_ft'] ?? null,
-                    'qty'        => $row['qty'] ?? null,
-                    'unit'       => $row['unit'] ?? null,
-                    'shadeNo'    => $row['shadeNo'],
+                    'invoice_id' => $invoice->id,
+                    'invoice_no' => $invoiceNo,
+                    'lot_no'  => $row[2] ?? null,
+                    'width'     => $row[4] ?? null,
+                    'length'      => $row[5] ?? null,
+                    'qty'        => $row[7] ?? null,
+                    'unit'       => $row[6] ?? null,
+                    'type'       => $row[8] ?? null,
                 ];
-
+    
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;
-                AvailableStock::create(
-                     [
-                        'stock_ins_id' => $createdItem->id,
+    
+                $existingStock = AvailableStock::where('product_id', $createdItem->product_id)
+                    ->where('length', $createdItem->length)
+                    ->where('width', $createdItem->width)
+                    ->where('unit', $createdItem->unit)
+                    ->first();
+                if ($existingStock) {
+                    $existingStock->qty += $createdItem->qty;
+                    $existingStock->save();
+                } else {
+                    AvailableStock::create([
                         'product_id' => $createdItem->product_id,
                         'length' => $createdItem->length,
                         'width' => $createdItem->width,
                         'unit' => $createdItem->unit,
-                        'area' => $createdItem->area,
-                        'area_sq_ft' => $createdItem->area_sq_ft,
                         'qty' => $createdItem->qty,
                         'rack' => $createdItem->rack,
-                    ]
-                );
+                    ]);
+                }
             }
-
-            return response()->json(['success' => 'Stock entries created successfully', 'data' => $createdItems], 201);
+            return $this->successResponse($createdItems, 'Stock entries created successfully.', 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Failed to process CSV file', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => 'Failed to process file', 'message' => $e->getMessage()], 500);
         }
-    }
-
+    }    
     public function show($id)
     {
         $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])
@@ -161,19 +137,67 @@ class StocksInController extends ApiController
         return response()->json($stocks);
     }
 
-    public function update(StockInRequest $request, $id)
+    public function update(StockInUpdate $request, $id)
     {
         $stock = StocksIn::findOrFail($id);
 
-        $validatedData = $request->validated();
+    // Rollback the previous stock changes
+    $existingStock = AvailableStock::where('product_id', $stock->product_id)
+        ->where('length', $stock->length)
+        ->where('width', $stock->width)
+        ->where('unit', $stock->unit)
+        ->first();
 
-        $stock->update($validatedData);
+    if ($existingStock) {
+        $existingStock->qty -= $stock->qty; 
+        if ($existingStock->qty <= 0) {
+            $existingStock->delete(); 
+        } else {
+            $existingStock->save();
+        }
+    }
+
+    $validatedData = $request->validated();
+    $stock->update($validatedData);
+
+    $updatedStock = AvailableStock::where('product_id', $stock->product_id)
+        ->where('length', $stock->length)
+        ->where('width', $stock->width)
+        ->where('unit', $stock->unit)
+        ->first();
+
+    if ($updatedStock) {
+        $updatedStock->qty += $stock->qty; 
+        $updatedStock->save();
+    } else {
+        AvailableStock::create([
+            'product_id' => $stock->product_id,
+            'length' => $stock->length,
+            'width' => $stock->width,
+            'unit' => $stock->unit,
+            'qty' => $stock->qty,
+            'rack' => $stock->rack,
+        ]);
+    }
         return $this->successResponse($stock, 'Stock entry updated successfully.', 200);
     }
 
     public function destroy($id)
     {
         $stock = StocksIn::findOrFail($id);
+        $existingStock = AvailableStock::where('product_id', $stock->product_id)
+                    ->where('length', $stock->length)
+                    ->where('width', $stock->width)
+                    ->where('unit', $stock->unit)
+                    ->first();
+                if ($existingStock) {
+                    $existingStock->qty -= $stock->qty;
+                    if ($existingStock->qty <= 0) {
+                        $existingStock->delete(); 
+                    } else {
+                        $existingStock->save();
+                    }
+                }
         $stock->delete();
 
         return $this->successResponse(['message' => 'Stock entry deleted successfully'], 200);

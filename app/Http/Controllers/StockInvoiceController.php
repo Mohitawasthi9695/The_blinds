@@ -18,9 +18,7 @@ class StockInvoiceController extends ApiController
     // POST /StockInvoices - Create a new StockInvoice
     public function store(StockInvoiceRequest $request)
     {
-        // Get validated data
         $validatedData = $request->validated();
-
         $stockInvoice = StockInvoice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'supplier_id' => $validatedData['supplier_id'],
@@ -41,10 +39,7 @@ class StockInvoiceController extends ApiController
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
             'bank_id' => $validatedData['bank_id'],
             'qr_code' => $validatedData['qr_code'] ?? null,
-
         ]);
-
-        // Insert product details
         foreach ($validatedData['products'] as $product) {
             StockInvoiceDetail::create([
                 'stock_invoice_id' => $stockInvoice->id,
@@ -59,8 +54,6 @@ class StockInvoiceController extends ApiController
                 'amount' => $product['amount'],
             ]);
         }
-
-        // Return success response
         return $this->successResponse($stockInvoice, 'StockInvoice created successfully.', 201);
     }
 

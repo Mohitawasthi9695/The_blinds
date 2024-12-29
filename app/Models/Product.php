@@ -15,12 +15,8 @@ class Product extends Model
   {
       return $this->hasMany(StockInvoiceDetail::class);
   }
-  public function stockAvaible()
-    {
-        return $this->hasMany(AvailableStock::class, 'product_id', 'id')->with('products')->where('status', 1);
-    }
-    public function AvaibleProducts()
-    {
-        return $this->whereHas('stockAvaible')->get();
-    }
+public function stockAvailable()
+{
+    return $this->hasMany(AvailableStock::class);
+}
 }

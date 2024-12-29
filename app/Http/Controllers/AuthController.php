@@ -22,9 +22,7 @@ class AuthController extends ApiController
             // if ($user->tokens()->count() > 0) {
             //     return $this->errorResponse('You are already logged in on another device.', 403);
             // }
-
-            $token = $user->createToken("{$user->role}_token")->plainTextToken;
-
+            $token = $user->createToken("{$user->role}_token", ['*'], now()->addMinutes(60))->plainTextToken;
             return response()->json([
                 'message' => "Login successful",
                 'user' => $user,

@@ -50,7 +50,6 @@ class StockOutRequest extends FormRequest
             'qr_code' => 'nullable|string|max:1000',
             'status' => 'nullable|boolean',
             'created_at' => 'nullable|date',
-            // Out Product fields (array of products)
             'out_products' => 'required|array',
             'out_products.*.stock_available_id' => 'required|integer|exists:stock_available,id',
             'out_products.*.product_id' => 'required|integer|exists:products,id',
