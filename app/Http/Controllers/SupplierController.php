@@ -6,6 +6,7 @@ use App\Models\Supplier;
 
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\SupplierRequest;
+use App\Http\Requests\SupplierUpdate;
 use Illuminate\Support\Str;
 
 class SupplierController extends ApiController
@@ -48,7 +49,7 @@ class SupplierController extends ApiController
         return $this->successResponse($supplier, 'Supplier retrieved successfully.', 200);
     }
 
-    public function update(SupplierRequest $request, $id)
+    public function update(SupplierUpdate $request, $id)
     {
         $supplier = Supplier::find($id);
         if (!$supplier) {

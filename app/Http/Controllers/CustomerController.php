@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\CustomerRequest;
+use App\Http\Requests\SupplierRequest;
+use App\Http\Requests\SupplierUpdate;
 use App\Models\Customer;
 use Illuminate\Support\Str;
 
@@ -14,7 +15,7 @@ class CustomerController extends ApiController
         return $this->successResponse($Customers, 'Customers retrieved successfully.',200);
     }
 
-    public function store(CustomerRequest $request)
+    public function store(SupplierRequest $request)
     {
         $validatedData = $request->validated();
         $uniqueCode = Str::upper(Str::random(10));
@@ -34,7 +35,7 @@ class CustomerController extends ApiController
     }
 
     // PUT /Customers/{id} - Update a Customer
-    public function update(CustomerRequest $request, $id)
+    public function update(SupplierUpdate $request, $id)
     {
         $Customer = Customer::find($id);
         if (!$Customer) {

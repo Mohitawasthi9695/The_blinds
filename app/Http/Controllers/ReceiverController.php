@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ReceiverRequest;
+use App\Http\Requests\SupplierRequest;
+use App\Http\Requests\SupplierUpdate;
 use App\Models\Receiver;
 use Illuminate\Support\Str;
 
@@ -15,7 +17,7 @@ class ReceiverController extends ApiController
     }
 
     // POST /Receivers - Create a new Receiver
-    public function store(ReceiverRequest $request)
+    public function store(SupplierRequest $request)
     {
         $validatedData = $request->validated();
         $uniqueCode = Str::upper(Str::random(10));
@@ -35,7 +37,7 @@ class ReceiverController extends ApiController
     }
 
     // PUT /Receivers/{id} - Update a Receiver
-    public function update(ReceiverRequest $request, $id)
+    public function update(SupplierUpdate $request, $id)
     {
         $Receiver = Receiver::find($id);
         if (!$Receiver) {

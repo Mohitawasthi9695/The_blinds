@@ -197,9 +197,13 @@ class StocksInController extends ApiController
                     } else {
                         $existingStock->save();
                     }
+                    $stock->delete();
+                    return $this->successResponse(['message' => 'Stock entry deleted successfully'], 200);
+                } else {
+                    return $this->errorResponse('Stock is in use and cannot be deleted.', 400);
                 }
-        $stock->delete();
+        
 
-        return $this->successResponse(['message' => 'Stock entry deleted successfully'], 200);
+      
     }
 }
