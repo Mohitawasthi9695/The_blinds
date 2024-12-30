@@ -44,13 +44,13 @@ class ProductController extends ApiController
         }
         $responseData = $stocks->map(function ($stock) {
             return [
-                'id' => $stock->id,
+                'stock_available_id' => $stock->id,
                 'product_id' => $stock->product_id,
-                'length' => $stock->length,
-                'width' => $stock->width,
+                'out_length' => $stock->length,
+                'out_width' => $stock->width,
                 'unit' => $stock->unit,
-                'type' => $stock->type,
-                'qty' => $stock->qty,
+                'product_type' => $stock->type,
+                'out_quantity' => $stock->qty,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name,
