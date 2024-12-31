@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('payment_Bank')->nullable();
             $table->string('payment_account_no')->nullable();
             $table->string('payment_ref_no')->nullable();
-            $table->decimal('payment_amount',10,5)->nullable();
+            $table->decimal('payment_amount',15,2)->nullable();
             $table->string('payment_remarks')->nullable();
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);

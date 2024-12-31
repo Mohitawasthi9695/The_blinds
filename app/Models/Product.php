@@ -19,4 +19,8 @@ public function stockAvailable()
 {
     return $this->hasMany(AvailableStock::class);
 }
+public function stockOutDetails()
+{
+    return $this->hasMany(StockOutDetail::class, 'product_id');
+}
 }

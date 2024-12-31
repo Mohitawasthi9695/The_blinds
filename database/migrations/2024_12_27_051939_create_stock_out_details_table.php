@@ -22,12 +22,8 @@ return new class extends Migration
             $table->decimal('out_length', 10, 5)->nullable();
             $table->decimal('out_quantity', 15, 5)->nullable();
             $table->string('unit')->nullable();
-            $table->decimal('area', 15, 5)->nullable();
-            $table->decimal('area_sq_ft', 15, 5)->nullable();
             $table->string('type')->nullable();
             $table->string('waste_width')->nullable();
-            $table->string('waste_area')->nullable();
-            $table->string('waste_area_sq_ft')->nullable();
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();
             $table->string('rack')->nullable();

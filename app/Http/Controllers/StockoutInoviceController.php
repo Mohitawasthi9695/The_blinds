@@ -6,18 +6,29 @@ use App\Http\Requests\StockOutRequest;
 use App\Models\AvailableStock;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
+use Illuminate\Support\Facades\Log;
 
 class StockoutInoviceController extends ApiController
 {
 
     public function index()
     {
-        $stockOutInvoices = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->get();
+        $stockOutInvoices = StockoutInovice::with('customer', 'receiver', 'stockOutDetails.product')->get();
         return $this->successResponse($stockOutInvoices, 'StockOutInovices retrieved successfully.');
     }
+    public function AllStockOut()
+    {
+        $stockOutInvoices = StockoutInovice::select('id', 'invoice_no', 'date')
+            ->with('stockOutDetails.product')
+            ->get();
+
+        return $this->successResponse($stockOutInvoices, 'StockOutInvoices retrieved successfully.');
+    }
+
     public function store(StockOutRequest $request)
     {
         $validatedData = $request->validated();
+        log::info($validatedData);
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
@@ -39,7 +50,7 @@ class StockoutInoviceController extends ApiController
             'payment_mode' => $validatedData['payment_mode'] ?? null,
             'payment_status' => $validatedData['payment_status'] ?? null,
             'payment_date' => $validatedData['payment_date'] ?? null,
-            'payment_bank' => $validatedData['payment_bank'] ?? null,
+            'payment_Bank' => $validatedData['payment_bank'] ?? null,
             'payment_account_no' => $validatedData['payment_account_no'] ?? null,
             'payment_ref_no' => $validatedData['payment_ref_no'] ?? null,
             'payment_amount' => $validatedData['payment_amount'] ?? null,
@@ -49,8 +60,8 @@ class StockoutInoviceController extends ApiController
 
         foreach ($validatedData['out_products'] as $product) {
             $availableStock = AvailableStock::where('id', $product['stock_available_id'])
-            ->where('status', '1')
-            ->first();
+                ->where('status', '1')
+                ->first();
 
             if (!$availableStock) {
                 return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
@@ -70,7 +81,7 @@ class StockoutInoviceController extends ApiController
                 $outWidth *= 0.3048;
             }
 
-           
+
             $restLength = $availableStock->length - $outLength;
             $restWidth = $availableStock->width - $outWidth;
             if ($restLength > 0 && $restWidth > 0) {
@@ -79,7 +90,7 @@ class StockoutInoviceController extends ApiController
                     ->where('width', $availableStock->width)
                     ->where('unit', $availableStock->unit)
                     ->first();
-        
+
                 if (!$newStock) {
                     AvailableStock::create([
                         'product_id' => $product['product_id'],
@@ -95,8 +106,8 @@ class StockoutInoviceController extends ApiController
                     ]);
                 }
             }
-           
-            StockOutDetail::create([
+
+            $creat =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_available_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
@@ -107,16 +118,12 @@ class StockoutInoviceController extends ApiController
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,
                 'waste_width' => $restWidth,
-                'waste_area' =>$outLength,
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
             ]);
             $availableStock->update([
                 'qty' => $availableStock->qty - $product['out_quantity'],
             ]);
-            if ($availableStock->qty == 0) {
-                $availableStock->delete();
-            }
         }
         return $this->successResponse($stockOutInvoice, 'StockInvoice created successfully.', 201);
     }

@@ -22,6 +22,6 @@ class StockoutInovice extends Model
     }
     public function stockOutDetails()
     {
-        return $this->hasMany(StockOutDetail::class);
+        return $this->hasMany(StockOutDetail::class, 'stockout_inovice_id');
     }
 }
