@@ -53,9 +53,13 @@ class ProductController extends ApiController
             return [
                 'stock_available_id' => $stock->id,
                 'product_id' => $stock->product_id,
+                'stock_code' => $stock->products->shadeNo . '-' . $stock->stock_code,
+                'lot_no' => $stock->lot_no,
                 'out_length' => $stock->length,
                 'out_width' => $stock->width,
                 'unit' => $stock->unit,
+                'area_sq_ft'=>$stock->length*$stock->width*10.7639,
+                'area'=>$stock->length*$stock->width,
                 'product_type' => $stock->type,
                 'out_quantity' => $stock->qty,
                 'rack' => $stock->rack,
