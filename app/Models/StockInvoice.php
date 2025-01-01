@@ -14,13 +14,6 @@ class StockInvoice extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
-
-
-    public function receiver()
-    {
-        return $this->belongsTo(Receiver::class);
-    }
-
     public function bank()
     {
         return $this->belongsTo(Bank::class);

@@ -25,7 +25,6 @@ class StockInvoiceRequest extends FormRequest
         $rules = [
             'invoice_no' => 'required|string||max:255|unique:stock_invoices,invoice_no',
             'supplier_id' => 'exists:suppliers,id',
-            'receiver_id' => 'exists:receivers,id',
             'bank_id' => 'exists:banks,id',
             'date' => 'date',
             'place_of_supply' => 'nullable|string|max:255',
@@ -34,6 +33,8 @@ class StockInvoiceRequest extends FormRequest
             'ewaybill' => 'nullable|string|max:255',
             'gr_rr' => 'nullable|string|max:255',
             'transport' => 'nullable|string|max:255',
+            'agent' => 'nullable|string|max:255',
+            'warehouse' => 'nullable|string|max:255',   
             'irn' => 'nullable|string|max:255',
             'ack_no' => 'nullable|string|max:255',
             'ack_date' => 'nullable|date',

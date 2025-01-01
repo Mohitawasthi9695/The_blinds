@@ -11,7 +11,7 @@ class StockInvoiceController extends ApiController
 {
     public function index()
     {
-        $StockInvoices = StockInvoice::with(['supplier', 'receiver', 'bank', 'products.product'])->get();
+        $StockInvoices = StockInvoice::with(['supplier','bank', 'products.product'])->get();
         return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
 
@@ -85,7 +85,8 @@ class StockInvoiceController extends ApiController
             'reverse_charge' => $validatedData['reverse_charge'] ?? false,
             'gr_rr' => $validatedData['gr_rr'] ?? null,
             'transport' => $validatedData['transport'] ?? null,
-            'receiver_id' => $validatedData['receiver_id'],
+            'agent' => $validatedData['agent'],
+            'warehouse' => $validatedData['warehouse'],
             'irn' => $validatedData['irn'] ?? null,
             'ack_no' => $validatedData['ack_no'] ?? null,
             'ack_date' => $validatedData['ack_date'] ?? null,

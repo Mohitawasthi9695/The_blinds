@@ -23,7 +23,8 @@ return new class extends Migration
             $table->boolean('reverse_charge')->default(false);
             $table->string('gr_rr')->nullable();
             $table->string('transport')->nullable();
-            $table->unsignedBigInteger('receiver_id');
+            $table->string('agent')->nullable();
+            $table->string('warehouse')->nullable();
             $table->string('irn')->nullable();
             $table->string('ack_no')->nullable();
             $table->date('ack_date')->nullable();
@@ -35,7 +36,6 @@ return new class extends Migration
             $table->boolean('status')->default(1);
             $table->timestamps();
             $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('cascade');
-            $table->foreign('receiver_id')->references('id')->on('receivers')->onDelete('cascade');
             $table->foreign('bank_id')->references('id')->on('banks')->onDelete('cascade');
         });
     }
