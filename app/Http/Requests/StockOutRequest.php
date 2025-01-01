@@ -51,7 +51,7 @@ class StockOutRequest extends FormRequest
             'status' => 'nullable|boolean',
             'created_at' => 'nullable|date',
             'out_products' => 'required|array',
-            'out_products.*.stock_available_id' => 'required|integer|exists:stock_available,id',
+            'out_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
             'out_products.*.product_id' => 'required|integer|exists:products,id',
             'out_products.*.product_type' => 'nullable|string|max:255',
             'out_products.*.hsn_sac_code' => 'nullable|string|max:255',

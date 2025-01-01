@@ -35,14 +35,12 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
     Route::Resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class,'supplierStocks']);   
     Route::get('/recent-suppliers', [SupplierController::class,'RecentSuppliers']);   
-    
     Route::Resource('/products', ProductController::class);
     Route::get('/operator/bank', [BankController::class, 'index']);
     Route::Resource('/stockin/invoice', StockInvoiceController::class);
     Route::Resource('/stocks', StocksInController::class);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
     Route::get('/available', [ProductController::class, 'AvailableProducts']);
-    Route::get('/available-stocks', [ProductController::class, 'AvailableStocks']);
     Route::Resource('stockout', StockoutInoviceController::class);
     Route::get('/allstockout', [StockoutInoviceController::class,'AllStockOut']);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);

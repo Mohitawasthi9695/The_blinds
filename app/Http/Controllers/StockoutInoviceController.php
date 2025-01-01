@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StockOutRequest;
-use App\Models\AvailableStock;
+use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
 use Illuminate\Support\Facades\Log;
@@ -59,7 +59,7 @@ class StockoutInoviceController extends ApiController
         ]);
 
         foreach ($validatedData['out_products'] as $product) {
-            $availableStock = AvailableStock::where('id', $product['stock_available_id'])
+            $availableStock = StocksIn::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
 
@@ -85,31 +85,19 @@ class StockoutInoviceController extends ApiController
             $restLength = $availableStock->length - $outLength;
             $restWidth = $availableStock->width - $outWidth;
             if ($restLength > 0 && $restWidth > 0) {
-                $newStock = AvailableStock::where('product_id', $product['product_id'])
-                    ->where('length', $restLength)
-                    ->where('width', $availableStock->width)
-                    ->where('unit', $availableStock->unit)
+                $newStock = StocksIn::where('product_id', $product['product_id'])
+                    ->where('lot_no', $availableStock->lot_no)
                     ->first();
-
-                if (!$newStock) {
-                    AvailableStock::create([
-                        'product_id' => $product['product_id'],
-                        'length' => $restLength,
-                        'width' => $availableStock->width,
-                        'unit' => $availableStock->unit,
-                        'qty' => $product['out_quantity'],
-                        'status' => 1,
-                    ]);
-                } else {
                     $newStock->update([
-                        'qty' => $newStock->qty + $product['out_quantity'],
+                        'available_width' => $restWidth,
+                        'available_height' => $restLength,
+                        'qty' => $newStock->qty - $product['out_quantity'],
                     ]);
-                }
             }
 
             $creat =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
-                'stock_available_id' => $product['stock_available_id'],
+                'stock_in_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
@@ -125,7 +113,7 @@ class StockoutInoviceController extends ApiController
                 'qty' => $availableStock->qty - $product['out_quantity'],
             ]);
         }
-        return $this->successResponse($stockOutInvoice, 'StockInvoice created successfully.', 201);
+        return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
     public function show($id)
     {
@@ -146,7 +134,7 @@ class StockoutInoviceController extends ApiController
         }
 
         foreach ($stockOutInvoice->stockOutDetails as $detail) {
-            $availableStock = AvailableStock::find($detail->stock_available_id);
+            $availableStock = StocksIn::find($detail->stock_available_id);
             if ($availableStock) {
                 $availableStock->update([
                     'qty' => $availableStock->qty + $detail->out_quantity,

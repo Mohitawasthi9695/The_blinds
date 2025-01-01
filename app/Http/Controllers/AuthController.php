@@ -17,19 +17,21 @@ class AuthController extends ApiController
         try {
             if (!$user || !Hash::check($validated['password'], $user->password)) {
                 return $this->errorResponse('The login credentials are incorrect.', 401);
-            }
+            }   
 
             // if ($user->tokens()->count() > 0) {
             //     return $this->errorResponse('You are already logged in on another device.', 403);
             // }
-            $token = $user->createToken("{$user->role}_token", ['*'], now()->addMinutes(60))->plainTextToken;
+
+            $token = $user->createToken("{$user->role}_token")->plainTextToken;
+
             return response()->json([
                 'message' => "Login successful",
                 'user' => $user,
                 'access_token' => $token,
             ], 200);
 
-        } catch (\Throwable $e) {
+        }  catch (\Throwable $e) {
             return $this->errorResponse("An unexpected error occurred. Please try again later.", 500);
         }
     }

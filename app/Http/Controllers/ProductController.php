@@ -28,25 +28,27 @@ class ProductController extends ApiController
     {
         $stocks = Product::whereHas('stockAvailable', function ($query) {
             $query->where('qty', '>', 0)
-                  ->where('status', 1);
+                ->where('status', 1);
         })->with(['stockAvailable' => function ($query) {
             $query->where('qty', '>', 0)
-                  ->where('status', 1);
+                ->where('status', 1);
         }])->get();
-        
+
         return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
     }
-    
+
     public function CheckStocks($product_id)
     {
         $product = Product::find($product_id);
         if (!$product) {
             return $this->errorResponse('Product not found.', 404);
         }
-        $stocks = $product->stockAvailable->where('status', 1);
+        $stocks = $product->stockAvailable()->where('status', 1)->with('products')->get();
+
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
         }
+
         $responseData = $stocks->map(function ($stock) {
             return [
                 'stock_available_id' => $stock->id,
@@ -58,15 +60,16 @@ class ProductController extends ApiController
                 'out_quantity' => $stock->qty,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
-                'product_name' => $stock->products->name,
-                'product_code' => $stock->products->code,
-                'product_shadeNo' => $stock->products->shadeNo,
-                'product_purchase_shade_no' => $stock->products->purchase_shade_no,
+                'product_name' => $stock->products->name ?? 'N/A',
+                'product_code' => $stock->products->code ?? 'N/A',
+                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
+                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
             ];
         });
+
         return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
     }
-    
+
     /**
      * Show the form for creating a new resource.
      */

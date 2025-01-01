@@ -17,7 +17,7 @@ class Product extends Model
   }
 public function stockAvailable()
 {
-    return $this->hasMany(AvailableStock::class);
+    return $this->hasMany(StocksIn::class, 'product_id');
 }
 public function stockOutDetails()
 {

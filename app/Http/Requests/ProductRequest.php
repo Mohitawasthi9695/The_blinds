@@ -22,10 +22,10 @@ class ProductRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'name' => 'required|string|max:200|unique:products,name,' . $this->id,
+            'name' => 'required|string|max:255|',
             'code' => 'string|max:200|unique:products,code,' . $this->id,
             'shadeNo'=>'string|max:200|unique:products,shadeNo,' . $this->id,
-            'purchase_shade_no'=> 'string|max:200|unique:products,purchase_shade_no,' . $this->id,
+            'purchase_shade_no'=> 'string|max:255|unique:products,purchase_shade_no,' . $this->id,
 
         ];
         return $rules;
