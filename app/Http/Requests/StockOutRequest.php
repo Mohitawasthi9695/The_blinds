@@ -22,7 +22,7 @@ class StockOutRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'invoice_no' => 'required|string|max:255',
+            'invoice_no' => 'required|string|max:255|unique:stock_invoices,invoice_no',
             'date' => 'required|date',
             'customer_id' => 'required|integer|exists:customers,id',
             'receiver_id' => 'nullable|integer|exists:receivers,id',
