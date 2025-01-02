@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class ProductController extends ApiController
@@ -22,6 +23,7 @@ class ProductController extends ApiController
         $products = Product::whereHas('stockAvailable', function ($query) {
             $query->where('status', 1);
         })->get();
+        Log::info($products);
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
     public function AvailableStocks()

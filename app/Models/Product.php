@@ -16,8 +16,10 @@ class Product extends Model
       return $this->hasMany(StockInvoiceDetail::class);
   }
 public function stockAvailable()
-{
-    return $this->hasMany(StocksIn::class, 'product_id');
+{   
+    return $this->hasMany(StocksIn::class, 'product_id')->where(function($query) {
+        $query->where('qty', '>=', 1);
+    });
 }
 public function stockOutDetails()
 {

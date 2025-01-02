@@ -71,6 +71,7 @@ class StockoutInoviceController extends ApiController
                 return response()->json(['error' => 'Insufficient quantity available in stock.'], 422);
             }
 
+
             $outLength = $product['out_length'];
             $outWidth = $product['out_width'];
             if ($product['unit'] === 'inches') {
@@ -80,22 +81,31 @@ class StockoutInoviceController extends ApiController
                 $outLength *= 0.3048;
                 $outWidth *= 0.3048;
             }
-
+log::info($outLength);
+log::info($outWidth);
 
             $restLength = $availableStock->length - $outLength;
             $restWidth = $availableStock->width - $outWidth;
-            if ($restLength > 0 && $restWidth > 0) {
-                $newStock = StocksIn::where('product_id', $product['product_id'])
-                    ->where('lot_no', $availableStock->lot_no)
-                    ->first();
-                    $newStock->update([
-                        'available_width' => $restWidth,
-                        'available_height' => $restLength,
-                        'qty' => $newStock->qty - $product['out_quantity'],
-                    ]);
+            log::info($restLength);
+
+            $newStock = StocksIn::where('product_id', $product['product_id'])
+            ->where('lot_no', $availableStock->lot_no)
+            ->first();
+
+            if ($restLength == 0 || $restWidth == 0) {
+                $newStock->update([
+                    'available_width' => $restWidth,
+                    'available_height' => $restLength,
+                    'qty' => $newStock->qty - $product['out_quantity'],
+                ]);
+            } else {
+                $newStock->update([
+                    'available_width' => $restWidth,
+                    'available_height' => $restLength,
+                ]);
             }
 
-            $creat =  StockOutDetail::create([
+            $Stock =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_in_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
@@ -109,11 +119,8 @@ class StockoutInoviceController extends ApiController
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
             ]);
-            $availableStock->update([
-                'qty' => $availableStock->qty - $product['out_quantity'],
-            ]);
         }
-        return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
+        return $this->successResponse($Stock, 'StocksInvoice created successfully.', 201);
     }
     public function show($id)
     {
