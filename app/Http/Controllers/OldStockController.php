@@ -11,7 +11,7 @@ class OldStockController extends ApiController
     
     public function index()
     {
-        $oldStock = oldStock::all();
+        $oldStock = oldStock::with('product')->get();
         return $this->successResponse($oldStock, 'Old stock retrieved successfully.', 200);
     }
     public function store(OldStockRequest $request)

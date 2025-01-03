@@ -6,7 +6,6 @@ use App\Http\Requests\StockOutRequest;
 use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
-use Illuminate\Support\Facades\Log;
 
 class StockoutInoviceController extends ApiController
 {
@@ -28,7 +27,6 @@ class StockoutInoviceController extends ApiController
     public function store(StockOutRequest $request)
     {
         $validatedData = $request->validated();
-        log::info($validatedData);
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
