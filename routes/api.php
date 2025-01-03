@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BankController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\OldStockController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
 use App\Http\Controllers\StockInvoiceController;
@@ -39,6 +40,7 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
     Route::get('/operator/bank', [BankController::class, 'index']);
     Route::Resource('/stockin/invoice', StockInvoiceController::class);
     Route::Resource('/stocks', StocksInController::class);
+    Route::Resource('/oldstocks', OldStockController::class);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
     Route::get('/available', [ProductController::class, 'AvailableProducts']);
     Route::Resource('stockout', StockoutInoviceController::class);
