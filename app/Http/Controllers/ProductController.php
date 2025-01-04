@@ -49,10 +49,10 @@ class ProductController extends ApiController
                 'product_shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
                 'stock_in' => $product->stockAvailable->sum(function ($stock) {
-                    return $stock->length * $stock->width;
+                    return round($stock->length * $stock->width*10.7639,2);
                 }),
                 'stock_out' => $product->stockOutDetails->sum(function($stock){
-                    return $stock->out_length * $stock->out_width;
+                    return round($stock->out_length * $stock->out_width*10.7639,2);
                 }),
             ];
         });

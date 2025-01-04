@@ -99,7 +99,7 @@ class StockoutInoviceController extends ApiController
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                'out_quantity' => $product['out_quantity'] ?? 1,
+                'out_quantity' => 1 ?? null,
                 'out_width' => round($outWidth, 5),
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,
@@ -113,6 +113,7 @@ class StockoutInoviceController extends ApiController
         }
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
+    
     public function show($id)
     {
         $stockOutInvoice = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->find($id);

@@ -90,6 +90,7 @@ class StocksInController extends ApiController
                     'rack'        => $row[7] ?? null,
                     'unit'       => $row[6] ?? null,
                     'type'       => $row[8] ?? null,
+                    'qty'        => 1 ?? null,
                 ];
 
                 $createdItem = StocksIn::create($data);

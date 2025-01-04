@@ -8,6 +8,7 @@ use App\Http\Controllers\OldStockController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
 use App\Http\Controllers\StockInvoiceController;
+use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\SupplierController;
@@ -44,6 +45,8 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
     Route::get('/available', [ProductController::class, 'AvailableProducts']);
     Route::Resource('stockout', StockoutInoviceController::class);
+    Route::get('/sales',[StockOutController::class,'Sales']);
+    Route::get('/StockOutDash',[StockOutController::class,'StockOutDash']);
     Route::get('stockOuttoday', [StockoutInoviceController::class,'stockOuttoday']);
     Route::get('/barData', [ProductController::class,'BarGraphData']);
     Route::get('/allstockout', [StockoutInoviceController::class,'AllStockOut']);
