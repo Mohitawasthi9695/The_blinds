@@ -57,7 +57,7 @@ class StockOutRequest extends FormRequest
             'out_products.*.hsn_sac_code' => 'nullable|string|max:255',
             'out_products.*.out_width' => 'required|numeric|min:0',
             'out_products.*.out_length' => 'required|numeric|min:0',
-            'out_products.*.out_quantity' => 'required|numeric|min:0',
+            'out_products.*.out_quantity' => 'nullable|numeric|min:0',
             'out_products.*.unit' => 'required|string|max:50',
             'out_products.*.rate' => 'required|numeric|min:0',
             'out_products.*.amount' => 'required|numeric|min:0',

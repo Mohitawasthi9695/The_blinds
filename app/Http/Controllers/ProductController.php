@@ -24,17 +24,40 @@ class ProductController extends ApiController
         })->get();
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
-    public function AvailableStocks()
-    {
-        $stocks = Product::whereHas('stockAvailable', function ($query) {
-            $query->where('qty', '>', 0)
-                ->where('status', 1);
-        })->with(['stockAvailable' => function ($query) {
-            $query->where('qty', '>', 0)
-                ->where('status', 1);
-        }])->get();
+    // public function AvailableStocks()
+    // {
+    //     $stocks = Product::whereHas('stockAvailable', function ($query) {
+    //         $query->where('qty', '>', 0)
+    //             ->where('status', 1);
+    //     })->with(['stockAvailable' => function ($query) {
+    //         $query->where('qty', '>', 0)
+    //             ->where('status', 1);
+    //     }])->get();
 
-        return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
+    //     return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
+    // }
+
+    public function BarGraphData()
+    {
+        $products = Product::whereHas('stockAvailable')->with('stockOutDetails')->get();
+
+        $responseData = $products->map(function ($product) {
+            return [
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'product_code' => $product->code,
+                'product_shadeNo' => $product->shadeNo,
+                'product_purchase_shade_no' => $product->purchase_shade_no,
+                'stock_in' => $product->stockAvailable->sum(function ($stock) {
+                    return $stock->length * $stock->width;
+                }),
+                'stock_out' => $product->stockOutDetails->sum(function($stock){
+                    return $stock->out_length * $stock->out_width;
+                }),
+            ];
+        });
+
+        return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
 
     public function CheckStocks($product_id)

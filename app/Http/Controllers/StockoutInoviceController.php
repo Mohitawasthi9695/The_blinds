@@ -99,7 +99,7 @@ class StockoutInoviceController extends ApiController
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                'out_quantity' => $product['out_quantity'],
+                'out_quantity' => $product['out_quantity'] ?? 1,
                 'out_width' => round($outWidth, 5),
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,

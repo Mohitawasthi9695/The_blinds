@@ -13,7 +13,7 @@ class SupplierSeeder extends Seeder
         $faker = Faker::create();
 
         // Create 10 suppliers with fake data
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             DB::table('suppliers')->insert([
                 'name' => $faker->company,
                 'code' => $faker->bothify('###-###'),

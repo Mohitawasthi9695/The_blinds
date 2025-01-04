@@ -87,7 +87,7 @@ class StocksInController extends ApiController
                     'available_height' => $row[5] ?? null,
                     'width'     => $row[4] ?? null,
                     'length'      => $row[5] ?? null,
-                    'qty'        => $row[7] ?? null,
+                    'rack'        => $row[7] ?? null,
                     'unit'       => $row[6] ?? null,
                     'type'       => $row[8] ?? null,
                 ];

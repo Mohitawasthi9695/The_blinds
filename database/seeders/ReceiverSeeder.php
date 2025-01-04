@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
@@ -16,7 +15,7 @@ class ReceiverSeeder extends Seeder
         $faker = Faker::create();
 
         // Create 10 suppliers with fake data
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 4; $i++) {
             DB::table('receivers')->insert([
                 'name' => $faker->company,
                 'code' => $faker->bothify('###-###'),
