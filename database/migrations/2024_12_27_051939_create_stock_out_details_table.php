@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
+            $table->string('stock_code')->nullable()->unique();
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
@@ -27,7 +28,7 @@ return new class extends Migration
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();
             $table->string('rack')->nullable();
-            $table->boolean('status')->default(1);
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }

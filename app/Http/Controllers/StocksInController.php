@@ -6,9 +6,13 @@ use App\Http\Requests\StockInRequest;
 use App\Http\Requests\StockInUpdate;
 use App\Models\Product;
 use App\Models\StockInvoice;
+use App\Models\StockOutDetail;
+use App\Models\StockoutInovice;
 use App\Models\StocksIn;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StocksInController extends ApiController
 {
@@ -76,8 +80,8 @@ class StocksInController extends ApiController
                     return response()->json(['error' => "Invoice with invoice_no {$invoiceNo} not found"], 422);
                 }
                 $stock_code = StocksIn::where('product_id', [$product->id])
-                ->orderBy('id', 'desc')
-                ->first();               
+                    ->orderBy('id', 'desc')
+                    ->first();
                 $data = [
                     'product_id' => $product->id,
                     'invoice_id' => $invoice->id,
@@ -100,6 +104,70 @@ class StocksInController extends ApiController
             return response()->json(['error' => 'Failed to process file', 'message' => $e->getMessage()], 500);
         }
     }
+
+    public function approveStockOut(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:1,2', 
+        ]);
+        $status = $request->status;
+
+        $stockoutInvoice = StockoutInovice::where('id', $id)
+            ->where('status', '0') 
+            ->first();
+
+        if (!$stockoutInvoice) {
+            return $this->errorResponse('Stock-out invoice not found or already processed.', 404);
+        }
+
+        $stockoutDetails = StockOutDetail::where('stockout_inovice_id', $stockoutInvoice->id)
+            ->get();
+
+        foreach ($stockoutDetails as $stockout) {
+            $availableStock = StocksIn::where('id', $stockout->stock_in_id)
+                ->where('status', '1') 
+                ->first();
+
+            if (!$availableStock) {
+                return $this->errorResponse("Stock-in entry for ID {$stockout->stock_in_id} not found.", 404);
+            }
+
+            if ($stockout->out_length > $availableStock->available_height || $stockout->out_width > $availableStock->width) {
+                return $this->errorResponse("Insufficient stock available for Stock-in ID {$stockout->stock_in_id}.", 400);
+            }
+        }
+
+        // Process the transaction
+        DB::transaction(function () use ($stockoutInvoice, $stockoutDetails, $status) {
+            foreach ($stockoutDetails as $stockout) {
+                $availableStock = StocksIn::find($stockout->stock_in_id);
+
+                if ($status == 1) { 
+                    $remainingLength = $availableStock->available_height - $stockout->out_length;
+                    $remainingWidth = $availableStock->available_width - $stockout->out_width;
+
+                    $availableStock->update([
+                        'available_height' => max($remainingLength, 0),
+                        'available_width' => max($remainingWidth, 0),
+                        'status' => ($remainingLength <= 0 || $remainingWidth <= 0) ? '0' : '1', 
+                    ]);
+
+                    $stockout->update(['status' => 1]); 
+                } elseif ($status == 2) { 
+                    $stockout->update(['status' => 2]); 
+                }
+            }
+
+            $stockoutInvoice->update(['status' => $status]);
+        });
+
+        return $this->successResponse([
+            'stock_out_invoice' => $stockoutInvoice,
+            'stock_out_details' => $stockoutDetails,
+        ], 'Stock-out processed successfully.', 200);
+    }
+
+
     public function show($id)
     {
         $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])

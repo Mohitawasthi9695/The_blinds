@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ProductController extends ApiController
 {
@@ -24,19 +23,6 @@ class ProductController extends ApiController
         })->get();
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
-    // public function AvailableStocks()
-    // {
-    //     $stocks = Product::whereHas('stockAvailable', function ($query) {
-    //         $query->where('qty', '>', 0)
-    //             ->where('status', 1);
-    //     })->with(['stockAvailable' => function ($query) {
-    //         $query->where('qty', '>', 0)
-    //             ->where('status', 1);
-    //     }])->get();
-
-    //     return $this->successResponse($stocks, 'Active stocks retrieved successfully.', 200);
-    // }
-
     public function BarGraphData()
     {
         $products = Product::whereHas('stockAvailable')->with('stockOutDetails')->get();
@@ -78,7 +64,7 @@ class ProductController extends ApiController
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->products->shadeNo . '-' . $stock->stock_code,
                 'lot_no' => $stock->lot_no,
-                'out_length' => $stock->length,
+                'out_length' => $stock->available_height,
                 'out_width' => $stock->width,
                 'unit' => $stock->unit,
                 'area_sq_ft'=>$stock->length*$stock->width*10.7639,

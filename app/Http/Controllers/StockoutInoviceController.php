@@ -6,6 +6,8 @@ use App\Http\Requests\StockOutRequest;
 use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StockoutInoviceController extends ApiController
 {
@@ -21,12 +23,14 @@ class StockoutInoviceController extends ApiController
             ->with('stockOutDetails.product')
             ->get();
 
+
         return $this->successResponse($stockOutInvoices, 'StockOutInvoices retrieved successfully.');
     }
 
     public function store(StockOutRequest $request)
     {
         $validatedData = $request->validated();
+        Log::info($validatedData);
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
@@ -54,6 +58,7 @@ class StockoutInoviceController extends ApiController
             'payment_amount' => $validatedData['payment_amount'] ?? null,
             'payment_remarks' => $validatedData['payment_remarks'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
+            'status' => 0,
         ]);
 
         foreach ($validatedData['out_products'] as $product) {
@@ -78,23 +83,11 @@ class StockoutInoviceController extends ApiController
                 $outLength *= 0.3048;
                 $outWidth *= 0.3048;
             }
-
-
             $restLength = $availableStock->length - $outLength;
             $restWidth = $availableStock->width - $outWidth;
-            if ($restLength > 0 && $restWidth > 0) {
-                $newStock = StocksIn::where('product_id', $product['product_id'])
-                    ->where('lot_no', $availableStock->lot_no)
-                    ->first();
-                    $newStock->update([
-                        'available_width' => $restWidth,
-                        'available_height' => $restLength,
-                        'qty' => $newStock->qty - $product['out_quantity'],
-                    ]);
-            }
-
-            $creat =  StockOutDetail::create([
+            $create =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
+                'stock_code' => $stockOutInvoice->stock_code,
                 'stock_in_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
@@ -106,14 +99,27 @@ class StockoutInoviceController extends ApiController
                 'waste_width' => $restWidth,
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
-            ]);
-            $availableStock->update([
-                'qty' => $availableStock->qty - $product['out_quantity'],
+                'status' => 0,
             ]);
         }
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
-    
+    public function invoice_no()
+    {
+        $lastInvoice = StockoutInovice::where('status', '1')->select('invoice_no')->orderBy('id', 'desc')->first();
+
+        if ($lastInvoice) {
+            $lastInvoiceNo = $lastInvoice->invoice_no;
+            $prefix = substr($lastInvoiceNo, 0, 2);
+            $number = (int) substr($lastInvoiceNo, 2);
+            $newNumber = $number + 1;
+            $invoice_no = $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        } else {
+            $invoice_no = 'IN0001';
+        }
+
+        return $this->successResponse($invoice_no, 'Invoice number retrieved successfully.');
+    }
     public function show($id)
     {
         $stockOutInvoice = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->find($id);
@@ -123,30 +129,30 @@ class StockoutInoviceController extends ApiController
         return $this->successResponse($stockOutInvoice, 'StockOutInvoice retrieved successfully.');
     }
 
-
     public function destroy($id)
     {
         $stockOutInvoice = StockoutInovice::find($id);
-
+        log::info($stockOutInvoice);
         if (!$stockOutInvoice) {
             return $this->errorResponse('StockOutInvoice not found.', 404);
         }
-
-        foreach ($stockOutInvoice->stockOutDetails as $detail) {
-            $availableStock = StocksIn::find($detail->stock_available_id);
-            if ($availableStock) {
-                $availableStock->update([
-                    'qty' => $availableStock->qty + $detail->out_quantity,
-                    'area' => $availableStock->area + $detail->area,
-                    'area_sq_ft' => $availableStock->area_sq_ft + $detail->area_sq_ft,
-                    'status' => 1,
-                ]);
+        DB::transaction(function () use ($stockOutInvoice) {
+            foreach ($stockOutInvoice->stockOutDetails as $detail) {
+                log::info($detail);
+                $availableStock = StocksIn::find($detail->stock_in_id);
+                if ($availableStock) {
+                    log::info($detail->out_length);
+                    log::info($detail->out_width);
+                    $availableStock->update([
+                        'available_height' => $availableStock->available_height + $detail->out_length,
+                        'available_width' => $availableStock->available_width + $detail->out_width,
+                        'status' => 1,
+                    ]);
+                }
+                $detail->delete();
             }
-            $detail->delete();
-        }
-
-        $stockOutInvoice->delete();
-
-        return $this->successResponse(null, 'StockOutInvoice deleted successfully.');
+            $stockOutInvoice->delete();
+        });
+        return $this->successResponse(null, 'StockOutInvoice and associated records deleted successfully.');
     }
 }
