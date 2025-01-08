@@ -15,6 +15,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\OperatorMiddleware;
+use App\Http\Middleware\SupervisorMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,10 +31,15 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 Route::middleware('auth:sanctum')->post('/change-password', [ForgotPasswordController::class, 'changepassword'])->name('change-password');
 
 Route::middleware(['auth:sanctum', AdminMiddleware::class])->group(function () {
+    Route::Resource('/admin/users', UserController::class);
+    Route::Resource('/admin/bank', BankController::class);
+});
+Route::middleware(['auth:sanctum', SupervisorMiddleware::class])->group(function () {
     Route::post('/stockout/approved/{id}', [StocksInController::class, 'approveStockOut']);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::Resource('admin/stockout', StockoutInoviceController::class);
 });
+
 
 Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function () {
     Route::Resource('/supplier', SupplierController::class);
@@ -58,7 +64,5 @@ Route::middleware(['auth:sanctum', OperatorMiddleware::class])->group(function (
 
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
-    Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
-    Route::Resource('/admin/bank', BankController::class);
-    Route::Resource('/admin/users', UserController::class);
+    Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']); 
 });
