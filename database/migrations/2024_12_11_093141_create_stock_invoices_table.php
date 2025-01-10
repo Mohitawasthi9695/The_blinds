@@ -31,12 +31,10 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2);
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
-            $table->unsignedBigInteger('bank_id');
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
             $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('cascade');
-            $table->foreign('bank_id')->references('id')->on('banks')->onDelete('cascade');
         });
     }
 

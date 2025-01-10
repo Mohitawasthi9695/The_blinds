@@ -22,7 +22,6 @@ class UserController extends ApiController
             'email' => 'required|string|email|max:255|unique:users,email',
             'phone' => 'required|string|max:15',
             'password' => 'required|string|min:8',
-            'role' => 'required|integer'
         ]);
 
         $user = User::create([
@@ -31,7 +30,6 @@ class UserController extends ApiController
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
         ]);
 
         return $this->successResponse($user, 'User created successfully.', 201);
@@ -59,7 +57,6 @@ class UserController extends ApiController
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
             'phone' => 'sometimes|required|string|max:15',
             'password' => 'sometimes|required|string|min:8',
-            'role' => 'sometimes|required|integer',
             'status'=> 'boolean'
         ]);
 

@@ -30,7 +30,6 @@ class StockInvoice extends Seeder
                 'total_amount' => 15000.00,
                 'cgst_percentage' => 9.00,
                 'sgst_percentage' => 9.00,
-                'bank_id' => 1,
                 'qr_code' => 'QR12345',
                 'status' => true,
                 'created_at' => '2024-12-12',

@@ -21,7 +21,6 @@ class UserSeeder extends Seeder
                 'email' => 'mohitawasthi.intern@gmail.com',
                 'phone' => '9234567890',
                 'status' => 0, // Active
-                'role' => 1, // CMP
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#123'),
                 'remember_token' => Str::random(10),
@@ -34,7 +33,6 @@ class UserSeeder extends Seeder
                 'email' => 'admin@gmail.com',
                 'phone' => '9876543210',
                 'status' => 0, // Inactive
-                'role' => 1, // Admin
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#456'),
                 'remember_token' => Str::random(10),
@@ -47,7 +45,6 @@ class UserSeeder extends Seeder
                 'email' => 'super@gmail.com',
                 'phone' => '9876543210',
                 'status' => 0, // Inactive
-                'role' => 2, // Supervisor
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#678'),
                 'remember_token' => Str::random(10),
@@ -60,7 +57,6 @@ class UserSeeder extends Seeder
                 'email' => 'operator@gmail.com',
                 'phone' => '9876543210',
                 'status' => 0,
-                'role' => 3,
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#910'),
                 'remember_token' => Str::random(10),
