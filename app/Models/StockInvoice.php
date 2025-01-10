@@ -14,10 +14,6 @@ class StockInvoice extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
-    public function bank()
-    {
-        return $this->belongsTo(Bank::class);
-    }
     public function products()
     {
         return $this->hasMany(StockInvoiceDetail::class)->with('product'); 

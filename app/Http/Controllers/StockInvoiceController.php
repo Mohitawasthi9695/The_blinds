@@ -11,7 +11,7 @@ class StockInvoiceController extends ApiController
 {
     public function index()
     {
-        $StockInvoices = StockInvoice::with(['supplier','bank', 'products.product'])->get();
+        $StockInvoices = StockInvoice::with(['supplier','products.product'])->get();
         return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
 
@@ -62,7 +62,7 @@ class StockInvoiceController extends ApiController
     // GET /StockInvoices/{id} - Show a single StockInvoice
     public function show($id)
     {
-        $StockInvoice = StockInvoice::with(['supplier', 'receiver', 'bank','products'])->get()->find($id);
+        $StockInvoice = StockInvoice::with(['supplier', 'receiver','products'])->get()->find($id);
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
         }
@@ -100,7 +100,7 @@ class StockInvoiceController extends ApiController
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
 
-        $stockInvoice->products()->delete(); // Delete existing products
+        $stockInvoice->products()->delete(); 
         foreach ($validatedData['products'] as $product) {
             $stockInvoice->products()->create([
                 'product_id' => $product['product_id'],

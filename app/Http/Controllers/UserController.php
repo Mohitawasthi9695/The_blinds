@@ -14,6 +14,13 @@ class UserController extends ApiController
         return $this->successResponse($users, 'Users retrieved successfully.', 200);
     }
 
+
+    public function Sub_supervisor()
+    {
+    $users=User::role('Sub_supervisor');
+    return $this->successResponse($users, 'Sub_Supervisor retrieved successfully.', 200);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([

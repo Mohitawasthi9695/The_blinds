@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'username' => 'mohitawasthi9695',
                 'email' => 'mohitawasthi.intern@gmail.com',
                 'phone' => '9234567890',
-                'status' => 0, // Active
+                'status' => 1, // Active
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#123'),
                 'remember_token' => Str::random(10),
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
                 'username' => 'Admin1234',
                 'email' => 'admin@gmail.com',
                 'phone' => '9876543210',
-                'status' => 0, // Inactive
+                'status' => 1, // Inactive
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#456'),
                 'remember_token' => Str::random(10),
@@ -44,7 +44,19 @@ class UserSeeder extends Seeder
                 'username' => 'Super123',
                 'email' => 'super@gmail.com',
                 'phone' => '9876543210',
-                'status' => 0, // Inactive
+                'status' => 1, // Inactive
+                'email_verified_at' => now(),
+                'password' => Hash::make('Password#678'),
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Sub_Supervisor',
+                'username' => 'Sub_super123',
+                'email' => 'sub_super@gmail.com',
+                'phone' => '9876543210',
+                'status' => 1,
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#678'),
                 'remember_token' => Str::random(10),
@@ -56,7 +68,7 @@ class UserSeeder extends Seeder
                 'username' => 'Operator123',
                 'email' => 'operator@gmail.com',
                 'phone' => '9876543210',
-                'status' => 0,
+                'status' => 1,
                 'email_verified_at' => now(),
                 'password' => Hash::make('Password#910'),
                 'remember_token' => Str::random(10),

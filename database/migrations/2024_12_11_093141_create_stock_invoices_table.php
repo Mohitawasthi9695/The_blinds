@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stock_invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_no')->unique();
-            $table->unsignedBigInteger('supplier_id');
+            $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');;
             $table->date('date');
             $table->string('place_of_supply')->nullable();
             $table->string('vehicle_no')->nullable();
@@ -34,7 +34,6 @@ return new class extends Migration
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
-            $table->foreign('supplier_id')->references('id')->on('suppliers')->onDelete('cascade');
         });
     }
 

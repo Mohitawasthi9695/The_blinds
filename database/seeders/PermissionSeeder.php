@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 class PermissionSeeder extends Seeder
 {
@@ -34,14 +33,18 @@ class PermissionSeeder extends Seeder
         foreach ($permissions as $permission) {
             Permission::create(['name' => $permission]);
         }
-        $role_admin = Role::firstOrCreate(['name' => 'admin']);
-        $role_superadmin = Role::firstOrCreate(['name' => 'superadmin']);
-        $role_admin->syncPermissions(Permission::all());
-        $role_superadmin->syncPermissions(Permission::all());
 
         $superadminUsers = User::role('superadmin')->get();
-        foreach ($superadminUsers as $user2) {
-            $user2->syncPermissions(Permission::all());
+        if (!empty($superadminUsers)) {
+            foreach ($superadminUsers as $user) {
+                $user->syncPermissions(Permission::all());
+            }
+        }
+        $supervisor = User::role('supervisor')->get();
+        if (!empty($supervisor)) {
+            foreach ($supervisor as $user) {
+                $user->syncPermissions(Permission::all());
+            }
         }
     }
 }
