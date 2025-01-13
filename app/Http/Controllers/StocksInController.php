@@ -4,15 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StockInRequest;
 use App\Http\Requests\StockInUpdate;
-use App\Models\Godown;
 use App\Models\Product;
 use App\Models\StockInvoice;
-use App\Models\StockOutDetail;
-use App\Models\StockoutInovice;
 use App\Models\StocksIn;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class StocksInController extends ApiController
