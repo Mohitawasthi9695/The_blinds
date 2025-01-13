@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use App\Models\Godown;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends ApiController
 {
@@ -23,6 +26,8 @@ class ProductController extends ApiController
         })->get();
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
+
+
     public function BarGraphData()
     {
         $products = Product::whereHas('stockAvailable')->with('stockOutDetails')->get();
@@ -35,10 +40,10 @@ class ProductController extends ApiController
                 'product_shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
                 'stock_in' => $product->stockAvailable->sum(function ($stock) {
-                    return round($stock->length * $stock->width*10.7639,2);
+                    return round($stock->length * $stock->width * 10.7639, 2);
                 }),
-                'stock_out' => $product->stockOutDetails->sum(function($stock){
-                    return round($stock->out_length * $stock->out_width*10.7639,2);
+                'stock_out' => $product->stockOutDetails->sum(function ($stock) {
+                    return round($stock->out_length * $stock->out_width * 10.7639, 2);
                 }),
             ];
         });
@@ -67,8 +72,8 @@ class ProductController extends ApiController
                 'out_length' => $stock->available_height,
                 'out_width' => $stock->width,
                 'unit' => $stock->unit,
-                'area_sq_ft'=>$stock->length*$stock->width*10.7639,
-                'area'=>$stock->length*$stock->width,
+                'area_sq_ft' => $stock->length * $stock->width * 10.7639,
+                'area' => $stock->length * $stock->width,
                 'product_type' => $stock->type,
                 'out_quantity' => $stock->qty,
                 'rack' => $stock->rack,

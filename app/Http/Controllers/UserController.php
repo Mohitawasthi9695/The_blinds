@@ -10,14 +10,14 @@ class UserController extends ApiController
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::with('roles')->get(); 
         return $this->successResponse($users, 'Users retrieved successfully.', 200);
     }
 
 
     public function Sub_supervisor()
     {
-    $users=User::role('Sub_supervisor');
+    $users=User::role('Sub_supervisor')->select('name','id')->get();
     return $this->successResponse($users, 'Sub_Supervisor retrieved successfully.', 200);
     }
 

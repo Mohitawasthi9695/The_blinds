@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StockOutRequest;
+use App\Models\Godown;
 use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
@@ -22,10 +23,10 @@ class StockoutInoviceController extends ApiController
         $stockOutInvoices = StockoutInovice::select('id', 'invoice_no', 'date')
             ->with('stockOutDetails.product')
             ->get();
-
-
         return $this->successResponse($stockOutInvoices, 'StockOutInvoices retrieved successfully.');
     }
+
+    
 
     public function store(StockOutRequest $request)
     {
@@ -62,7 +63,7 @@ class StockoutInoviceController extends ApiController
         ]);
 
         foreach ($validatedData['out_products'] as $product) {
-            $availableStock = StocksIn::where('id', $product['stock_available_id'])
+            $availableStock = Godown::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
 

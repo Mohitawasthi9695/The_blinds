@@ -10,6 +10,11 @@ use Laravel\Sanctum\HasApiTokens;
 class Godown extends Model
 {
     use HasFactory, HasApiTokens;
-    protected $guarded = [];
+    protected $guarded = [''];
 
+    
+    public function products()
+    {
+        return $this->belongsTo(Product::class, 'product_id');
+    }
 }

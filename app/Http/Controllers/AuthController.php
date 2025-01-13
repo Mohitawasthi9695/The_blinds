@@ -6,18 +6,21 @@ use App\Http\Requests\LoginRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+
 class AuthController extends ApiController
 {
     public function login(LoginRequest $request)
     {
         $validated = $request->validated();
 
-        $user = User::where('email', $validated['email'])->first();
-
+        $user = User::with('roles:name')->where('email', $validated['email'])->first();
+        
+        Log::info($user);
         try {
             if (!$user || !Hash::check($validated['password'], $user->password)) {
                 return $this->errorResponse('The login credentials are incorrect.', 401);
-            }   
+            }
 
             // if ($user->tokens()->count() > 0) {
             //     return $this->errorResponse('You are already logged in on another device.', 403);
@@ -29,8 +32,7 @@ class AuthController extends ApiController
                 'user' => $user,
                 'access_token' => $token,
             ], 200);
-
-        }  catch (\Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->errorResponse("An unexpected error occurred. Please try again later.", 500);
         }
     }
@@ -39,7 +41,7 @@ class AuthController extends ApiController
         try {
             $request->user()->currentAccessToken()->delete();
 
-            return response()->json(['message'=>"Logout successful"],200);
+            return response()->json(['message' => "Logout successful"], 200);
         } catch (\Throwable $e) {
             return $this->errorResponse("An error occurred during logout. Please try again later.", 500);
         }
@@ -74,5 +76,4 @@ class AuthController extends ApiController
             return $this->errorResponse('An error occurred while resetting the password.', 500, $e->getMessage());
         }
     }
-
 }

@@ -23,20 +23,20 @@ class GodownStore extends FormRequest
     {
         $rules = [
             'invoice_no' => 'required|string|max:255',
-            'warehouse_supervisor_id' => 'nullable|integer|exists:users,id',
-            'godown_supervisor_id' => 'nullable|integer|exists:users,id',
+            'warehouse_supervisor_id' => 'required|integer|exists:users,id',
+            'godown_supervisor_id' => 'required|integer|exists:users,id',
             'date' => 'nullable|date',
-            'send_products' => 'required|array',
-            'send_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
-            'send_products.*.product_id' => 'required|integer|exists:products,id',
-            'send_products.*.product_type' => 'nullable|string|max:255',
-            'send_products.*.stock_code' => 'nullable|string|max:255',
-            'send_products.*.hsn_sac_code' => 'nullable|string|max:255',
-            'send_products.*.get_width' => 'required|numeric|min:0',
-            'send_products.*.get_length' => 'required|numeric|min:0',
-            'send_products.*.get_quantity' => 'nullable|numeric|min:0',
-            'send_products.*.unit' => 'required|string|max:50',
-            'send_products.*.status' => 'nullable|numeric',
+            'out_products' => 'required|array',
+            'out_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
+            'out_products.*.product_id' => 'required|integer|exists:products,id',
+            'out_products.*.product_type' => 'nullable|string|max:255',
+            'out_products.*.stock_code' => 'nullable|string|max:255',
+            'out_products.*.hsn_sac_code' => 'nullable|string|max:255',
+            'out_products.*.out_width' => 'required|numeric|min:0',
+            'out_products.*.out_length' => 'required|numeric|min:0',
+            'out_products.*.out_quantity' => 'nullable|numeric|min:0',
+            'out_products.*.unit' => 'required|string|max:50',
+            'out_products.*.status' => 'nullable|numeric',
         ];
            return $rules;
     }

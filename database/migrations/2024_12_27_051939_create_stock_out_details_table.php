@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('stock_out_details', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
+            $table->foreignId('godown_id')->constrained('godowns')->onDelete('cascade');
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->string('stock_code')->nullable()->unique();
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
@@ -22,9 +22,10 @@ return new class extends Migration
             $table->decimal('out_width', 10, 5)->nullable();
             $table->decimal('out_length', 10, 5)->nullable();
             $table->decimal('out_quantity', 15, 5)->nullable();
+            $table->string('waste_width')->nullable();
             $table->string('unit')->nullable();
             $table->string('type')->nullable();
-            $table->string('waste_width')->nullable();
+            $table->decimal('gst', 10, 5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();
             $table->string('rack')->nullable();

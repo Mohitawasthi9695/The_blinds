@@ -25,7 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/change-password', [ForgotPasswordController::class, 'changepassword']);
     Route::Resource('/supplier', SupplierController::class);
     Route::Resource('/receiver', ReceiverController::class);
-    Route::get('/sub_supervisor',[UserController::class, 'Sub_supervisor']);
+    Route::get('/sub_supervisor', [UserController::class, 'Sub_supervisor']);
     Route::Resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
     Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
@@ -36,10 +36,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::Resource('/stocks', StocksInController::class);
     Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
+    Route::Resource('/godown', GodownController::class);
+    Route::get('/sub_supervisor/godown/{id}', [GodownController::class, 'Sub_supervisorStock']);
+    Route::get('/godown/stock/{id}', [GodownController::class,'godownStock']);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
+
     Route::get('/available', [ProductController::class, 'AvailableProducts']);
+    Route::get('/godownproducts',[GodownController::class, 'GetStockProducts']);
+    Route::get('/godowncheckout/{id}',[GodownController::class, 'GetStockCheckout']);
+    Route::post('godownstockout', [GodownController::class,'GodownStockOut']);
+
     Route::Resource('stockout', StockoutInoviceController::class);
-    Route::post('/stockout/approved/{id}', [GodownController::class, 'approveStockOut']);
+    Route::post('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::Resource('admin/stockout', StockoutInoviceController::class);
     Route::get('/sales', [StockOutController::class, 'Sales']);

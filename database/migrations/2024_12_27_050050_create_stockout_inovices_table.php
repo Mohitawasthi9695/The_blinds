@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('irn')->nullable();
             $table->string('ack_no')->nullable();
             $table->date('ack_date')->nullable();
-            $table->decimal('total_amount', 15, 2);
+            $table->decimal('total_amount', 15, 2)->nullable();
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
             $table->string('payment_mode')->nullable();

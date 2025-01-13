@@ -6,25 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('godowns', function (Blueprint $table) {
             $table->id();
-            $table->string('invoice_no')->unique();
+            $table->string('invoice_no');
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->unsignedBigInteger('warehouse_supervisor_id');
             $table->unsignedBigInteger('godown_supervisor_id');
-            $table->string('stock_code')->nullable()->unique();
+            $table->string('stock_code')->nullable();
             $table->date('date');
             $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
+            $table->string('lot_no')->nullable();
             $table->decimal('get_width', 10, 5)->nullable();
             $table->decimal('get_length', 10, 5)->nullable();
-            $table->decimal('get_quantity', 15, 5)->nullable();
+            $table->decimal('available_height', 15, 5)->nullable();
+            $table->decimal('available_width', 15, 5)->nullable();
+            $table->integer('get_quantity')->nullable(); 
             $table->string('unit')->nullable();
             $table->string('type')->nullable();
             $table->string('waste_width')->nullable();
