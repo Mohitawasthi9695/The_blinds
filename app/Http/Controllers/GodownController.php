@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Log;
 
 class GodownController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $stocks = Godown::with('products')->get();
@@ -35,12 +32,15 @@ class GodownController extends ApiController
         $products = Product::whereHas('godowns')->get();
         return response()->json($products);
     }
+
     public function GetStockCheckout($product_id)
     {
         $product = Product::find($product_id);
+
         if (!$product) {
             return $this->errorResponse('Product not found.', 404);
         }
+
         $stocks = $product->godowns()->where('status', 1)->with('products')->get();
 
         if ($stocks->isEmpty()) {
@@ -56,7 +56,7 @@ class GodownController extends ApiController
                 'out_length' => $stock->available_height,
                 'out_width' => $stock->get_width,
                 'unit' => $stock->unit,
-                'area_sq_ft' => round($stock->available_height * $stock->get_width * 10.7639,2),
+                'area_sq_ft' => round($stock->available_height * $stock->get_width * 10.7639, 2),
                 'area' => $stock->available_height * $stock->get_width,
                 'product_type' => $stock->type,
                 'out_quantity' => $stock->get_quantity,
@@ -74,7 +74,7 @@ class GodownController extends ApiController
     public function GodownStockOut(GodownStockOutRequest $request)
     {
         $validatedData = $request->validated();
-        Log::info($validatedData);
+
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
@@ -106,15 +106,18 @@ class GodownController extends ApiController
         ]);
 
         foreach ($validatedData['out_products'] as $product) {
+
             $availableStock = Godown::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
+
+            log::info($availableStock);
 
             if (!$availableStock) {
                 return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
 
-            if ($availableStock->qty < $product['out_quantity']) {
+            if ($availableStock->get_quantity < $product['out_quantity']) {
                 return response()->json(['error' => 'Insufficient quantity available in stock.'], 422);
             }
 
@@ -127,12 +130,15 @@ class GodownController extends ApiController
                 $outLength *= 0.3048;
                 $outWidth *= 0.3048;
             }
+            $remainingLength = $availableStock->available_height - $outLength;
+            $remainingWidth = $availableStock->available_width - $outWidth;
+
             $restLength = $availableStock->length - $outLength;
             $restWidth = $availableStock->width - $outWidth;
             $create =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_code' => $stockOutInvoice->stock_code,
-                'stock_in_id' => $product['stock_available_id'],
+                'godown_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
@@ -145,6 +151,16 @@ class GodownController extends ApiController
                 'amount' => $product['amount'],
                 'status' => 0,
             ]);
+
+
+            // If stock dimensions are exhausted, set qty to 0 and status to inactive (0)
+            $newQty = ($remainingLength <= 0) ? 0 : $availableStock->qty;
+
+            $availableStock->update([
+                'available_height' => max($remainingLength, 0),
+                'qty' => $newQty,
+                'status' => ($remainingLength <= 0) ? 0 : 1,
+            ]);
         }
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
@@ -153,7 +169,7 @@ class GodownController extends ApiController
     {
         log::info($id);
         $stocks = Godown::where('godown_supervisor_id', $id)
-            ->with('products') ->orderBy('id', 'desc')
+            ->with('products')->orderBy('id', 'desc')
             ->get();
         log::info($stocks);
         return response()->json($stocks);
@@ -197,8 +213,8 @@ class GodownController extends ApiController
                 $outLength *= 0.0254;
                 $outWidth *= 0.0254;
             } elseif ($product['unit'] === 'feet') {
-                $outLength *= 0.3048; 
-                $outWidth *= 0.3048;  
+                $outLength *= 0.3048;
+                $outWidth *= 0.3048;
             }
             if ($outLength > $availableStock->available_height || $outWidth > $availableStock->available_width) {
                 return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);

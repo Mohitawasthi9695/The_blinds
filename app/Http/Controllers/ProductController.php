@@ -23,7 +23,7 @@ class ProductController extends ApiController
     {
         $products = Product::whereHas('stockAvailable', function ($query) {
             $query->where('status', 1);
-        })->get();
+        })->where('status', 1)->get();
         return $this->successResponse($products, 'Active products retrieved successfully.', 200);
     }
 
