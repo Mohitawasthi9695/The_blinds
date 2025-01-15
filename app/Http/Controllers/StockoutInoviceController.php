@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StockOutRequest;
 use App\Models\Godown;
-use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
 use Illuminate\Support\Facades\DB;
@@ -140,13 +139,13 @@ class StockoutInoviceController extends ApiController
         DB::transaction(function () use ($stockOutInvoice) {
             foreach ($stockOutInvoice->stockOutDetails as $detail) {
                 log::info($detail);
-                $availableStock = StocksIn::find($detail->stock_in_id);
+                $availableStock = Godown::find($detail->godown_id);
                 if ($availableStock) {
                     log::info($detail->out_length);
                     log::info($detail->out_width);
                     $availableStock->update([
-                        'available_height' => $availableStock->available_height + $detail->out_length,
-                        'available_width' => $availableStock->available_width + $detail->out_width,
+                        'available_height' => $availableStock->available_height + $detail->get_length,
+                        'available_width' => $availableStock->available_width + $detail->get_width,
                         'status' => 1,
                     ]);
                 }

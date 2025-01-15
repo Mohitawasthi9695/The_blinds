@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('stock_code')->nullable();
             $table->date('date');
             $table->string('product_type')->nullable();
-            $table->string('hsn_sac_code')->nullable();
             $table->string('lot_no')->nullable();
             $table->decimal('get_width', 10, 5)->nullable();
             $table->decimal('get_length', 10, 5)->nullable();

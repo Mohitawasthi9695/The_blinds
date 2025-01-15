@@ -14,9 +14,8 @@ return new class extends Migration {
         Schema::create('stocks_ins', function (Blueprint $table) {
             $table->id();
             $table->string('lot_no');
-            $table->unsignedBigInteger('stock_code')->nullable();
+            $table->unsignedBigInteger('stock_code')->nullable()->unique();
             $table->unsignedBigInteger('invoice_id')->nullable();
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('invoice_no')->nullable();
             $table->decimal('length', 15, 5)->nullable();
             $table->decimal('width', 15, 5)->nullable();
@@ -24,15 +23,13 @@ return new class extends Migration {
             $table->decimal('available_width', 15, 5)->nullable();
             $table->string('unit')->default('meter');
             $table->string('type')->nullable();
-            $table->integer('qty')->nullable(); 
-            $table->string('rack')->nullable(); 
+            $table->integer('qty')->nullable();
+            $table->string('rack')->nullable();
             $table->string('Warehouse')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
-            $table->foreign('invoice_id')
-                  ->references('id')
-                  ->on('stock_invoices')
-                  ->onDelete('cascade');
+            $table->foreign('invoice_id')->references('id')->on('stock_invoices')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
         });
         DB::unprepared('
         CREATE TRIGGER auto_increment_stock_code
@@ -44,12 +41,7 @@ return new class extends Migration {
             END IF;
         END
     ');
-
     }
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('stocks_ins');

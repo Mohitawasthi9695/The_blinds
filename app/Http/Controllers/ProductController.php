@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class ProductController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $products = Product::all();

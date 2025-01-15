@@ -38,7 +38,6 @@ class StockInvoiceController extends ApiController
             'total_amount' => $validatedData['total_amount'],
             'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
-            'bank_id' => $validatedData['bank_id'],
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
         foreach ($validatedData['products'] as $product) {

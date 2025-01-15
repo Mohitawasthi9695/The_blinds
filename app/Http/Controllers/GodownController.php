@@ -31,6 +31,7 @@ class GodownController extends ApiController
     {
         $products = Product::whereHas('godowns')->get();
         return response()->json($products);
+        
     }
 
     public function GetStockCheckout($product_id)
@@ -151,15 +152,12 @@ class GodownController extends ApiController
                 'amount' => $product['amount'],
                 'status' => 0,
             ]);
-
-
-            // If stock dimensions are exhausted, set qty to 0 and status to inactive (0)
             $newQty = ($remainingLength <= 0) ? 0 : $availableStock->qty;
 
             $availableStock->update([
                 'available_height' => max($remainingLength, 0),
                 'qty' => $newQty,
-                'status' => ($remainingLength <= 0) ? 0 : 1,
+                'status' => ($remainingLength <= 0) ? 3 : 1,
             ]);
         }
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
@@ -228,6 +226,8 @@ class GodownController extends ApiController
                 'warehouse_supervisor_id' => $validatedData['warehouse_supervisor_id'],
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
                 'stock_code' => $product['stock_code'],
+                'lot_no' => $availableStock->lot_no,
+                'type' => $availableStock->type,
                 'product_type' => $product['product_type'],
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'get_quantity' => $product['out_quantity'] ?? null,

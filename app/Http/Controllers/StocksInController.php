@@ -46,6 +46,7 @@ class StocksInController extends ApiController
 
     public function storeFromCsv(Request $request)
     {
+        log::info($request->all());
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls',
         ]);
@@ -71,6 +72,8 @@ class StocksInController extends ApiController
                 $invoiceNo = $row[1];
                 $product = Product::where('shadeNo', $shadeNo)->first();
                 $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
+                
+
                 if (!$product) {
                     return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
                 }

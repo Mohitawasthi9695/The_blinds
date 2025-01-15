@@ -45,6 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownproducts',[GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}',[GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class,'GodownStockOut']);
+    Route::post('godownstockout/{id}', [GodownController::class,'GodownStockOutApprove']);
 
     Route::Resource('stockout', StockoutInoviceController::class);
     Route::post('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
