@@ -133,9 +133,7 @@ class GodownController extends ApiController
             }
             $remainingLength = $availableStock->available_height - $outLength;
             $remainingWidth = $availableStock->available_width - $outWidth;
-
-            $restLength = $availableStock->length - $outLength;
-            $restWidth = $availableStock->width - $outWidth;
+            
             $create =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
                 'stock_code' => $stockOutInvoice->stock_code,
@@ -147,7 +145,7 @@ class GodownController extends ApiController
                 'out_width' => round($outWidth, 5),
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,
-                'waste_width' => $restWidth,
+                'waste_width' => $remainingWidth,
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
                 'status' => 0,
@@ -287,6 +285,10 @@ class GodownController extends ApiController
     }
 
 
+    public function GodownStockOutApprove( Request $request)
+    {
+
+    }
 
     /**
      * Display the specified resource.

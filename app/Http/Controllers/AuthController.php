@@ -18,13 +18,12 @@ class AuthController extends ApiController
         
         Log::info($user);
         try {
-            if (!$user || !Hash::check($validated['password'], $user->password)) {
+            if (!$user || !Hash::check($validated['password'], $user->password) || $user->status == 0) {
                 return $this->errorResponse('The login credentials are incorrect.', 401);
             }
-
-            // if ($user->tokens()->count() > 0) {
-            //     return $this->errorResponse('You are already logged in on another device.', 403);
-            // }
+            if ($user->tokens()->count() > 0) {
+                return $this->errorResponse('You are already logged in on another device.', 403);
+            }
             $token = $user->createToken("{$user->name}_token")->plainTextToken;
 
             return response()->json([
