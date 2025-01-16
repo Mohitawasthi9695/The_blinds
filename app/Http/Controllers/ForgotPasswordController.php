@@ -90,7 +90,6 @@ class ForgotPasswordController extends ApiController
         ]);
 
         $user = $request->user();
-
         if (!Hash::check($request->current_password, $user->password)) {
             throw ValidationException::withMessages([
                 'current_password' => ['The provided password does not match our records.'],
