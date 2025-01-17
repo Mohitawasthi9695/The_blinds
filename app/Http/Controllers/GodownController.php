@@ -237,12 +237,8 @@ class GodownController extends ApiController
                 'waste_width' => $restWidth,
                 'status' => 0,
             ]);
-
-            // Update the available stock after outing the stock out
             $remainingLength = $availableStock->available_height - $outLength;
             $remainingWidth = $availableStock->available_width - $outWidth;
-
-            // If stock dimensions are exhausted, set qty to 0 and status to inactive (0)
             $newQty = ($remainingLength <= 0) ? 0 : $availableStock->qty;
 
             $availableStock->update([
@@ -260,7 +256,7 @@ class GodownController extends ApiController
     {
         $godown = Godown::find($id);
         $status = $request->status;
-        if (!$godown) {
+        if (!$godown){
             return response()->json(['error' => 'Godown stock not found.'], 404);
         }
         if ($status == 2) {
@@ -283,13 +279,6 @@ class GodownController extends ApiController
 
         return response()->json(['success' => 'Godown stock status has been updated successfully.'], 200);
     }
-
-
-    public function GodownStockOutApprove( Request $request)
-    {
-
-    }
-
     /**
      * Display the specified resource.
      */

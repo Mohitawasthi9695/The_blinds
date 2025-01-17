@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockOutDetail;
+use App\Models\StockoutInovice;
 use Illuminate\Http\Request;
 
 class StockOutController extends ApiController
@@ -17,16 +18,16 @@ class StockOutController extends ApiController
         $sumMonth = StockOutDetail::where('created_at', '>=', $startOfMonth)->sum('amount');
         $sumQuarter = StockOutDetail::where('created_at', '>=', $startOfQuarter)->sum('amount');
         $sumYear = StockOutDetail::where('created_at', '>=', $startOfYear)->sum('amount');
-        $out_quantity = StockOutDetail::where('out_quantity', '>',0)->sum('out_quantity');
+        $out_quantity = StockOutDetail::where('out_quantity', '>', 0)->sum('out_quantity');
         $today_out_quantity = StockOutDetail::where('created_at', '>=', $today)->sum('out_quantity');
         $data = [
             'totals' => [
                 'sum_today' => round($sumToday, 2),
-                'sum_month' => round($sumMonth,2),
-                'sum_quarter' => round($sumQuarter,2),
-                'sum_year' => round($sumYear,2),
-                'out_quantity' => round($out_quantity,0),
-                'today_out_quantity' => round($today_out_quantity,0),
+                'sum_month' => round($sumMonth, 2),
+                'sum_quarter' => round($sumQuarter, 2),
+                'sum_year' => round($sumYear, 2),
+                'out_quantity' => round($out_quantity, 0),
+                'today_out_quantity' => round($today_out_quantity, 0),
             ],
         ];
         return $this->successResponse($data, 'StockOutDetails and amounts retrieved successfully.');
@@ -34,7 +35,7 @@ class StockOutController extends ApiController
 
     public function StockOutDash(Request $request)
     {
-        $filter = $request->query('filter', 'all'); 
+        $filter = $request->query('filter', 'all');
         $stockOut = StockOutDetail::query();
         switch ($filter) {
             case 'today':
@@ -53,7 +54,21 @@ class StockOutController extends ApiController
         $stockOutDetails = $stockOut->get();
         return $this->successResponse($stockOutDetails, 'StockOutDetails retrieved successfully.');
     }
-    
-    
-    
+
+    public function GodownStockOutApprove(Request $request, $id)
+    {
+        $StockOutInvoice = StockoutInovice::find($id);
+        if (!$StockOutInvoice) {
+            return response()->json(['error' => 'Stockout invoice not found.'], 404);
+        }
+        $validatedData = $request->validate([
+            'status' => 'required|integer',
+        ]);
+        $StockOutInvoice->status = $validatedData['status'];
+        $StockOutInvoice->save();
+        $StockOutInvoice->stockOutDetails()->update(['status' => $validatedData['status']]);
+        return response()->json([
+            'message' => 'Stockout invoice and related stock out details updated successfully.',
+        ], 200);
+    }
 }

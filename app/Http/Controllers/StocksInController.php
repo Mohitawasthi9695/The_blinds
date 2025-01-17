@@ -7,6 +7,7 @@ use App\Http\Requests\StockInUpdate;
 use App\Models\Product;
 use App\Models\StockInvoice;
 use App\Models\StocksIn;
+use App\Models\StockOutDetail;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,6 +22,16 @@ class StocksInController extends ApiController
         $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
         return response()->json($stocks);
     }
+
+    public function truncateStockOutDetails()
+    {
+        StocksIn::truncate();
+
+        return response()->json([
+            'message' => 'StockOutdetails table has been truncated successfully.'
+        ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -72,7 +83,7 @@ class StocksInController extends ApiController
                 $invoiceNo = $row[1];
                 $product = Product::where('shadeNo', $shadeNo)->first();
                 $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
-                
+
 
                 if (!$product) {
                     return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
