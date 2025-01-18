@@ -10,6 +10,7 @@ use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class StocksInController extends ApiController
@@ -45,6 +46,7 @@ class StocksInController extends ApiController
             foreach ($validatedData as $data) {
                 $data['available_width'] = $data['width'];
                 $data['available_height'] = $data['length'];
+                $data['user_id'] =  Auth::id();;
                 $createdItems = StocksIn::create($data);
             }
 
@@ -97,6 +99,7 @@ class StocksInController extends ApiController
                 $data = [
                     'product_id' => $product->id,
                     'invoice_id' => $invoice->id,
+                    'user_id' =>  Auth::id(),
                     'invoice_no' => $invoiceNo,
                     'lot_no'  => $row[2] ?? null,
                     'available_width' => $row[4] ?? null,
@@ -107,6 +110,7 @@ class StocksInController extends ApiController
                     'unit'       => $row[6] ?? null,
                     'type'       => $row[8] ?? null,
                     'qty'        => 1 ?? null,
+                    'Warehouse'=>$row[9] ?? null
                 ];
 
                 $createdItem = StocksIn::create($data);

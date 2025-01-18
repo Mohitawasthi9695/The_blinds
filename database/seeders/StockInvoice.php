@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+
 class StockInvoice extends Seeder
 {
     public function run()
@@ -14,6 +15,7 @@ class StockInvoice extends Seeder
             [
                 'invoice_no' => 'INV002',
                 'supplier_id' => 1,
+                'user_id' => 3,
                 'date' => '2024-12-12',
                 'place_of_supply' => 'Mumbai',
                 'vehicle_no' => 'MH01AB1234',
@@ -63,5 +65,4 @@ class StockInvoice extends Seeder
             ]
         ]);
     }
-
 }

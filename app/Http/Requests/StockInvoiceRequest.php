@@ -25,7 +25,6 @@ class StockInvoiceRequest extends FormRequest
         $rules = [
             'invoice_no' => 'required|string||max:255|unique:stock_invoices,invoice_no',
             'supplier_id' => 'exists:suppliers,id',
-            'bank_id' => 'exists:banks,id',
             'date' => 'date',
             'place_of_supply' => 'nullable|string|max:255',
             'vehicle_no' => 'nullable|string|max:255',

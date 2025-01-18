@@ -27,9 +27,10 @@ return new class extends Migration {
             $table->string('rack')->nullable();
             $table->string('Warehouse')->nullable();
             $table->boolean('status')->default(1);
-            $table->timestamps();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
             $table->foreign('invoice_id')->references('id')->on('stock_invoices')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->timestamps();
         });
         DB::unprepared('
         CREATE TRIGGER auto_increment_stock_code

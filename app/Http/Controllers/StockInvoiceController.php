@@ -6,6 +6,7 @@ use App\Http\Requests\StockInvoiceRequest;
 use App\Models\StockInvoice;
 use App\Models\StockInvoiceDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class StockInvoiceController extends ApiController
 {
@@ -22,6 +23,7 @@ class StockInvoiceController extends ApiController
         $stockInvoice = StockInvoice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'supplier_id' => $validatedData['supplier_id'],
+            'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
             'vehicle_no' => $validatedData['vehicle_no'] ?? null,
@@ -77,6 +79,7 @@ class StockInvoiceController extends ApiController
 
         $stockInvoice->update([
             'supplier_id' => $validatedData['supplier_id'],
+            'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
             'vehicle_no' => $validatedData['vehicle_no'] ?? null,

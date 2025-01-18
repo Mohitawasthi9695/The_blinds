@@ -33,6 +33,7 @@ return new class extends Migration
             $table->decimal('sgst_percentage', 5, 2)->nullable();
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
