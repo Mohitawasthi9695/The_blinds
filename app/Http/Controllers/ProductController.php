@@ -69,7 +69,7 @@ class ProductController extends ApiController
                 'out_length' => $stock->available_height,
                 'out_width' => $stock->width,
                 'unit' => $stock->unit,
-                'area_sq_ft' => $stock->length * $stock->width * 10.7639,
+                'area_sq_ft' => round($stock->length * $stock->width * 10.7639),
                 'area' => $stock->length * $stock->width,
                 'product_type' => $stock->type,
                 'out_quantity' => $stock->qty,

@@ -30,10 +30,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
     Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
     Route::Resource('/products', ProductController::class);
+
     Route::Resource('/stockin/invoice', StockInvoiceController::class);
+
     Route::get('/stockout/invoiceno', [StockoutInoviceController::class, 'invoice_no']);
     Route::get('/godown/invoiceno', [GodownController::class, 'invoice_no']);
     Route::Resource('/stocks', StocksInController::class);
+
+    Route::get('/stocks_insrm', [StocksInController::class,'stocks_ins']);
+    Route::get('/godownsrm', [GodownController::class,'godowns']);
+    Route::get('/stockout_inovicesrm', [StockoutInoviceController::class,'stockout_inovices']);
+    Route::get('/stock_out_details', [StockOutController::class,'stock_out_details']);
+    
     Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
     Route::Resource('/godown', GodownController::class);
@@ -45,7 +53,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownproducts',[GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}',[GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class,'GodownStockOut']);
-
     Route::put('godownstockout/{id}', [StockOutController::class,'GodownStockOutApprove']);
 
     Route::Resource('stockout', StockoutInoviceController::class);
@@ -58,5 +65,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
-
 });
