@@ -25,7 +25,7 @@ return new class extends Migration {
             $table->string('type')->nullable();
             $table->integer('qty')->nullable();
             $table->string('rack')->nullable();
-            $table->string('Warehouse')->nullable();
+            $table->string('warehouse')->nullable();
             $table->boolean('status')->default(1);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
             $table->foreign('invoice_id')->references('id')->on('stock_invoices')->onDelete('cascade');

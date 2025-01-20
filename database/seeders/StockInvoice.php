@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Illuminate\Support\Str;
 
 class StockInvoice extends Seeder
 {
@@ -34,32 +33,6 @@ class StockInvoice extends Seeder
                 'sgst_percentage' => 9.00,
                 'qr_code' => 'QR12345',
                 'status' => true,
-                'created_at' => '2024-12-12',
-                'updated_at' => Carbon::now(),
-            ]
-        ]);
-        DB::table('stock_invoice_details')->insert([
-            [
-                'stock_invoice_id' => 1,
-                'product_id' => 1,
-                'hsn_sac_code' => '1234',
-                'total_product' => 58,
-                'quantity' => 10,
-                'unit' => 'pcs',
-                'rate' => 100.00,
-                'amount' => 1000.00,
-                'created_at' => '2024-12-12',
-                'updated_at' => Carbon::now(),
-            ],
-            [
-                'stock_invoice_id' => 1,
-                'product_id' => 2,
-                'hsn_sac_code' => '5678',
-                'total_product' => 58,
-                'quantity' => 20,
-                'unit' => 'pcs',
-                'rate' => 200.00,
-                'amount' => 4000.00,
                 'created_at' => '2024-12-12',
                 'updated_at' => Carbon::now(),
             ]

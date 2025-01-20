@@ -12,7 +12,7 @@ class StockInvoiceController extends ApiController
 {
     public function index()
     {
-        $StockInvoices = StockInvoice::with(['supplier','products.product'])->get();
+        $StockInvoices = StockInvoice::with(['supplier','user:id,name,phone','stock_in'])->get();
         return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
 
@@ -42,20 +42,6 @@ class StockInvoiceController extends ApiController
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
-        foreach ($validatedData['products'] as $product) {
-            StockInvoiceDetail::create([
-                'stock_invoice_id' => $stockInvoice->id,
-                'product_id' => $product['product_id'],
-                'total_product' => $product['total_product'],
-                'product_type' => $product['product_type'] ?? null,
-                'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                'quantity' => $product['quantity'],
-                'width' => $product['width'] ?? null,
-                'unit' => $product['unit'] ?? null,
-                'rate' => $product['rate'],
-                'amount' => $product['amount'],
-            ]);
-        }
         return $this->successResponse($stockInvoice, 'StockInvoice created successfully.', 201);
     }
 

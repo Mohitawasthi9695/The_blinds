@@ -14,8 +14,14 @@ class StockInvoice extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
-    public function products()
+    public function user()
     {
-        return $this->hasMany(StockInvoiceDetail::class)->with('product'); 
+        return $this->belongsTo(User::class);
     }
+    public function stock_in()
+    {
+        return $this->hasMany(StocksIn::class, 'invoice_id');
+    }
+
+
 }

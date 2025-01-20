@@ -7,7 +7,6 @@ use App\Http\Requests\StockInUpdate;
 use App\Models\Product;
 use App\Models\StockInvoice;
 use App\Models\StocksIn;
-use App\Models\StockOutDetail;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,7 @@ class StocksInController extends ApiController
      */
     public function index()
     {
-        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
+        $stocks = StocksIn::with(['stockProduct','stockInvoice'])->get();
         return response()->json($stocks);
     }
 
@@ -110,7 +109,7 @@ class StocksInController extends ApiController
                     'unit'       => $row[6] ?? null,
                     'type'       => $row[8] ?? null,
                     'qty'        => 1 ?? null,
-                    'Warehouse'=>$row[9] ?? null
+                    'warehouse'=>$row[9] ?? null
                 ];
 
                 $createdItem = StocksIn::create($data);

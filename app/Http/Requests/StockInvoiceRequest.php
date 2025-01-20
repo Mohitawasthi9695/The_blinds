@@ -41,16 +41,6 @@ class StockInvoiceRequest extends FormRequest
             'cgst_percentage' => 'nullable|numeric|min:0|max:100',
             'sgst_percentage' => 'nullable|numeric|min:0|max:100',
             'qr_code' => 'nullable|string|max:255',
-            'products' => 'array|min:1',
-            'products.*.total_product' => 'numeric|min:1',
-            'products.*.product_type' => 'nullable|string|max:255',
-            'products.*.product_id' => 'exists:products,id',
-            'products.*.hsn_sac_code' => 'nullable|string|max:255',
-            'products.*.quantity' => 'numeric|min:0',
-            'products.*.unit' => 'nullable|string|max:50',
-            'products.*.width' => 'numeric|min:0',
-            'products.*.rate' => 'numeric|min:0',
-            'products.*.amount' => 'numeric|min:0',
         ];
         return $rules;
     }

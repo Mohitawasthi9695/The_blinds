@@ -23,15 +23,16 @@ class StockInRequest extends FormRequest
     {
         $rules = [
             '*.lot_no' => 'nullable|string|max:255', 
-            '*.stock_invoice_details_id' => 'nullable|exists:stock_invoice_details,id',
-            '*.invoice_id' => 'nullable|exists:stock_invoices,id',
-            '*.invoice_no' => 'nullable|exists:stock_invoices,invoice_no',
-            '*.product_id' => 'nullable|exists:products,id',
-            '*.width' => 'nullable|numeric|min:0',
-            '*.length' => 'nullable|numeric|min:0',
-            '*.unit' => 'nullable|string|max:255',
-            '*.type' => 'nullable|string|max:255',
-            '*.qty' => 'nullable|numeric|min:0',
+            '*.invoice_id' => 'required|exists:stock_invoices,id',
+            '*.invoice_no' => 'required|exists:stock_invoices,invoice_no',
+            '*.product_id' => 'required|exists:products,id',
+            '*.width' => 'required|numeric|min:0',
+            '*.length' => 'required|numeric|min:0',
+            '*.unit' => 'required|string|max:255',
+            '*.rack' => 'required|string|max:255',
+            '*.warehouse' => 'required|string|max:255',
+            '*.type' => 'required|string|max:255',
+            '*.qty' => 'required|numeric|min:0',
         ];
         
         return $rules;
