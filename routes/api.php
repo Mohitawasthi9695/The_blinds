@@ -45,6 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
     Route::Resource('/godown', GodownController::class);
+    Route::get('/supervisor/godown/{id}', [GodownController::class, 'supervisorStock']);
     Route::get('/sub_supervisor/godown/{id}', [GodownController::class, 'Sub_supervisorStock']);
     Route::get('/godown/stock/{id}', [GodownController::class,'godownStock']);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);

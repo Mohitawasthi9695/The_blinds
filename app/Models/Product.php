@@ -25,6 +25,6 @@ class Product extends Model
     }
     public function godowns()
     {
-        return $this->hasMany(Godown::class);
+        return $this->hasMany(Godown::class, 'product_id');
     }
 }

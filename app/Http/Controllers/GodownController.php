@@ -29,9 +29,10 @@ class GodownController extends ApiController
 
     public function GetStockProducts()
     {
-        $products = Product::whereHas('godowns')->get();
+        $products = Product::whereHas('godowns', function ($query) {
+            $query->where('status', 1);
+        })->get();
         return response()->json($products);
-        
     }
 
     public function GetStockCheckout($product_id)
@@ -75,7 +76,7 @@ class GodownController extends ApiController
     public function GodownStockOut(GodownStockOutRequest $request)
     {
         $validatedData = $request->validated();
-
+        log::info($validatedData);
         $stockOutInvoice = StockoutInovice::create([
             'invoice_no' => $validatedData['invoice_no'],
             'customer_id' => $validatedData['customer_id'],
@@ -111,9 +112,6 @@ class GodownController extends ApiController
             $availableStock = Godown::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
-
-            log::info($availableStock);
-
             if (!$availableStock) {
                 return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
@@ -133,10 +131,10 @@ class GodownController extends ApiController
             }
             $remainingLength = $availableStock->available_height - $outLength;
             $remainingWidth = $availableStock->available_width - $outWidth;
-            
+
             $create =  StockOutDetail::create([
                 'stockout_inovice_id' => $stockOutInvoice->id,
-                'stock_code' => $stockOutInvoice->stock_code,
+                'stock_code' => $availableStock->stock_code,
                 'godown_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
                 'product_type' => $product['product_type'],
@@ -146,11 +144,12 @@ class GodownController extends ApiController
                 'out_length' => round($outLength, 5),
                 'unit' => $product['unit'] ?? null,
                 'waste_width' => $remainingWidth,
+                'rack' => $availableStock->rack ?? null,
                 'rate' => $product['rate'],
                 'amount' => $product['amount'],
                 'status' => 0,
             ]);
-            $newQty = ($remainingLength <= 0) ? 0 : $availableStock->qty;
+            $newQty = ($remainingLength <= 0) ? 0 : $availableStock->get_quantity;
 
             $availableStock->update([
                 'available_height' => max($remainingLength, 0),
@@ -163,13 +162,18 @@ class GodownController extends ApiController
 
     public function Sub_supervisorStock($id)
     {
-        log::info($id);
         $stocks = Godown::where('godown_supervisor_id', $id)
-            ->with('products')->orderBy('id', 'desc')
-            ->get();
+            ->with('products')->orderBy('id', 'desc')->get();
+        return response()->json($stocks);
+    }
+    public function supervisorStock($id)
+    {
+        $stocks = Godown::where('warehouse_supervisor_id', $id)
+            ->with('products')->orderBy('id', 'desc')->get();
         log::info($stocks);
         return response()->json($stocks);
     }
+
 
     public function invoice_no()
     {
@@ -256,7 +260,7 @@ class GodownController extends ApiController
     {
         $godown = Godown::find($id);
         $status = $request->status;
-        if (!$godown){
+        if (!$godown) {
             return response()->json(['error' => 'Godown stock not found.'], 404);
         }
         if ($status == 2) {
