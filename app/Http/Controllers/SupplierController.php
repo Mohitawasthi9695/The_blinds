@@ -14,7 +14,7 @@ class SupplierController extends ApiController
 
     public function index()
     {
-        $suppliers = Supplier::all();
+        $suppliers = Supplier::where('status',1)->get();
         return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
     }
     public function supplierStocks()

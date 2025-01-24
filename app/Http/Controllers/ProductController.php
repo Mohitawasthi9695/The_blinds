@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Godown;
 use Exception;
 use Illuminate\Http\Request;
@@ -85,9 +86,88 @@ class ProductController extends ApiController
         return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    public function ProductCsv(Request $request)
+    {
+        log::info($request->all());
+
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,xlsx,xls',
+        ]);
+
+        try {
+            $data = Excel::toArray([], $request->file('csv_file'));
+
+            if (empty($data) || !isset($data[0])) {
+                return response()->json(['error' => 'File is empty or invalid'], 422);
+            }
+
+            $rows = $data[0];
+            $createdItems = [];
+            $invalidRows = [];
+            $existingRecords = [];
+            $newRecords = [];
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) {
+                    continue;
+                }
+
+                // Validate required fields
+                if (empty($row[2]) || empty($row[3])) {
+                    $invalidRows[] = [
+                        'row'   => $index + 1,
+                        'error' => 'Missing required fields: code or shadeNo'
+                    ];
+                    continue;
+                }
+                $code = $row[2];
+                $shadeNo = $row[3];
+                $purchaseShadeNo = $row[4] ?? null;
+                $existingProduct = Product::where('code', $code)
+                    ->orWhere('shadeNo', $shadeNo)
+                    ->first();
+
+                if ($existingProduct) {
+                    $existingRecords[] = [
+                        'row'   => $index + 1,
+                        'code'  => $code,
+                        'shadeNo' => $shadeNo,
+                        'error' => 'Duplicate record exists in the database'
+                    ];
+                    continue;
+                }
+                $newRecords[] = [
+                    'name'             => $row[1]?? null,
+                    'code'             => $code,
+                    'shadeNo'          => $shadeNo,
+                    'purchase_shade_no'=> $purchaseShadeNo,
+                    'created_at'       => now(),
+                    'updated_at'       => now(),
+                ];
+            }
+            if (!empty($newRecords)) {
+                Product::insert($newRecords);
+            }
+            return response()->json([
+                'message'       => 'File processed successfully.',
+                'createdCount'  => count($newRecords),
+                'duplicates'    => $existingRecords,
+                'invalidRows'   => $invalidRows,
+            ], 201);
+        } catch (\Exception $e) {
+            log::error('CSV Processing Error: ', [
+                'error'    => $e->getMessage(),
+                'file'     => $request->file('csv_file')->getClientOriginalName(),
+            ]);
+
+            return response()->json([
+                'error'   => 'Failed to process file',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     public function store(ProductRequest $request)
     {
         $products = Product::create($request->validated());
