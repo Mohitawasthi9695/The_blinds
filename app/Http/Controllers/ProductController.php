@@ -154,7 +154,7 @@ class ProductController extends ApiController
                 'duplicates'    => $existingRecords,
                 'invalidRows'   => $invalidRows,
             ], 201);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             log::error('CSV Processing Error: ', [
                 'error'    => $e->getMessage(),
                 'file'     => $request->file('csv_file')->getClientOriginalName(),

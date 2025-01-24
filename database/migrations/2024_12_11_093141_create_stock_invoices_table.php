@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stock_invoices', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_no')->unique();
-            $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');;
+            $table->foreignId('supplier_id')->constrained('suppliers')->onDelete('cascade');
             $table->date('date');
             $table->string('place_of_supply')->nullable();
             $table->string('vehicle_no')->nullable();

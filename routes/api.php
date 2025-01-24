@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GodownController;
 use App\Http\Controllers\OldStockController;
+use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
 use App\Http\Controllers\StockInvoiceController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use App\Models\ProductCategory;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -30,6 +32,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
     Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
     
+    Route::Resource('/products/category', ProductCategoryController::class);
     Route::Resource('/products', ProductController::class);
     Route::post('/product/import-csv',[ProductController::class,'ProductCsv']);
 
@@ -59,7 +62,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('godownstockout/{id}', [StockOutController::class,'GodownStockOutApprove']);
 
     Route::Resource('stockout', StockoutInoviceController::class);
-    Route::post('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
+    Route::put('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::Resource('admin/stockout', StockoutInoviceController::class);
     Route::get('/sales', [StockOutController::class, 'Sales']);

@@ -6,39 +6,34 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class ProductSeeder extends Seeder
+class ProductCategory extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-
-        DB::table('products')->insert([
+        DB::table('product_categories')->insert([
             [
-                'product_category_id' => 1,
-                'shadeNo' => 'Shade001',
-                'purchase_shade_no' => 'PSN001',
-                'status' => true,
+                'product_category'=>'Roller',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'product_category_id' => 1,
-                'shadeNo' => 'Shade002',
-                'purchase_shade_no' => 'PSN002',
-                'status' => false,
+                'product_category'=>'Wooden',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
-                'product_category_id' => 2,
-                'shadeNo' => 'Shade003',
-                'purchase_shade_no' => 'PSN003',
-                'status' => true,
+                'product_category'=>'Vertical',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'product_category'=>'Honey Comb',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
     }
 }

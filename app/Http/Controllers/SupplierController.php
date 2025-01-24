@@ -7,27 +7,33 @@ use App\Models\Supplier;
 use App\Http\Controllers\ApiController;
 use App\Http\Requests\SupplierRequest;
 use App\Http\Requests\SupplierUpdate;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SupplierController extends ApiController
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $suppliers = Supplier::where('status',1)->get();
+        $condition = $request->status;
+        if ($condition == 1) {
+            $suppliers = Supplier::where('status', 1)->get();
+        } else {
+            $suppliers = Supplier::all();
+        }
         return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
     }
     public function supplierStocks()
     {
-        $supplier = Supplier::with('stockInvoices.products')->select('id','name')->find(5);
+        $supplier = Supplier::with('stockInvoices.products')->select('id', 'name')->find(5);
 
         return $this->successResponse($supplier, 'Suppliers retrieved successfully.', 200);
     }
     public function RecentSuppliers()
     {
         $suppliers = Supplier::whereHas('RecentInvoice')
-                         ->with('RecentInvoice')->select( 'id','name','gst_no','owner_mobile','reg_address')    
-                         ->get();
+            ->with('RecentInvoice')->select('id', 'name', 'gst_no', 'owner_mobile', 'reg_address')
+            ->get();
         return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
     }
     public function store(SupplierRequest $request)
