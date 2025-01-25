@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Godown;
 use Exception;
@@ -14,7 +15,7 @@ class ProductController extends ApiController
 {
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('ProductCategory:id,product_category')->get();
         return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
     public function AvailableProducts()
@@ -34,7 +35,6 @@ class ProductController extends ApiController
             return [
                 'product_id' => $product->id,
                 'product_name' => $product->name,
-                'product_code' => $product->code,
                 'product_shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
                 'stock_in' => $product->stockAvailable->sum(function ($stock) {
@@ -112,7 +112,6 @@ class ProductController extends ApiController
                     continue;
                 }
 
-                // Validate required fields
                 if (empty($row[2]) || empty($row[3])) {
                     $invalidRows[] = [
                         'row'   => $index + 1,
@@ -120,29 +119,37 @@ class ProductController extends ApiController
                     ];
                     continue;
                 }
-                $code = $row[2];
+                $productCategory = $row[1];
+                log::info($productCategory);
                 $shadeNo = $row[3];
                 $purchaseShadeNo = $row[4] ?? null;
-                $existingProduct = Product::where('code', $code)
-                    ->orWhere('shadeNo', $shadeNo)
+                $existProductCategory = ProductCategory::where('product_category', $productCategory)
+                    ->first();
+                if (!$existProductCategory) {
+                    $invalidRows[] = [
+                        'row'   => $index + 1,
+                        'error' => 'Product Category not found'
+                    ];
+                    continue;
+                }
+                $existingProduct = Product::Where('shadeNo', $shadeNo)
                     ->first();
 
                 if ($existingProduct) {
                     $existingRecords[] = [
                         'row'   => $index + 1,
-                        'code'  => $code,
                         'shadeNo' => $shadeNo,
                         'error' => 'Duplicate record exists in the database'
                     ];
                     continue;
                 }
                 $newRecords[] = [
-                    'name'             => $row[1]?? null,
-                    'code'             => $code,
-                    'shadeNo'          => $shadeNo,
-                    'purchase_shade_no'=> $purchaseShadeNo,
-                    'created_at'       => now(),
-                    'updated_at'       => now(),
+                    'product_category_id'=> $existProductCategory->id,
+                    'name'           => $row[2],
+                    'shadeNo'           => $shadeNo,
+                    'purchase_shade_no' => $purchaseShadeNo,
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
                 ];
             }
             if (!empty($newRecords)) {

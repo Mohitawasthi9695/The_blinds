@@ -19,8 +19,8 @@ return new class extends Migration {
             $table->string('invoice_no')->nullable();
             $table->decimal('length', 15, 5)->nullable();
             $table->decimal('width', 15, 5)->nullable();
-            $table->decimal('available_height', 15, 5)->nullable();
-            $table->decimal('available_width', 15, 5)->nullable();
+            $table->decimal('available_height', 15, 3)->nullable();
+            $table->decimal('available_width', 15, 3)->nullable();
             $table->string('unit')->default('meter');
             $table->string('type')->nullable();
             $table->integer('qty')->nullable();

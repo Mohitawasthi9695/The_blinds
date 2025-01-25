@@ -17,6 +17,7 @@ class ProductSeeder extends Seeder
         DB::table('products')->insert([
             [
                 'product_category_id' => 1,
+                'name' => 'New Zebra',
                 'shadeNo' => 'Shade001',
                 'purchase_shade_no' => 'PSN001',
                 'status' => true,
@@ -25,6 +26,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'product_category_id' => 1,
+                'name' => 'New Zebra',
                 'shadeNo' => 'Shade002',
                 'purchase_shade_no' => 'PSN002',
                 'status' => false,
@@ -33,6 +35,7 @@ class ProductSeeder extends Seeder
             ],
             [
                 'product_category_id' => 2,
+                'name' => 'Vento',
                 'shadeNo' => 'Shade003',
                 'purchase_shade_no' => 'PSN003',
                 'status' => true,
