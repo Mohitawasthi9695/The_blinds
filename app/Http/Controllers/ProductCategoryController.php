@@ -18,7 +18,7 @@ class ProductCategoryController extends ApiController
 
     public function store(Request $request)
     {
-        $productsCategory = $request->validate(['name' => 'required|string|Max:255']);
+        $productsCategory = $request->validate(['product_category' => 'required|string|Max:255']);
         $products = ProductCategory::create($productsCategory);
         return $this->successResponse($products, 'Product created successfully.', 201);
     }

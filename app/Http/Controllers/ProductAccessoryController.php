@@ -5,61 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\ProductAccessory;
 use Illuminate\Http\Request;
 
-class ProductAccessoryController extends Controller
+class ProductAccessoryController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $products = ProductAccessory::all();
+        return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $productsCategory = $request->validate(['product_category' => 'required|string|Max:255']);
+        $products = ProductAccessory::create($productsCategory);
+        return $this->successResponse($products, 'Product created successfully.', 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProductAccessory $productAccessory)
+    public function show($id)
     {
-        //
+        $ProductAccessory = ProductAccessory::find($id);
+        if (!$ProductAccessory) {
+            return $this->errorResponse('ProductAccessory not found.', 404);
+        }
+        return $this->successResponse($ProductAccessory, 'ProductAccessory retrieved successfully.', 200);
+    }
+    public function update(Request $request, $id)
+    {
+        $product = ProductAccessory::findOrFail($id);
+        $product->update($request->all());
+        return $this->successResponse($product, 'ProductAccessory updated successfully.', 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProductAccessory $productAccessory)
+    // DELETE /ProductAccessorys/{id} - Delete a ProductAccessory
+    public function destroy($id)
     {
-        //
-    }
+        $ProductAccessory = ProductAccessory::find($id);
+        if (!$ProductAccessory) {
+            return $this->errorResponse('ProductAccessory not found.', 404);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ProductAccessory $productAccessory)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ProductAccessory $productAccessory)
-    {
-        //
+        $ProductAccessory->delete();
+        return $this->successResponse([], 'ProductAccessory deleted successfully.', 200);
     }
 }

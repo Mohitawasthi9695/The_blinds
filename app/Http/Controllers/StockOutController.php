@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 
 class StockOutController extends ApiController
 {
+
+    
     public function Sales()
     {
         $today = now()->startOfDay();

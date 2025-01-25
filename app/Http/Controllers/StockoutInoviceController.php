@@ -147,6 +147,7 @@ class StockoutInoviceController extends ApiController
 
         return $this->successResponse($invoice_no, 'Invoice number retrieved successfully.');
     }
+    
     public function show($id)
     {
         $stockOutInvoice = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->find($id);

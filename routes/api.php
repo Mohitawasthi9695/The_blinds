@@ -31,10 +31,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::Resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
     Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
-    
+
     Route::Resource('/products/category', ProductCategoryController::class);
     Route::Resource('/products', ProductController::class);
-    Route::post('/product/import-csv',[ProductController::class,'ProductCsv']);
+    Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
 
     Route::Resource('/stockin/invoice', StockInvoiceController::class);
 
@@ -42,26 +42,29 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godown/invoiceno', [GodownController::class, 'invoice_no']);
     Route::Resource('/stocks', StocksInController::class);
 
-    Route::get('/stocks_insrm', [StocksInController::class,'stocks_ins']);
-    Route::get('/godownsrm', [GodownController::class,'godowns']);
-    Route::get('/stockout_inovicesrm', [StockoutInoviceController::class,'stockout_inovices']);
-    Route::get('/stock_out_details', [StockOutController::class,'stock_out_details']);
-    
+    Route::get('/stocks_insrm', [StocksInController::class, 'stocks_ins']);
+    Route::get('/godownsrm', [GodownController::class, 'godowns']);
+    Route::get('/stockout_inovicesrm', [StockoutInoviceController::class, 'stockout_inovices']);
+    Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
+
     Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
     Route::Resource('/godown', GodownController::class);
     Route::get('/supervisor/godown/{id}', [GodownController::class, 'supervisorStock']);
     Route::get('/sub_supervisor/godown/{id}', [GodownController::class, 'Sub_supervisorStock']);
-    Route::get('/godown/stock/{id}', [GodownController::class,'godownStock']);
+    Route::get('/godown/stock/{id}', [GodownController::class, 'godownStock']);
     Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
 
     Route::get('/available', [ProductController::class, 'AvailableProducts']);
-    Route::get('/godownproducts',[GodownController::class, 'GetStockProducts']);
-    Route::get('/godowncheckout/{id}',[GodownController::class, 'GetStockCheckout']);
-    Route::post('godownstockout', [GodownController::class,'GodownStockOut']);
-    Route::put('godownstockout/{id}', [StockOutController::class,'GodownStockOutApprove']);
-
+    Route::get('/godownproducts', [GodownController::class, 'GetStockProducts']);
+    Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
+    Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
+    
     Route::Resource('stockout', StockoutInoviceController::class);
+    Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
+    
+    Route::Resource('stockoutdetails', StockOutController::class);
+
     Route::put('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::Resource('admin/stockout', StockoutInoviceController::class);
