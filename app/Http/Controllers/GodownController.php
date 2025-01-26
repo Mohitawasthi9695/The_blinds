@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GodownStockOutRequest;
 use App\Http\Requests\GodownStore;
+use App\Models\GatePass;
 use App\Models\Godown;
 use App\Models\Product;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
 use App\Models\StocksIn;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class GodownController extends ApiController
 {
@@ -25,7 +28,6 @@ class GodownController extends ApiController
         $stocks = Godown::where('status', '1')->where('godown_supervisor_id', $id)->with('products')->get();
         return response()->json($stocks);
     }
-
 
     public function GetStockProducts()
     {
@@ -160,77 +162,80 @@ class GodownController extends ApiController
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
 
-    public function Sub_supervisorStock($id)
+    public function GetAllGatePass()
     {
-        $stocks = Godown::where('godown_supervisor_id', $id)
-            ->with('products')->orderBy('id', 'desc')->get();
-        return response()->json($stocks);
-    }
-    public function supervisorStock($id)
-    {
-        $stocks = Godown::where('warehouse_supervisor_id', $id)
-            ->with('products')->orderBy('id', 'desc')->get();
+        log::info('GetAllGatePass');
+        $stocks = GatePass::with('godowns')->orderBy('id', 'desc')->get();
         log::info($stocks);
         return response()->json($stocks);
     }
-
-
-    public function invoice_no()
+    public function GetGatePass($id)
     {
-        $lastInvoice = Godown::select('invoice_no')->orderBy('id', 'desc')->first();
-        log::info($lastInvoice);
-        if ($lastInvoice) {
-            $lastInvoiceNo = $lastInvoice->invoice_no;
-            $prefix = substr($lastInvoiceNo, 0, 2);
-            $number = (int) substr($lastInvoiceNo, 2);
-            $newNumber = $number + 1;
-            $invoice_no = $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-        } else {
-            $invoice_no = 'GT0001';
-        }
-
-        return $this->successResponse($invoice_no, 'Invoice number retrieved successfully.');
+        $stocks = GatePass::with('godowns')->where('id', $id)->first();
+        return response()->json($stocks);
     }
+    public function GatePassNo()
+    {
+        $GatePass = GatePass::select('gate_pass_no')->orderBy('id', 'desc')->first();
+        log::info($GatePass);
+        if ($GatePass) {
+            $GatePassNo = $GatePass->gate_pass_no;
+            $prefix = substr($GatePassNo, 0, 2);
+            $number = (int) substr($GatePassNo, 2);
+            $newNumber = $number + 1;
+            $gate_pass_no = $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        } else {
+            $gate_pass_no = 'GT0001';
+        }
+        return $this->successResponse($gate_pass_no, 'Invoice number retrieved successfully.');
+    }
+
+    
 
     public function store(GodownStore $request)
     {
         $validatedData = $request->validated();
-        Log::info($validatedData);
+        log::info($validatedData);
 
+        $GatePass = GatePass::create([
+            'gate_pass_no' => $validatedData['invoice_no'],
+            'warehouse_supervisor_id' => Auth::id(),
+            'gate_pass_date' => $validatedData['date'],
+            'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
+        ]);
         foreach ($validatedData['out_products'] as $product) {
             $availableStock = StocksIn::where('id', $product['stock_available_id'])
                 ->where('status', '1')
                 ->first();
-
-            if (!$availableStock || $availableStock->qty < $product['out_quantity']) {
+            if (!$availableStock) {
                 return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
 
             $outLength = $product['out_length'];
             $outWidth = $product['out_width'];
 
-            if ($product['unit'] === 'inches') {
-                $outLength *= 0.0254;
-                $outWidth *= 0.0254;
-            } elseif ($product['unit'] === 'feet') {
-                $outLength *= 0.3048;
-                $outWidth *= 0.3048;
-            }
-            if ($outLength > $availableStock->available_height || $outWidth > $availableStock->available_width) {
+            // if ($product['unit'] === 'inches')
+            // {
+            //     $outLength *= 0.0254;
+            //     $outWidth *= 0.0254;
+            // } elseif ($product['unit'] === 'feet') {
+            //     $outLength *= 0.3048;
+            //     $outWidth *= 0.3048;
+            // }
+
+            
+            if ($product['out_quantity'] > $availableStock->quantity - $availableStock->out_quantity) {
                 return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
             }
+
             $restWidth = $availableStock->available_width - $outWidth;
             $create = Godown::create([
-                'invoice_no' => $validatedData['invoice_no'],
+                'gate_pass_id'=> $GatePass->id,
                 'stock_in_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
-                'date' => $validatedData['date'],
-                'warehouse_supervisor_id' => $validatedData['warehouse_supervisor_id'],
-                'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
-                'stock_code' => $product['stock_code'],
                 'lot_no' => $availableStock->lot_no,
                 'type' => $availableStock->type,
-                'product_type' => $product['product_type'],
+                'product_type' => $product['product_type']?? null,
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'get_quantity' => $product['out_quantity'] ?? null,
                 'get_width' => round($outWidth, 5),
@@ -238,23 +243,18 @@ class GodownController extends ApiController
                 'available_height' => round($outLength, 5),
                 'available_width' => round($outWidth, 5),
                 'unit' => $product['unit'] ?? null,
-                'waste_width' => $restWidth,
+                // 'waste_width' => $restWidth,
                 'status' => 0,
             ]);
-            $remainingLength = $availableStock->available_height - $outLength;
-            $remainingWidth = $availableStock->available_width - $outWidth;
-            $newQty = ($remainingLength <= 0) ? 0 : $availableStock->qty;
-
+            $newQty = $availableStock->quantity - $product['out_quantity'];
             $availableStock->update([
-                'available_height' => max($remainingLength, 0),
-                'qty' => $newQty,
-                'status' => ($remainingLength <= 0) ? 0 : 1,
+                'out_quantity' => $product['out_quantity'],
+                'status' => ($newQty <= 0) ? 0 : 1,
             ]);
         }
 
         return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
     }
-
 
     public function GodownStockStatus(Request $request, $id)
     {

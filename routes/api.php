@@ -14,7 +14,6 @@ use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
-use App\Models\ProductCategory;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -31,41 +30,41 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::Resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
     Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
-
     Route::Resource('/products/category', ProductCategoryController::class);
     Route::Resource('/products', ProductController::class);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
-
+    
     Route::Resource('/stockin/invoice', StockInvoiceController::class);
-
+    
     Route::get('/stockout/invoiceno', [StockoutInoviceController::class, 'invoice_no']);
-    Route::get('/godown/invoiceno', [GodownController::class, 'invoice_no']);
     Route::Resource('/stocks', StocksInController::class);
-
+    
     Route::get('/stocks_insrm', [StocksInController::class, 'stocks_ins']);
     Route::get('/godownsrm', [GodownController::class, 'godowns']);
     Route::get('/stockout_inovicesrm', [StockoutInoviceController::class, 'stockout_inovices']);
     Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
-
+    
     Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
-    Route::Resource('/godown', GodownController::class);
+    
     Route::get('/supervisor/godown/{id}', [GodownController::class, 'supervisorStock']);
-    Route::get('/sub_supervisor/godown/{id}', [GodownController::class, 'Sub_supervisorStock']);
     Route::get('/godown/stock/{id}', [GodownController::class, 'godownStock']);
-    Route::get('/checkstocks/{product_id}', [ProductController::class, 'CheckStocks']);
+    
+    Route::get('/gatepass/shadeno/{category_id}', [ProductController::class, 'GatePassShadeNo']);
+    Route::get('/godowns/gatepassno', [GodownController::class, 'GatePassNo']);
+    Route::get('/stockin/{product_id}', [StocksInController::class, 'CheckStocks']);      
+    Route::Resource('/godown', GodownController::class);
 
-    Route::get('/available', [ProductController::class, 'AvailableProducts']);
+    Route::get('/godowns/gatepass', [GodownController::class, 'GetAllGatePass']);
+    Route::get('/godown/gatepass/{id}', [GodownController::class, 'GetGatePass']);
+
     Route::get('/godownproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
-    
-    Route::Resource('stockout', StockoutInoviceController::class);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
-    
-    Route::Resource('stockoutdetails', StockOutController::class);
 
-    Route::put('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
+    Route::Resource('stockout', StockoutInoviceController::class);
+    Route::post('/godown/approved/{id}', [GodownController::class, 'GodownStockStatus']);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::Resource('admin/stockout', StockoutInoviceController::class);
     Route::get('/sales', [StockOutController::class, 'Sales']);

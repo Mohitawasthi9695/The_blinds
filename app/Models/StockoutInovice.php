@@ -12,6 +12,7 @@ class StockoutInovice extends Model
     protected $guarded=[''];
     protected $table = 'stockout_inovices';
 
+    protected $hidden = ['created_at', 'updated_at'];
     public function customer()
     {
         return $this->belongsTo(Customer::class);

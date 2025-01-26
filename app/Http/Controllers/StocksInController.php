@@ -19,7 +19,7 @@ class StocksInController extends ApiController
      */
     public function index()
     {
-        $stocks = StocksIn::with(['stockProduct','stockInvoice'])->get();
+        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
         return response()->json($stocks);
     }
 
@@ -43,8 +43,6 @@ class StocksInController extends ApiController
             $createdItems = [];
 
             foreach ($validatedData as $data) {
-                $data['available_width'] = $data['width'];
-                $data['available_height'] = $data['length'];
                 $data['user_id'] =  Auth::id();;
                 $createdItems = StocksIn::create($data);
             }
@@ -85,7 +83,6 @@ class StocksInController extends ApiController
                 $product = Product::where('shadeNo', $shadeNo)->first();
                 $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
 
-
                 if (!$product) {
                     return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
                 }
@@ -101,15 +98,13 @@ class StocksInController extends ApiController
                     'user_id' =>  Auth::id(),
                     'invoice_no' => $invoiceNo,
                     'lot_no'  => $row[2] ?? null,
-                    'available_width' => $row[4] ?? null,
-                    'available_height' => $row[5] ?? null,
                     'width'     => $row[4] ?? null,
                     'length'      => $row[5] ?? null,
                     'rack'        => $row[7] ?? null,
                     'unit'       => $row[6] ?? null,
                     'type'       => $row[8] ?? null,
-                    'qty'        => 1 ?? null,
-                    'warehouse'=>$row[9] ?? null
+                    'quantity'    => $row[9] ?? null,
+                    'warehouse' => $row[10] ?? null
                 ];
 
                 $createdItem = StocksIn::create($data);
@@ -120,12 +115,48 @@ class StocksInController extends ApiController
         }
     }
 
+    public function CheckStocks($product_id)
+    {
+        $product = Product::find($product_id);
+        if (!$product) {
+            return $this->errorResponse('Product not found.', 404);
+        }
 
+        $stocks = $product->stockAvailable()->where('status', 1)->with('products')->get();
+
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No active stocks found for this product.', 404);
+        }
+
+        $responseData = $stocks->map(function ($stock) {
+            return [
+                'stock_available_id' => $stock->id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'out_length' => $stock->length,
+                'out_width' => $stock->width,
+                'unit' => $stock->unit,
+                // 'area_sq_ft' => round($stock->length * $stock->width * 10.7639),
+                // 'area' => $stock->length * $stock->width,
+                'product_type' => $stock->type,
+                'out_quantity' => $stock->quantity-$stock->out_quantity,
+                'rack' => $stock->rack,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? 'N/A',
+                'product_code' => $stock->products->code ?? 'N/A',
+                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
+                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
+    }
     public function show($id)
     {
         $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])
             ->where('invoice_id', $id)
             ->get();
+            log::info($stocks);
         return response()->json($stocks);
     }
 

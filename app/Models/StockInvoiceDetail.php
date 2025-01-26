@@ -10,6 +10,8 @@ class StockInvoiceDetail extends Model
 {
     use HasFactory, HasApiTokens;
     protected $guarded = [];
+
+    protected $hidden = ['created_at', 'updated_at'];
     public function invoice()
     {
         return $this->belongsTo(StockInvoice::class, 'stock_invoice_id');

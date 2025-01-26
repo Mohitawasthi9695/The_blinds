@@ -2,19 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Laravel\Sanctum\HasApiTokens;
 
-class oldStock extends Model
+class GatePass extends Model
 {
     use HasFactory, HasApiTokens;
-    protected $guarded = [];
+    protected $guarded = [''];
     protected $hidden = ['created_at', 'updated_at'];
-
-    public function product()
+    public function godowns()
     {
-        return $this->belongsTo(Product::class);
+        return $this->hasMany(Godown::class);
     }
-   
 }

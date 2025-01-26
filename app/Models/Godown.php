@@ -11,6 +11,8 @@ class Godown extends Model
 {
     use HasFactory, HasApiTokens;
     protected $guarded = [''];
+    protected $hidden = ['created_at', 'updated_at'];
+
 
     public function products()
     {

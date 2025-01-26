@@ -18,12 +18,12 @@ class ProductController extends ApiController
         $products = Product::with('ProductCategory:id,product_category')->get();
         return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
-    public function AvailableProducts()
+    public function GatePassShadeNo($category_id)
     {
         $products = Product::whereHas('stockAvailable', function ($query) {
             $query->where('status', 1);
-        })->where('status', 1)->get();
-        return $this->successResponse($products, 'Active products retrieved successfully.', 200);
+        })->where('status', 1)->where('product_category_id',$category_id)->get();
+        return $this->successResponse($products, 'Active shadeNo retrieved successfully.', 200);
     }
 
 
@@ -49,42 +49,7 @@ class ProductController extends ApiController
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
 
-    public function CheckStocks($product_id)
-    {
-        $product = Product::find($product_id);
-        if (!$product) {
-            return $this->errorResponse('Product not found.', 404);
-        }
-        $stocks = $product->stockAvailable()->where('status', 1)->with('products')->get();
-
-        if ($stocks->isEmpty()) {
-            return $this->errorResponse('No active stocks found for this product.', 404);
-        }
-
-        $responseData = $stocks->map(function ($stock) {
-            return [
-                'stock_available_id' => $stock->id,
-                'product_id' => $stock->product_id,
-                'stock_code' => $stock->products->shadeNo . '-' . $stock->stock_code,
-                'lot_no' => $stock->lot_no,
-                'out_length' => $stock->available_height,
-                'out_width' => $stock->width,
-                'unit' => $stock->unit,
-                'area_sq_ft' => round($stock->length * $stock->width * 10.7639),
-                'area' => $stock->length * $stock->width,
-                'product_type' => $stock->type,
-                'out_quantity' => $stock->qty,
-                'rack' => $stock->rack,
-                'status' => $stock->status,
-                'product_name' => $stock->products->name ?? 'N/A',
-                'product_code' => $stock->products->code ?? 'N/A',
-                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
-                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
-            ];
-        });
-
-        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
-    }
+    
 
     public function ProductCsv(Request $request)
     {

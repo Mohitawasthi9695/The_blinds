@@ -10,6 +10,8 @@ class Supplier extends Model
 {
     use HasFactory, HasApiTokens;
     protected $guarded = [];
+
+    protected $hidden = ['created_at', 'updated_at'];
     public function stockInvoices()
     {
         return $this->hasMany(StockInvoice::class) ->select('id', 'invoice_no', 'supplier_id','total_amount','date'); ;
