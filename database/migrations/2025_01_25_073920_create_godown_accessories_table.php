@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('godown_accessories', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
+            $table->foreignId('warehouse_accessory_id')->constrained('warehouse_accessories')->onDelete('cascade');
+            $table->string('length')->nullable();
+            $table->string('unit')->nullable();
+            $table->string('items')->nullable();
+            $table->string('box')->nullable();
+            $table->string('quantity')->nullable();
+            $table->boolean('status')->default(0);
             $table->timestamps();
         });
     }

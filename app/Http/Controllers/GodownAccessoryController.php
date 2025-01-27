@@ -2,64 +2,63 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GodownAccessoryStore;
 use App\Models\GodownAccessory;
 use Illuminate\Http\Request;
 
-class GodownAccessoryController extends Controller
+class GodownAccessoryController extends ApiController
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $warehouseAccessories = GodownAccessory::with('accessory')->get();
+        return $this->successResponse($warehouseAccessories, 'GodownAccessory retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(GodownAccessoryStore $request)
     {
-        //
+        $warehouseAccessories = $request->validated();
+        $WarehouseAccessories = GodownAccessory::create($warehouseAccessories);
+        return $this->successResponse($WarehouseAccessories, 'GodownAccessory created successfully.', 201);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
     /**
      * Display the specified resource.
      */
-    public function show(GodownAccessory $godownAccessory)
+
+    public function show($id)
     {
-        //
+        $GodownAccessory = GodownAccessory::with('accessory')->find($id);
+        if (!$GodownAccessory) {
+            return $this->errorResponse('GodownAccessory not found.', 404);
+        }
+        return $this->successResponse($GodownAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(GodownAccessory $godownAccessory)
+    public function update(Request $request, $id)
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, GodownAccessory $godownAccessory)
-    {
-        //
+        $GodownAccessory = GodownAccessory::findOrFail($id);
+        $validatedData = $request->validate([
+            'product_accessory_id' => 'required|exists:product_accessories,id',
+            'gate_pass_id' => 'required|exists:gate_passes,id',
+            'length'               => 'nullable|string|max:255',
+            'unit'                 => 'nullable|string|max:255',
+            'items'                => 'nullable|string|max:255',
+            'box'                  => 'nullable|string|max:255',
+            'quantity'             => 'nullable|string|max:255',
+        ]);
+        $GodownAccessory->update($validatedData);
+        return $this->successResponse($GodownAccessory, 'GodownAccessory updated successfully.', 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(GodownAccessory $godownAccessory)
+    public function destroy($id)
     {
-        //
+        $GodownAccessory = GodownAccessory::find($id);
+        if (!$GodownAccessory) {
+            return $this->errorResponse('GodownAccessory not found.', 404);
+        }
+        $GodownAccessory->delete();
+        return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
     }
 }

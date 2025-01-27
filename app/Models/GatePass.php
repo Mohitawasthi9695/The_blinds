@@ -24,4 +24,8 @@ class GatePass extends Model
     {
         return $this->hasMany(Godown::class);
     }
+    public function godown_accessories()
+    {
+        return $this->hasMany(GodownAccessory::class);
+    }
 }

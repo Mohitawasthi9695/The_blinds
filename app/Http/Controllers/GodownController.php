@@ -168,8 +168,6 @@ class GodownController extends ApiController
         }
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
-
-
     public function GatePassNo()
     {
         $GatePass = GatePass::select('gate_pass_no')->orderBy('id', 'desc')->first();
@@ -201,6 +199,7 @@ class GodownController extends ApiController
     {
         $gatePass->update(['status' => 1]);
         $gatePass->godowns()->update(['status' => 1]);
+        $gatePass->godown_accessories()->update(['status' => 1]);
         return response()->json(['success' => 'Gate Pass approved successfully.']);
     }
 

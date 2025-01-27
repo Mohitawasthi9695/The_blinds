@@ -34,6 +34,13 @@ class GodownStore extends FormRequest
             'out_products.*.out_length' => 'required|numeric|min:0',
             'out_products.*.out_quantity' => 'nullable|numeric|min:0',
             'out_products.*.unit' => 'required|string|max:50',
+            'out_accessory' => 'required|array',
+            'out_accessory.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
+            'out_accessory.*.length' => 'nullable|string|max:255',
+            'out_accessory.*.items' => 'nullable|string|max:255',
+            'out_accessory.*.box' => 'nullable|string|max:255',
+            'out_accessory.*.out_quantity' => 'nullable|string|max:255',
+            'out_accessory.*.unit' => 'required|string|max:50',
         ];
            return $rules;
     }

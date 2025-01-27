@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\WarehouseAccessory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class WarehouseAccessoryController extends ApiController
 {
@@ -21,37 +22,46 @@ class WarehouseAccessoryController extends ApiController
     {
         $warehouseAccessories = $request->validated();
         $WarehouseAccessories = WarehouseAccessory::create($warehouseAccessories);
-        return $this->successResponse($WarehouseAccessories, 'Product created successfully.', 201);
+        return $this->successResponse($WarehouseAccessories, 'WarehouseAccessory created successfully.', 201);
     }
     /**
      * Display the specified resource.
      */
-    public function show(WarehouseAccessory $warehouseAccessory)
+
+    public function show($id)
     {
-        $warehouseAccessory = WarehouseAccessory::with('accessory')->find($warehouseAccessory->id);
-        if (!$warehouseAccessory) {
+        $WarehouseAccessory = WarehouseAccessory::with('accessory')->find($id);
+        if (!$WarehouseAccessory) {
             return $this->errorResponse('WarehouseAccessory not found.', 404);
         }
-        return $this->successResponse($warehouseAccessory, 'WarehouseAccessory retrieved successfully.', 200);
+        return $this->successResponse($WarehouseAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
 
-    public function update(Request $request, WarehouseAccessory $warehouseAccessory)
+    public function update(Request $request, $id)
     {
-        $WarehouseAccessory = WarehouseAccessory::findOrFail($warehouseAccessory->id);
-        $WarehouseAccessory->update($request->all());
-        return $this->successResponse($WarehouseAccessory, 'ProductAccessory updated successfully.', 200);
+        $WarehouseAccessory = WarehouseAccessory::findOrFail($id);
+        $validatedData = $request->validate([
+            'product_accessory_id' => 'required|exists:product_accessories,id',
+            'length'               => 'nullable|string|max:255',
+            'unit'                 => 'nullable|string|max:255',
+            'items'                => 'nullable|string|max:255',
+            'box'                  => 'nullable|string|max:255',
+            'quantity'             => 'nullable|string|max:255',
+        ]);
+        $WarehouseAccessory->update($validatedData);
+        return $this->successResponse($WarehouseAccessory, 'WarehouseAccessory updated successfully.', 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(WarehouseAccessory $warehouseAccessory)
+    public function destroy($id)
     {
-        $warehouseAccessory = WarehouseAccessory::find($warehouseAccessory->id);
-        if (!$warehouseAccessory) {
-            return $this->errorResponse('warehouseAccessory not found.', 404);
+        $WarehouseAccessory = WarehouseAccessory::find($id);
+        if (!$WarehouseAccessory) {
+            return $this->errorResponse('WarehouseAccessory not found.', 404);
         }
-        $warehouseAccessory->delete();
-        return $this->successResponse([], 'warehouseAccessory deleted successfully.', 200);
+        $WarehouseAccessory->delete();
+        return $this->successResponse([], 'WarehouseAccessory deleted successfully.', 200);
     }
 }
