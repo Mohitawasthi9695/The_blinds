@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GodownStore extends FormRequest
+class GatePassUpdate extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,11 +22,11 @@ class GodownStore extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'invoice_no' => 'required|string|max:255',
             'godown_supervisor_id' => 'required|integer|exists:users,id',
             'date' => 'nullable|date',
             'out_products' => 'required|array',
             'out_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
+            'out_products.*.gate_pass_id' => 'nullable|integer|exists:gate_passes,id',
             'out_products.*.product_id' => 'required|integer|exists:products,id',
             'out_products.*.product_type' => 'nullable|string|max:255',
             'out_products.*.hsn_sac_code' => 'nullable|string|max:255',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\GatePassUpdate;
 use App\Http\Requests\GodownStockOutRequest;
 use App\Http\Requests\GodownStore;
 use App\Models\GatePass;
@@ -19,14 +20,20 @@ class GodownController extends ApiController
 {
     public function index()
     {
-        $stocks = Godown::with('products')->get();
-        return response()->json($stocks);
+        $stocks = Godown::with('gatepasses:id,gate_pass_no','products')->where('status',1)->get();
+        return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
     }
 
-    public function godownStock($id)
+    public function show($id)
     {
-        $stocks = Godown::where('status', '1')->where('godown_supervisor_id', $id)->with('products')->get();
-        return response()->json($stocks);
+        $stock = Godown::with('products')->where('id', $id)->first();
+        return response()->json($stock);
+    }
+
+    public function destroy(Godown $godown)
+    {
+        $godown->delete();
+        return response()->json(['success' => 'Stock deleted successfully.']);
     }
 
     public function GetStockProducts()
@@ -162,18 +169,7 @@ class GodownController extends ApiController
         return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
     }
 
-    public function GetAllGatePass()
-    {
-        log::info('GetAllGatePass');
-        $stocks = GatePass::with('godowns')->orderBy('id', 'desc')->get();
-        log::info($stocks);
-        return response()->json($stocks);
-    }
-    public function GetGatePass($id)
-    {
-        $stocks = GatePass::with('godowns')->where('id', $id)->first();
-        return response()->json($stocks);
-    }
+
     public function GatePassNo()
     {
         $GatePass = GatePass::select('gate_pass_no')->orderBy('id', 'desc')->first();
@@ -189,13 +185,52 @@ class GodownController extends ApiController
         }
         return $this->successResponse($gate_pass_no, 'Invoice number retrieved successfully.');
     }
+    public function GetAllGatePass()
+    {
+        log::info('GetAllGatePass');
+        $stocks = GatePass::with('warehouse_supervisors:id,name','godown_supervisors:id,name','godowns')->orderBy('id', 'desc')->get();
+        log::info($stocks);
+        return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
+    }
+    public function GetGatePass($gatePass)
+    {
+        $stocks = GatePass::with('godowns')->where('id', $gatePass)->first();
+        return response()->json($stocks);
+    }    
+    public function ApproveGatePass(GatePass $gatePass)
+    {
+        $gatePass->update(['status' => 1]);
+        $gatePass->godowns()->update(['status' => 1]);
+        return response()->json(['success' => 'Gate Pass approved successfully.']);
+    }
 
-    
+    public function RejectGatePass(GatePass $gatePass)
+    {
+        DB::beginTransaction();
+        try {
+            $gatePass->update(['status' => 2]);
+            $gatePass->godowns()->update(['status' => 2]);
+            $godownRecords = Godown::where('gate_pass_id', $gatePass->id)->get();
+            foreach ($godownRecords as $godownRecord) {
+                $stock = StocksIn::find($godownRecord->stock_in_id);
+                if ($stock) {
+                    $stock->update([
+                        'out_quantity' => $stock->out_quantity - $godownRecord->get_quantity,
+                        'status' => ($stock->quantity - $stock->out_quantity) > 0 ? 1 : 0,
+                    ]);
+                }
+            }
+            DB::commit(); 
+            return response()->json(['success' => 'Gate Pass rejected and stock quantities rolled back successfully.']);
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            return response()->json(['error' => 'Failed to reject Gate Pass.'], 500);
+        }
+    }
 
-    public function store(GodownStore $request)
+    public function StoreGatePass(GodownStore $request)
     {
         $validatedData = $request->validated();
-        log::info($validatedData);
 
         $GatePass = GatePass::create([
             'gate_pass_no' => $validatedData['invoice_no'],
@@ -203,6 +238,7 @@ class GodownController extends ApiController
             'gate_pass_date' => $validatedData['date'],
             'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
         ]);
+
         foreach ($validatedData['out_products'] as $product) {
             $availableStock = StocksIn::where('id', $product['stock_available_id'])
                 ->where('status', '1')
@@ -211,107 +247,127 @@ class GodownController extends ApiController
                 return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
 
-            $outLength = $product['out_length'];
-            $outWidth = $product['out_width'];
-
-            // if ($product['unit'] === 'inches')
-            // {
-            //     $outLength *= 0.0254;
-            //     $outWidth *= 0.0254;
-            // } elseif ($product['unit'] === 'feet') {
-            //     $outLength *= 0.3048;
-            //     $outWidth *= 0.3048;
-            // }
-
-            
             if ($product['out_quantity'] > $availableStock->quantity - $availableStock->out_quantity) {
                 return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
             }
 
-            $restWidth = $availableStock->available_width - $outWidth;
-            $create = Godown::create([
-                'gate_pass_id'=> $GatePass->id,
+            Godown::create([
+                'gate_pass_id' => $GatePass->id,
                 'stock_in_id' => $product['stock_available_id'],
                 'product_id' => $product['product_id'],
                 'lot_no' => $availableStock->lot_no,
                 'type' => $availableStock->type,
-                'product_type' => $product['product_type']?? null,
+                'product_type' => $product['product_type'] ?? null,
                 'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                 'get_quantity' => $product['out_quantity'] ?? null,
-                'get_width' => round($outWidth, 5),
-                'get_length' => round($outLength, 5),
-                'available_height' => round($outLength, 5),
-                'available_width' => round($outWidth, 5),
+                'get_width' => round($product['out_width'], 2),
+                'get_length' => round($product['out_length'], 2),
+                'available_height' => round($product['out_length'], 2),
+                'available_width' => round($product['out_width'], 2),
                 'unit' => $product['unit'] ?? null,
-                // 'waste_width' => $restWidth,
-                'status' => 0,
             ]);
-            $newQty = $availableStock->quantity - $product['out_quantity'];
+
+            $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+            log::info($newQty);
             $availableStock->update([
-                'out_quantity' => $product['out_quantity'],
+                'out_quantity' => $availableStock->out_quantity+$product['out_quantity'],
                 'status' => ($newQty <= 0) ? 0 : 1,
             ]);
         }
 
         return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
-    }
+    }    
 
-    public function GodownStockStatus(Request $request, $id)
+    public function UpdateGatePass(GatePassUpdate $request, GatePass $gatePass)
     {
-        $godown = Godown::find($id);
-        $status = $request->status;
-        if (!$godown) {
-            return response()->json(['error' => 'Godown stock not found.'], 404);
-        }
-        if ($status == 2) {
-            $availableStock = StocksIn::find($godown->stock_in_id);
+        $validatedData = $request->validated();
+        $gatePass->update([
+            'gate_pass_date' => $validatedData['date'],
+            'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
+        ]);
+
+        foreach ($validatedData['out_products'] as $product) {
+            $availableStock = StocksIn::where('id', $product['stock_available_id'])
+                ->where('status', '1')
+                ->first();
+
             if (!$availableStock) {
-                return response()->json(['error' => 'Stock-in record not found.'], 404);
+                return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
             }
-            $newAvailableHeight = $availableStock->available_height + $godown->get_length;
+
+            $godownRecord = Godown::where('gate_pass_id', $gatePass->id)
+                ->where('stock_in_id', $product['stock_available_id'])->first();
+            if ($godownRecord) {
+
+                $adjustedAvailableStock = $availableStock->quantity - $availableStock->out_quantity + $godownRecord->get_quantity;
+                if ($product['out_quantity'] > $adjustedAvailableStock) {
+                    return response()->json(["error" => "Insufficient stock available for Stock-in ID {$product['stock_available_id']}."], 400);
+                }
+
+                $availableStock->update(['out_quantity' => $availableStock->out_quantity - $godownRecord->get_quantity]);
+
+                $godownRecord->update([
+                    'product_id' => $product['product_id'],
+                    'lot_no' => $availableStock->lot_no,
+                    'type' => $availableStock->type,
+                    'product_type' => $product['product_type'] ?? null,
+                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                    'get_quantity' => $product['out_quantity'] ?? null,
+                    'get_width' => round($product['out_width'], 2),
+                    'get_length' => round($product['out_length'], 2),
+                    'available_height' => round($product['out_length'], 2),
+                    'available_width' => round($product['out_width'], 2),
+                    'unit' => $product['unit'] ?? null,
+                ]);
+            } else {
+                $remainingStock = $availableStock->quantity - $availableStock->out_quantity;
+
+                if ($product['out_quantity'] > $remainingStock) {
+                    return response()->json(["error" => "Insufficient stock available for Stock-in ID {$product['stock_available_id']}."], 400);
+                }
+
+                Godown::create([
+                    'gate_pass_id' => $gatePass->id,
+                    'stock_in_id' => $product['stock_available_id'],
+                    'product_id' => $product['product_id'],
+                    'lot_no' => $availableStock->lot_no,
+                    'type' => $availableStock->type,
+                    'product_type' => $product['product_type'] ?? null,
+                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                    'get_quantity' => $product['out_quantity'] ?? null,
+                    'get_width' => round($product['out_width'], 2),
+                    'get_length' => round($product['out_length'], 2),
+                    'available_height' => round($product['out_length'], 2),
+                    'available_width' => round($product['out_width'], 2),
+                    'unit' => $product['unit'] ?? null,
+                ]);
+            }
+
+            $newQty = $availableStock->quantity - $product['out_quantity'];
+
             $availableStock->update([
-                'available_height' => $newAvailableHeight,
-                'qty' => $availableStock->qty + $godown->get_quantity,
-                'status' => 1,
+                'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                'status' => ($newQty <= 0) ? 0 : 1,
             ]);
-            $godown->status = $status;
-            $godown->save();
-            return response()->json(['success' => 'Godown stock has been rejected and stock has been restored to StockIn.'], 200);
         }
-        $godown->status = $status;
-        $godown->save();
 
-        return response()->json(['success' => 'Godown stock status has been updated successfully.'], 200);
+        return response()->json(['success' => 'Gate Pass and stock details successfully updated.'], 200);
     }
-    /**
-     * Display the specified resource.
-     */
-    public function show(Godown $godown)
+    public function DeleteGatePass(GatePass $gatePass)
     {
-        //
+        $godownRecords = Godown::where('gate_pass_id', $gatePass->id)->get();
+        foreach ($godownRecords as $godownRecord) {
+            $stock = StocksIn::find($godownRecord->stock_in_id);
+            if ($stock) {
+                $stock->update([
+                    'out_quantity' => $stock->out_quantity - $godownRecord->get_quantity,
+                    'status' => ($stock->quantity - ($stock->out_quantity-$godownRecord->get_quantity)) > 0 ? 1 : 0,
+                ]);
+            }
+        }
+        $gatePass->delete();
+        $gatePass->godowns()->delete();
+        return response()->json(['success' => 'Gate Pass and stock details successfully deleted.'], 200);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Godown $godown)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Godown $godown)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Godown $godown)
-    {
-        //
-    }
+    
 }

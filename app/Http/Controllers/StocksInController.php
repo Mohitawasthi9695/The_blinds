@@ -23,6 +23,28 @@ class StocksInController extends ApiController
         return response()->json($stocks);
     }
 
+    public function CategoryRollStocks()
+    {
+        $stocks = StocksIn::with(['stockProduct'])
+        ->where('type','roll')
+        ->get();
+
+    return response()->json($stocks);
+    }
+    public function CategoryBoxStocks()
+    {
+        $stocks = StocksIn::with(['stockProduct'])
+        ->where('type','box')
+        ->get();
+
+    return response()->json($stocks);
+    }
+
+
+    /**
+     * Truncate the StocksIn table.
+     */
+
     public function truncateStockOutDetails()
     {
         StocksIn::truncate();
