@@ -13,5 +13,9 @@ class ProductAccessory extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
+    public function productCategory()
+    {
+        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
 
 }

@@ -2,57 +2,44 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\WarehouseAccessory;
 use Illuminate\Http\Request;
 
-class WarehouseAccessoryController extends Controller
+class WarehouseAccessoryController extends ApiController
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $warehouseAccessories = WarehouseAccessory::with('accessory')->get();
+        return $this->successResponse($warehouseAccessories, 'WarehouseAccessory retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(WarehouseAccessoryStore $request)
     {
-        //
+        $warehouseAccessories = $request->validated();
+        $WarehouseAccessories = WarehouseAccessory::create($warehouseAccessories);
+        return $this->successResponse($WarehouseAccessories, 'Product created successfully.', 201);
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
     /**
      * Display the specified resource.
      */
     public function show(WarehouseAccessory $warehouseAccessory)
     {
-        //
+        $warehouseAccessory = WarehouseAccessory::with('accessory')->find($warehouseAccessory->id);
+        if (!$warehouseAccessory) {
+            return $this->errorResponse('WarehouseAccessory not found.', 404);
+        }
+        return $this->successResponse($warehouseAccessory, 'WarehouseAccessory retrieved successfully.', 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(WarehouseAccessory $warehouseAccessory)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, WarehouseAccessory $warehouseAccessory)
     {
-        //
+        $WarehouseAccessory = WarehouseAccessory::findOrFail($warehouseAccessory->id);
+        $WarehouseAccessory->update($request->all());
+        return $this->successResponse($WarehouseAccessory, 'ProductAccessory updated successfully.', 200);
     }
 
     /**
@@ -60,6 +47,11 @@ class WarehouseAccessoryController extends Controller
      */
     public function destroy(WarehouseAccessory $warehouseAccessory)
     {
-        //
+        $warehouseAccessory = WarehouseAccessory::find($warehouseAccessory->id);
+        if (!$warehouseAccessory) {
+            return $this->errorResponse('warehouseAccessory not found.', 404);
+        }
+        $warehouseAccessory->delete();
+        return $this->successResponse([], 'warehouseAccessory deleted successfully.', 200);
     }
 }

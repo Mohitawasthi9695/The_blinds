@@ -5,6 +5,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GodownController;
 use App\Http\Controllers\OldStockController;
+use App\Http\Controllers\ProductAccessoryController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReceiverController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WarehouseAccessoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -46,8 +48,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownsrm', [GodownController::class, 'godowns']);
     Route::get('/stockout_inovicesrm', [StockoutInoviceController::class, 'stockout_inovices']);
     Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
-
-    Route::Resource('/admin/users', UserController::class);
     Route::Resource('/oldstocks', OldStockController::class);
 
 
@@ -64,6 +64,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/godowns/gatepass/{gatePass}/approve', [GodownController::class, 'ApproveGatePass']);
     Route::put('/godowns/gatepass/{gatePass}/reject', [GodownController::class, 'RejectGatePass']);
    
+
+   // Assecorries Api 
+   Route::Resource('/accessory', ProductAccessoryController::class);
+   Route::Resource('/warehouse/accessory',WarehouseAccessoryController::class);
+
+
 
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);

@@ -13,4 +13,9 @@ class WarehouseAccessory extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
+    public function accessory()
+    {
+        return $this->belongsTo(ProductAccessory::class, 'product_accessory_id');
+    }
+
 }

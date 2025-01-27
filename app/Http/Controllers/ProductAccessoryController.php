@@ -15,7 +15,12 @@ class ProductAccessoryController extends ApiController
 
     public function store(Request $request)
     {
-        $productsCategory = $request->validate(['product_category' => 'required|string|Max:255']);
+        $productsCategory = $request->validate(
+            [
+                'product_category_id' => 'required|numeric|exists:product_categories,id',
+                'accessory_name' => 'required|string|max:255',
+            ]
+        );
         $products = ProductAccessory::create($productsCategory);
         return $this->successResponse($products, 'Product created successfully.', 201);
     }
@@ -28,6 +33,7 @@ class ProductAccessoryController extends ApiController
         }
         return $this->successResponse($ProductAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
+    
     public function update(Request $request, $id)
     {
         $product = ProductAccessory::findOrFail($id);
