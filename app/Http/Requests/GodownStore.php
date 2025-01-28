@@ -37,10 +37,10 @@ class GodownStore extends FormRequest
             'out_accessory' => 'nullable|array',
             'out_accessory.*.product_accessory_id' => 'required|integer|exists:product_accessories,id',
             'out_accessory.*.warehouse_accessory_id' => 'required|integer|exists:warehouse_accessories,id',
-            'out_accessory.*.length' => 'nullable|string|max:255',
-            'out_accessory.*.items' => 'nullable|string|max:255',
-            'out_accessory.*.box' => 'nullable|string|max:255',
-            'out_accessory.*.out_quantity' => 'nullable|string|max:255',
+            'out_accessory.*.length' => 'nullable|numeric|min:0',
+            'out_accessory.*.items' => 'nullable|numeric|min:0',
+            'out_accessory.*.box' => 'nullable|numeric|min:0',
+            'out_accessory.*.out_quantity' => 'nullable|numeric|min:0',
             'out_accessory.*.unit' => 'required|string|max:50',
         ];
            return $rules;

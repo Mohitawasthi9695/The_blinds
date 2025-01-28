@@ -51,7 +51,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
     Route::resource('/oldstocks', OldStockController::class);
 
-
     Route::get('/gatepass/shadeno/{category_id}', [ProductController::class, 'GatePassShadeNo']);
     Route::get('/godowns/gatepassno', [GodownController::class, 'GatePassNo']);
     Route::get('/stockin/{product_id}', [StocksInController::class, 'CheckStocks']);
@@ -66,8 +65,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/godowns/gatepass/{gatePass}/reject', [GodownController::class, 'RejectGatePass']);
 
     // Assecorries Api
-    
+
     Route::resource('/accessory', ProductAccessoryController::class);
+    Route::get('/accessory/category/{id}', [ProductAccessoryController::class,'GetCategoryAccessory']);
+
     Route::resource('/warehouse/accessory', WarehouseAccessoryController::class);
     Route::resource('/godown/accessory', GodownAccessoryController::class);
 
@@ -85,4 +86,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
+
 });

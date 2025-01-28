@@ -10,7 +10,14 @@ class ProductAccessoryController extends ApiController
     public function index()
     {
         $products = ProductAccessory::all();
-        return $this->successResponse($products, 'Products retrieved successfully.', 200);
+        return $this->successResponse($products, 'ProductAccessory retrieved successfully.', 200);
+    }
+
+
+    public function GetCategoryAccessory($id)
+    {
+        $products = ProductAccessory::where('product_category_id', $id)->get();
+        return $this->successResponse($products, 'ProductAccessory retrieved successfully.', 200);
     }
 
     public function store(Request $request)
@@ -22,7 +29,7 @@ class ProductAccessoryController extends ApiController
             ]
         );
         $products = ProductAccessory::create($productsCategory);
-        return $this->successResponse($products, 'Product created successfully.', 201);
+        return $this->successResponse($products, 'ProductAccessory created successfully.', 201);
     }
 
     public function show($id)
@@ -33,12 +40,12 @@ class ProductAccessoryController extends ApiController
         }
         return $this->successResponse($ProductAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
-    
+
     public function update(Request $request, $id)
     {
-        $product = ProductAccessory::findOrFail($id);
-        $product->update($request->all());
-        return $this->successResponse($product, 'ProductAccessory updated successfully.', 200);
+        $ProductAccessory = ProductAccessory::findOrFail($id);
+        $ProductAccessory->update($request->all());
+        return $this->successResponse($ProductAccessory, 'ProductAccessory updated successfully.', 200);
     }
 
     // DELETE /ProductAccessorys/{id} - Delete a ProductAccessory
@@ -48,7 +55,6 @@ class ProductAccessoryController extends ApiController
         if (!$ProductAccessory) {
             return $this->errorResponse('ProductAccessory not found.', 404);
         }
-
         $ProductAccessory->delete();
         return $this->successResponse([], 'ProductAccessory deleted successfully.', 200);
     }

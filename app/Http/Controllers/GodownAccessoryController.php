@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\GodownAccessoryStore;
+use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\GodownAccessory;
 use Illuminate\Http\Request;
 
@@ -14,7 +14,7 @@ class GodownAccessoryController extends ApiController
         return $this->successResponse($warehouseAccessories, 'GodownAccessory retrieved successfully.', 200);
     }
 
-    public function store(GodownAccessoryStore $request)
+    public function store(WarehouseAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
         $WarehouseAccessories = GodownAccessory::create($warehouseAccessories);
