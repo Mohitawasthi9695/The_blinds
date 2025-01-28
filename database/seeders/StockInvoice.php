@@ -13,7 +13,7 @@ class StockInvoice extends Seeder
         DB::table('stock_invoices')->insert([
             [
                 'invoice_no' => 'INV002',
-                'supplier_id' => 1,
+                'people_id' => 1,
                 'user_id' => 3,
                 'date' => '2024-12-12',
                 'place_of_supply' => 'Mumbai',

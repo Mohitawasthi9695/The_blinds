@@ -22,7 +22,7 @@ class StockInvoiceController extends ApiController
         $validatedData = $request->validated();
         $stockInvoice = StockInvoice::create([
             'invoice_no' => $validatedData['invoice_no'],
-            'supplier_id' => $validatedData['supplier_id'],
+            'people_id' => $validatedData['people_id'],
             'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
@@ -64,7 +64,7 @@ class StockInvoiceController extends ApiController
         $validatedData = $request->validated();
 
         $stockInvoice->update([
-            'supplier_id' => $validatedData['supplier_id'],
+            'people_id' => $validatedData['people_id'],
             'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],

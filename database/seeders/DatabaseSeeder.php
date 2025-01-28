@@ -10,10 +10,9 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RolesSeeder::class,
             PermissionSeeder::class,
-            SupplierSeeder::class,
-            ReceiverSeeder::class,
             ProductCategory::class,
             ProductSeeder::class,
+            PeopleSeeder::class,
             StockInvoice::class,   
         ]);
     }

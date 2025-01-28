@@ -24,8 +24,8 @@ class StockOutRequest extends FormRequest
         $rules = [
             'invoice_no' => 'required|string|max:255',
             'date' => 'required|date',
-            'customer_id' => 'required|integer|exists:customers,id',
-            'receiver_id' => 'nullable|integer|exists:receivers,id',
+            'customer_id' => 'required|integer|exists:peoples,id',
+            'receiver_id' => 'nullable|integer|exists:peoples,id',
             'place_of_supply' => 'nullable|string|max:255',
             'vehicle_no' => 'nullable|string|max:50',
             'station' => 'nullable|string|max:255',
@@ -68,7 +68,7 @@ class StockOutRequest extends FormRequest
         if ($this->isMethod('patch') || $this->isMethod('put')) {
             $rules['invoice_no'] = 'sometimes|required|string|max:255';
             $rules['date'] = 'sometimes|required|date';
-            $rules['customer_id'] = 'sometimes|required|integer|exists:customers,id';
+            $rules['customer_id'] = 'sometimes|required|integer|exists:peoples,id';
             $rules['total_amount'] = 'sometimes|required|numeric|min:0';
             $rules['out_products'] = 'sometimes|required|array';
             $rules['out_products.*.stock_available_id'] = 'sometimes|required|integer|exists:stock_available,id';

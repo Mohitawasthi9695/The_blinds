@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('items')->nullable();
             $table->string('box')->nullable();
             $table->string('quantity')->nullable();
+            $table->string('out_quantity')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });

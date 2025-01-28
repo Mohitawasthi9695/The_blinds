@@ -17,24 +17,24 @@ class SupplierController extends ApiController
     {
         $condition = $request->status;
         if ($condition == 1) {
-            $suppliers = Supplier::where('status', 1)->get();
+            $peoples = Supplier::where('status', 1)->get();
         } else {
-            $suppliers = Supplier::all();
+            $peoples = Supplier::all();
         }
-        return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
+        return $this->successResponse($peoples, 'peoples retrieved successfully.', 200);
     }
     public function supplierStocks()
     {
         $supplier = Supplier::with('stockInvoices.products')->select('id', 'name')->find(5);
 
-        return $this->successResponse($supplier, 'Suppliers retrieved successfully.', 200);
+        return $this->successResponse($supplier, 'peoples retrieved successfully.', 200);
     }
     public function RecentSuppliers()
     {
-        $suppliers = Supplier::whereHas('RecentInvoice')
+        $peoples = Supplier::whereHas('RecentInvoice')
             ->with('RecentInvoice')->select('id', 'name', 'gst_no', 'owner_mobile', 'reg_address')
             ->get();
-        return $this->successResponse($suppliers, 'Suppliers retrieved successfully.', 200);
+        return $this->successResponse($peoples, 'peoples retrieved successfully.', 200);
     }
     public function store(SupplierRequest $request)
     {
@@ -45,7 +45,7 @@ class SupplierController extends ApiController
         return $this->successResponse($supplier, 'Supplier created successfully.', 201);
     }
 
-    // GET /suppliers/{id} - Show a single supplier
+    // GET /peoples/{id} - Show a single supplier
     public function show($id)
     {
         $supplier = Supplier::find($id);

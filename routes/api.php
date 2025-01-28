@@ -6,6 +6,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GodownAccessoryController;
 use App\Http\Controllers\GodownController;
 use App\Http\Controllers\OldStockController;
+use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProductAccessoryController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
@@ -27,12 +28,10 @@ Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logo
 
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/change-password', [ForgotPasswordController::class, 'changepassword']);
-    Route::resource('/supplier', SupplierController::class);
-    Route::resource('/receiver', ReceiverController::class);
+    Route::resource('/peoples', PeopleController::class);
     Route::get('/sub_supervisor', [UserController::class, 'Sub_supervisor']);
-    Route::resource('/customers', CustomerController::class);
     Route::get('/data', [SupplierController::class, 'supplierStocks']);
-    Route::get('/recent-suppliers', [SupplierController::class, 'RecentSuppliers']);
+    Route::get('/recent-peoples', [SupplierController::class, 'RecentSuppliers']);
     Route::resource('/products/category', ProductCategoryController::class);
     Route::resource('/products', ProductController::class);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
