@@ -15,12 +15,13 @@ class StockoutInovice extends Model
     protected $hidden = ['created_at', 'updated_at'];
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(People::class,'customer_id');
     }
-    public function receiver()
+    public function peoples()
     {
-        return $this->belongsTo(Receiver::class);
+        return $this->belongsTo(People::class,'people_id');
     }
+
     public function stockOutDetails()
     {
         return $this->hasMany(StockOutDetail::class, 'stockout_inovice_id');

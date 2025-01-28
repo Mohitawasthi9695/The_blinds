@@ -30,8 +30,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/change-password', [ForgotPasswordController::class, 'changepassword']);
     Route::resource('/peoples', PeopleController::class);
     Route::get('/sub_supervisor', [UserController::class, 'Sub_supervisor']);
-    Route::get('/data', [SupplierController::class, 'supplierStocks']);
-    Route::get('/recent-peoples', [SupplierController::class, 'RecentSuppliers']);
+    Route::get('/data', [PeopleController::class, 'supplierStocks']);
+    Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
     Route::resource('/products/category', ProductCategoryController::class);
     Route::resource('/products', ProductController::class);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);

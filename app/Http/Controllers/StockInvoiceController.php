@@ -22,7 +22,7 @@ class StockInvoiceController extends ApiController
         $validatedData = $request->validated();
         $stockInvoice = StockInvoice::create([
             'invoice_no' => $validatedData['invoice_no'],
-            'people_id' => $validatedData['people_id'],
+            'supplier_id' => $validatedData['supplier_id'],
             'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
@@ -49,7 +49,7 @@ class StockInvoiceController extends ApiController
     // GET /StockInvoices/{id} - Show a single StockInvoice
     public function show($id)
     {
-        $StockInvoice = StockInvoice::with(['supplier', 'receiver','products'])->get()->find($id);
+        $StockInvoice = StockInvoice::with(['supplier', 'peoples','products'])->get()->find($id);
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
         }

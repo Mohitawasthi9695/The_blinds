@@ -6,23 +6,20 @@ use App\Http\Requests\PeopleStore;
 use App\Http\Requests\PeopleUpdate;
 use App\Models\People;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class PeopleController extends ApiController
 {
     public function index(Request $request)
     {
-        $condition = $request->status;
-        if ($condition == 1) {
-            $peoples = People::where('status', 1)->get();
-        } else {
-            $peoples = People::all();
-        }
+        $condition = $request->people_type;
+        $peoples = People::where('people_type', $condition)->get();
         return $this->successResponse($peoples, 'Peoples retrieved successfully.', 200);
     }
     public function supplierStocks()
     {
-        $supplier = People::with('stockInvoices.products')->select('id', 'name')->find(5);
+        $supplier = People::with('stockInvoices.products')->where('people_type', 'Supplier')->select('id', 'name')->find(5);
 
         return $this->successResponse($supplier, 'Peoples retrieved successfully.', 200);
     }
@@ -75,5 +72,4 @@ class PeopleController extends ApiController
         $supplier->delete();
         return $this->successResponse([], 'People deleted successfully.', 200);
     }
-
 }

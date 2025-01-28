@@ -12,6 +12,7 @@ class People extends Model
     use HasFactory, HasApiTokens;
     protected $guarded = [];
 
+    protected $table = 'peoples';
     protected $hidden = ['created_at', 'updated_at'];
     public function stockInvoices()
     {

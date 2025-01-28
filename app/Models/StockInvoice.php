@@ -14,7 +14,7 @@ class StockInvoice extends Model
     protected $hidden = ['created_at', 'updated_at'];
     public function supplier()
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(People::class,'supplier_id');
     }
     public function user()
     {

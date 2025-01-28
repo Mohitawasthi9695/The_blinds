@@ -35,7 +35,7 @@ class PeopleUpdate extends FormRequest
             'tel_no' => 'sometimes|nullable|string|max:20',
             'email' => "sometimes|nullable|string|max:40|email|unique:peoples,email,{$id}",
             'owner_mobile' => 'sometimes|nullable|digits:10',
-            'people_type' => 'required|string|in:(Supplier,Company,Customer)',
+            'people_type' => 'sometimes|string|in:(Supplier,Company,Customer)',
             'status' => 'sometimes|boolean',
         ];
     }
