@@ -20,10 +20,7 @@ class GodownAccessoryController extends ApiController
         $WarehouseAccessories = GodownAccessory::create($warehouseAccessories);
         return $this->successResponse($WarehouseAccessories, 'GodownAccessory created successfully.', 201);
     }
-    /**
-     * Display the specified resource.
-     */
-
+    
     public function show($id)
     {
         $GodownAccessory = GodownAccessory::with('accessory')->find($id);
