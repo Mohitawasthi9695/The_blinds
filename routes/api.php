@@ -1,21 +1,17 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GodownAccessoryController;
 use App\Http\Controllers\GodownController;
-use App\Http\Controllers\OldStockController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProductAccessoryController;
 use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ReceiverController;
 use App\Http\Controllers\StockInvoiceController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
-use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseAccessoryController;
 use Illuminate\Support\Facades\Route;
@@ -48,27 +44,30 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownsrm', [GodownController::class, 'godowns']);
     Route::get('/stockout_inovicesrm', [StockoutInoviceController::class, 'stockout_inovices']);
     Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
-    Route::resource('/oldstocks', OldStockController::class);
 
     Route::get('/gatepass/shadeno/{category_id}', [ProductController::class, 'GatePassShadeNo']);
     Route::get('/godowns/gatepassno', [GodownController::class, 'GatePassNo']);
     Route::get('/stockin/{product_id}', [StocksInController::class, 'CheckStocks']);
     Route::resource('/godown', GodownController::class);
 
-    Route::get('/godowns/gatepass', [GodownController::class, 'GetAllGatePass']);
+    Route::get('/godowns/getStockgatepass', [GodownController::class, 'GetAllGatePass']);
+    Route::get('/godowns/getAccessorygatepass', [GodownAccessoryController::class, 'GetAllGatePass']);
     Route::post('/godowns/gatepass', [GodownController::class, 'StoreGatePass']);
-    Route::get('/godowns/gatepass/{gatePass}', [GodownController::class, 'GetGatePass']);
-    Route::put('/godowns/gatepass/{gatePass}', [GodownController::class, 'UpdateGatePass']);
-    Route::delete('/godowns/gatepass/{gatePass}', [GodownController::class, 'DeleteGatePass']);
-    Route::put('/godowns/gatepass/{gatePass}/approve', [GodownController::class, 'ApproveGatePass']);
-    Route::put('/godowns/gatepass/{gatePass}/reject', [GodownController::class, 'RejectGatePass']);
-
+    Route::get('/godowns/gatepass/{id}', [GodownController::class, 'GetGatePass']);
+    Route::put('/godowns/gatepass/{id}', [GodownController::class, 'UpdateGatePass']);
+    Route::delete('/godowns/gatepass/{id}', [GodownController::class, 'DeleteGatePass']);
+    Route::put('/godowns/gatepass/{id}/approve', [GodownController::class, 'ApproveGatePass']);
+    Route::put('/godowns/gatepass/{id}/reject', [GodownController::class, 'RejectGatePass']);
+    
     // Assecorries Api
-
+    
     Route::resource('/accessory', ProductAccessoryController::class);
     Route::get('/accessory/category/{id}', [ProductAccessoryController::class,'GetCategoryAccessory']);
-
+    
     Route::resource('/warehouse/accessory', WarehouseAccessoryController::class);
+    Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class,'GetWarehouseAccessory']); 
+    Route::post('godowns/accessory/gatepass', [GodownAccessoryController::class, 'StoreAccessoryGatePass']);
+    
     Route::resource('/godown/accessory', GodownAccessoryController::class);
 
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
@@ -76,6 +75,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
 
+
+    
     Route::resource('stockout', StockoutInoviceController::class);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::resource('admin/stockout', StockoutInoviceController::class);

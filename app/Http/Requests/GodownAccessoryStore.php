@@ -21,14 +21,20 @@ class GodownAccessoryStore extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'product_accessory_id' => 'required|exists:product_accessories,id',
-            'length'               => 'nullable|string|max:255',
-            'unit'                 => 'nullable|string|max:255',
-            'items'                => 'nullable|string|max:255',
-            'box'                  => 'nullable|string|max:255',
-            'quantity'             => 'nullable|string|max:255',
-            'status'               => 'boolean',
-        ];        
+        $rules = [
+            'invoice_no' => 'required|string|max:255',
+            'godown_supervisor_id' => 'required|integer|exists:users,id',
+            'date' => 'nullable|date',
+            'out_products' => 'required|array',
+            'out_products.*.warehouse_accessory_id' => 'required|integer|exists:warehouse_accessories,id',
+            // 'out_products.*.product_accessory_id' => 'required|integer|exists:product_accessories,id',
+            'out_products.*.lot_no' => 'nullable|string|max:255',
+            'out_products.*.items' => 'required|numeric|min:0',
+            'out_products.*.out_length' => 'required|numeric|min:0',
+            'out_products.*.box' => 'required|numeric|min:0',
+            'out_products.*.out_quantity' => 'nullable|numeric|min:0',
+            'out_products.*.unit' => 'required|string|max:50',
+        ];
+           return $rules;      
     }
 }

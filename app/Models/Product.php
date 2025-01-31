@@ -18,13 +18,13 @@ class Product extends Model
     {
         return $this->belongsTo(ProductCategory::class);
     }
-    public function products()
-    {
-        return $this->hasMany(StockInvoiceDetail::class);
-    }
+    // public function products()
+    // {
+    //     return $this->hasMany(Product::class);
+    // }
     public function stockAvailable()
     {
-        return $this->hasMany(StocksIn::class, 'product_id');
+        return $this->hasMany(StocksIn::class, 'product_id')->where('status', 1);
     }
     public function stockOutDetails()
     {

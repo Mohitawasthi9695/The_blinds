@@ -22,12 +22,12 @@ class WarehouseAccessoryStore extends FormRequest
     public function rules(): array
     {
         return [
-            'product_accessory_id' => 'required|exists:product_accessories,id',
-            'length' => 'nullable|numeric|min:0',
-            'unit' => 'nullable|string|max:255',
-            'items' => 'nullable|numeric|min:0',
-            'box' => 'nullable|numeric|min:0',
-            'quantity' => 'nullable|numeric|min:0',
+            '*.product_accessory_id' => 'required|exists:product_accessories,id',
+            '*.length' => 'nullable|numeric|min:0',
+            '*.unit' => 'nullable|string|max:255',
+            '*.items' => 'nullable|numeric|min:0',
+            '*.box' => 'nullable|numeric|min:0',
+            '*.quantity' => 'nullable|numeric|min:0',
         ];
         
     }

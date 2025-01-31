@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 
 class PeopleStore extends FormRequest
 {
@@ -21,6 +22,7 @@ class PeopleStore extends FormRequest
      */
     public function rules(): array
     {
+
         return [
             'name' => 'required|string|max:200|unique:peoples,name',
             'code' => 'nullable|string|max:10',
@@ -34,7 +36,7 @@ class PeopleStore extends FormRequest
             'tel_no' => 'nullable|string|max:20',
             'email' => 'nullable|string|max:40|email|unique:peoples,email',
             'owner_mobile' => 'nullable|digits:10',
-            'people_type' => 'required|string|in:(Supplier,Company,Customer)',
+            'people_type' => 'required|string|in:Supplier,Company,Customer'
         ];
     }
 }

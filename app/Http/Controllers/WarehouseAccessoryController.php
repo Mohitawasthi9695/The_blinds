@@ -18,11 +18,34 @@ class WarehouseAccessoryController extends ApiController
         return $this->successResponse($warehouseAccessories, 'WarehouseAccessory retrieved successfully.', 200);
     }
 
+    public function GetWarehouseAccessory($id)
+    {
+        $warehouseAccessories = WarehouseAccessory::with('accessory', 'accessory.productCategory')->where('product_accessory_id', $id)->where('status', 1)->get();
+        if ($warehouseAccessories->isEmpty()) {
+            return $this->errorResponse('WarehouseAccessory not found.', 404);
+        }
+        $formattedData = $warehouseAccessories->map(function ($item) {
+            return [
+                'warehouse_accessory_id' => $item->id, 
+                'product_accessory_id'=>$item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? '',
+                'product_accessory_name' => $item->accessory->accessory_name ?? '',
+                'lot_no' => '', 
+                'items' => $item->items ?? '', 
+                'out_length' => $item->length ?? '',
+                'unit' => $item->unit ?? '',
+                'box' => $item->box ?? '',
+                'out_quantity' => $item->out_quantity ?? $item->quantity ?? 0
+            ];
+        });
+        
+        return $this->successResponse($formattedData, 'WarehouseAccessory retrieved successfully.', 200);
+    }
     public function store(WarehouseAccessoryStore $request)
     {
-        $warehouseAccessories = $request->validated();
-        $WarehouseAccessories = WarehouseAccessory::create($warehouseAccessories);
-        return $this->successResponse($WarehouseAccessories, 'WarehouseAccessory created successfully.', 201);
+        $warehouseAccessories = $request->validated(); 
+        $insertedAccessories = WarehouseAccessory::insert($warehouseAccessories);
+        return $this->successResponse($insertedAccessories, 'WarehouseAccessories created successfully.', 201);
     }
     /**
      * Display the specified resource.

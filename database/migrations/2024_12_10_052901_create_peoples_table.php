@@ -24,9 +24,9 @@ return new class extends Migration
             $table->string('area', 50)->nullable();
             $table->string('tel_no', 20)->nullable();
             $table->string('email', 40)->nullable()->unique();
-            $table->string('owner_mobile', 10)->nullable(); // Mobile Number
-            $table->string('people_type')->nullable(); // Mobile Number
-            $table->boolean('status')->default(1); // Status (1 = Active, 0 = Inactive)
+            $table->string('owner_mobile', 10)->nullable(); 
+            $table->string('people_type')->nullable(); 
+            $table->boolean('status')->default(1);
             $table->timestamps();
         });
     }

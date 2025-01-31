@@ -20,12 +20,12 @@ class ProductController extends ApiController
     }
     public function GatePassShadeNo($category_id)
     {
-        $products = Product::whereHas('stockAvailable', function ($query) {
-            $query->where('status', 1);
-        })->where('status', 1)->where('product_category_id',$category_id)->get();
+        $products = Product::where('status', 1)->where('product_category_id',$category_id)->get();
+        if($products->isEmpty()){
+            return $this->errorResponse('No active shadeNo found.', 404);
+        }
         return $this->successResponse($products, 'Active shadeNo retrieved successfully.', 200);
     }
-
 
     public function BarGraphData()
     {

@@ -11,6 +11,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class StocksInController extends ApiController
 {
@@ -19,25 +20,50 @@ class StocksInController extends ApiController
      */
     public function index()
     {
-        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])->get();
+        $stocks = StocksIn::with(relations: ['products', 'products.ProductCategory'])->get();
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+        $stocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'invoice_id' => $stock->invoice_id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'invoice_no' => $stock->invoice_no,
+                'length' => $stock->length,
+                'width' => $stock->width,
+                'unit' => $stock->unit,
+                'type' => $stock->type,
+                'quantity' => $stock->quantity,
+                'out_quantity' => $stock->out_quantity,
+                'rack' => $stock->rack,
+                'warehouse' => $stock->warehouse,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? null,
+                'shadeNo' => $stock->products->shadeNo ?? null,
+                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
+                'product_category_name' => $stock->products->ProductCategory->name ?? null,
+            ];
+        });
         return response()->json($stocks);
     }
 
     public function CategoryRollStocks()
     {
-        $stocks = StocksIn::with(['stockProduct'])
-        ->where('type','roll')
-        ->get();
+        $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
+            ->where('type', 'roll')
+            ->get();
 
-    return response()->json($stocks);
+        return response()->json($stocks);
     }
     public function CategoryBoxStocks()
     {
-        $stocks = StocksIn::with(['stockProduct'])
-        ->where('type','box')
-        ->get();
+        $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
+            ->where('type', 'box')
+            ->get();
 
-    return response()->json($stocks);
+        return response()->json($stocks);
     }
 
 
@@ -45,12 +71,12 @@ class StocksInController extends ApiController
      * Truncate the StocksIn table.
      */
 
-    public function truncateStockOutDetails()
+    public function stocks_ins()
     {
         StocksIn::truncate();
 
         return response()->json([
-            'message' => 'StockOutdetails table has been truncated successfully.'
+            'message' => 'stocks_ins table has been truncated successfully.'
         ]);
     }
 
@@ -82,6 +108,7 @@ class StocksInController extends ApiController
         $request->validate([
             'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls',
         ]);
+        DB::beginTransaction();
         try {
             $data = Excel::toArray([], $request->file('csv_file'));
 
@@ -97,6 +124,7 @@ class StocksInController extends ApiController
                 }
 
                 if (empty($row[1]) || empty($row[2])) {
+                    DB::rollBack();
                     return response()->json(['error' => 'Required fields shadeNo or invoice_no are missing'], 422);
                 }
 
@@ -106,45 +134,46 @@ class StocksInController extends ApiController
                 $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
 
                 if (!$product) {
+                    DB::rollBack();
                     return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
                 }
                 if (!$invoice) {
+                    DB::rollBack();
                     return response()->json(['error' => "Invoice with invoice_no {$invoiceNo} not found"], 422);
                 }
-                $stock_code = StocksIn::where('product_id', [$product->id])
-                    ->orderBy('id', 'desc')
-                    ->first();
                 $data = [
-                    'product_id' => $product->id,
-                    'invoice_id' => $invoice->id,
-                    'user_id' =>  Auth::id(),
-                    'invoice_no' => $invoiceNo,
-                    'lot_no'  => $row[2] ?? null,
-                    'width'     => $row[4] ?? null,
-                    'length'      => $row[5] ?? null,
-                    'rack'        => $row[7] ?? null,
-                    'unit'       => $row[6] ?? null,
-                    'type'       => $row[8] ?? null,
-                    'quantity'    => $row[9] ?? null,
-                    'warehouse' => $row[10] ?? null
+                    'product_id'  => $product->id,
+                    'invoice_id'  => $invoice->id,
+                    'user_id'     => Auth::id(),
+                    'invoice_no'  => $invoiceNo,
+                    'lot_no'      => $row[2] ?? null,
+                    'width'       => $row[4] ?? null,
+                    'width_unit'  => $row[5] ?? null,
+                    'length'      => $row[6] ?? null,
+                    'length_unit' => $row[7] ?? null,
+                    'rack'        => $row[8] ?? null,
+                    'type'        => $row[9] ?? null,
+                    'quantity'    => $row[10] ?? null,
+                    'warehouse'   => $row[11] ?? null
                 ];
 
                 $createdItem = StocksIn::create($data);
+                $createdItems[] = $createdItem;
             }
+            DB::commit();
             return $this->successResponse($createdItem, 'Stock entries created successfully.', 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => 'Failed to process file', 'message' => $e->getMessage()], 500);
         }
     }
 
     public function CheckStocks($product_id)
     {
-        $product = Product::find($product_id);
-        if (!$product) {
-            return $this->errorResponse('Product not found.', 404);
-        }
-
-        $stocks = $product->stockAvailable()->where('status', 1)->with('products')->get();
+        $stocks = StocksIn::where('product_id', $product_id)
+            ->where('status', 1)
+            ->with(['products', 'products.ProductCategory'])
+            ->get();
 
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
@@ -158,16 +187,14 @@ class StocksInController extends ApiController
                 'out_length' => $stock->length,
                 'out_width' => $stock->width,
                 'unit' => $stock->unit,
-                // 'area_sq_ft' => round($stock->length * $stock->width * 10.7639),
-                // 'area' => $stock->length * $stock->width,
                 'product_type' => $stock->type,
-                'out_quantity' => $stock->quantity-$stock->out_quantity,
+                'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? 'N/A',
-                'product_code' => $stock->products->code ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
                 'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
+                'product_category' => $stock->products->ProductCategory->product_category ?? 'N/A',
             ];
         });
 
@@ -175,10 +202,34 @@ class StocksInController extends ApiController
     }
     public function show($id)
     {
-        $stocks = StocksIn::with(['stockProduct', 'stockInvoice'])
+        $stocks = StocksIn::with(['products'])
             ->where('invoice_id', $id)
             ->get();
-            log::info($stocks);
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+        $stocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'invoice_id' => $stock->invoice_id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'invoice_no' => $stock->invoice_no,
+                'length' => $stock->length,
+                'width' => $stock->width,
+                'unit' => $stock->unit,
+                'type' => $stock->type,
+                'quantity' => $stock->quantity,
+                'out_quantity' => $stock->out_quantity,
+                'rack' => $stock->rack,
+                'warehouse' => $stock->warehouse,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? null,
+                'shadeNo' => $stock->products->shadeNo ?? null,
+                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
+                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
+            ];
+        });
         return response()->json($stocks);
     }
 

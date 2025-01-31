@@ -9,7 +9,18 @@ class ProductAccessoryController extends ApiController
 {
     public function index()
     {
-        $products = ProductAccessory::all();
+        $products = ProductAccessory::with('productCategory')->get();
+        if (!$products) {
+            return $this->errorResponse('ProductAccessory not found.', 404);
+        }
+        $products=$products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'product_category' => $product->productCategory->product_category,
+                'accessory_name' => $product->accessory_name,
+                'status' => $product->status,
+            ];
+        });
         return $this->successResponse($products, 'ProductAccessory retrieved successfully.', 200);
     }
 
@@ -17,6 +28,9 @@ class ProductAccessoryController extends ApiController
     public function GetCategoryAccessory($id)
     {
         $products = ProductAccessory::where('product_category_id', $id)->get();
+        if (!$products) {
+            return $this->errorResponse('ProductAccessory not found.', 404);
+        }
         return $this->successResponse($products, 'ProductAccessory retrieved successfully.', 200);
     }
 

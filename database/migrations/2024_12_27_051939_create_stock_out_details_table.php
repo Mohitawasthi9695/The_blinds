@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
             $table->foreignId('godown_id')->constrained('godowns')->onDelete('cascade');
-            // $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->string('stock_code')->nullable()->unique();
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('product_type')->nullable();
