@@ -18,13 +18,13 @@ return new class extends Migration
             $table->string('product_type')->nullable();
             $table->string('lot_no')->nullable();
             $table->decimal('get_width', 10, 5)->nullable();
+            $table->string('width_unit')->default('meter');
             $table->decimal('get_length', 10, 5)->nullable();
+            $table->string('length_unit')->default('meter');
             $table->decimal('available_height', 15, 5)->nullable();
             $table->decimal('available_width', 15, 5)->nullable();
             $table->integer('get_quantity')->nullable();
-            $table->string('unit')->nullable();
             $table->string('type')->nullable();
-            $table->string('waste_width')->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);
             $table->timestamps();
@@ -35,11 +35,16 @@ return new class extends Migration
         BEFORE INSERT ON godowns
         FOR EACH ROW
         BEGIN
+            DECLARE next_number INT;
+            DECLARE next_code VARCHAR(10);
+            SELECT COALESCE(MAX(CAST(SUBSTRING(stock_code, 3, 2) AS UNSIGNED)), 0) + 1 
+            INTO next_number
+            FROM godowns;
+            SET next_code = CONCAT("VI", LPAD(next_number, 2, "0"));
             IF NEW.stock_code IS NULL THEN
-                SET NEW.stock_code = (SELECT COALESCE(MAX(stock_code), 1) + 1 FROM godowns);
+                SET NEW.stock_code = next_code;
             END IF;
-        END
-    ');
+        END');
     }
 
     /**

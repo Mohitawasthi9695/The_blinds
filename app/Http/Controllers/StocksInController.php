@@ -54,7 +54,32 @@ class StocksInController extends ApiController
         $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
             ->where('type', 'roll')
             ->get();
-
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+        $stocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'invoice_id' => $stock->invoice_id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'invoice_no' => $stock->invoice_no,
+                'length' => $stock->length,
+                'width' => $stock->width,
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
+                'type' => $stock->type,
+                'quantity' => $stock->quantity,
+                'out_quantity' => $stock->out_quantity,
+                'rack' => $stock->rack,
+                'warehouse' => $stock->warehouse,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? null,
+                'shadeNo' => $stock->products->shadeNo ?? null,
+                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
+                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
+            ];
+        });
         return response()->json($stocks);
     }
     public function CategoryBoxStocks()
@@ -62,7 +87,32 @@ class StocksInController extends ApiController
         $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
             ->where('type', 'box')
             ->get();
-
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+        $stocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'invoice_id' => $stock->invoice_id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'invoice_no' => $stock->invoice_no,
+                'length' => $stock->length,
+                'width' => $stock->width,
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
+                'type' => $stock->type,
+                'quantity' => $stock->quantity,
+                'out_quantity' => $stock->out_quantity,
+                'rack' => $stock->rack,
+                'warehouse' => $stock->warehouse,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? null,
+                'shadeNo' => $stock->products->shadeNo ?? null,
+                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
+                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
+            ];
+        });
         return response()->json($stocks);
     }
 
@@ -186,7 +236,8 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'out_length' => $stock->length,
                 'out_width' => $stock->width,
-                'unit' => $stock->unit,
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
                 'product_type' => $stock->type,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
@@ -217,7 +268,8 @@ class StocksInController extends ApiController
                 'invoice_no' => $stock->invoice_no,
                 'length' => $stock->length,
                 'width' => $stock->width,
-                'unit' => $stock->unit,
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,

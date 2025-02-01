@@ -287,7 +287,8 @@ class GodownController extends ApiController
                     'get_length' => round($product['out_length'], 2),
                     'available_height' => round($product['out_length'], 2),
                     'available_width' => round($product['out_width'], 2),
-                    'unit' => $product['unit'] ?? null,
+                    'width_unit' => $product['width_unit'] ?? null,
+                    'length_unit' => $product['length_unit'] ?? null,
                 ]);
 
                 $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);

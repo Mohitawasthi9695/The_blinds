@@ -33,7 +33,8 @@ class GodownStore extends FormRequest
             'out_products.*.out_width' => 'required|numeric|min:0',
             'out_products.*.out_length' => 'required|numeric|min:0',
             'out_products.*.out_quantity' => 'nullable|numeric|min:0',
-            'out_products.*.unit' => 'required|string|max:50',
+            'out_products.*.length_unit' => 'required|string|max:50',
+            'out_products.*.width_unit' => 'required|string|max:50',
         ];
            return $rules;
     }
