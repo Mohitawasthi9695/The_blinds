@@ -11,7 +11,7 @@ class WarehouseAccessory extends Model
     use HasFactory,HasApiTokens;
     protected $guarded = [];
 
-    protected $hidden = ['created_at', 'updated_at'];
+    protected $hidden = ['updated_at'];
 
     public function accessory()
     {

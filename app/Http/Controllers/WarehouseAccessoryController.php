@@ -15,6 +15,23 @@ class WarehouseAccessoryController extends ApiController
     public function index()
     {
         $warehouseAccessories = WarehouseAccessory::with('accessory')->get();
+        $warehouseAccessories = $warehouseAccessories->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'warehouse_accessory_id' => $item->id, 
+                'product_accessory_id'=>$item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? '',
+                'product_accessory_name' => $item->accessory->accessory_name ?? '',
+                'lot_no' => '', 
+                'items' => $item->items ?? '', 
+                'out_length' => $item->length ?? '',
+                'unit' => $item->unit ?? '',
+                'box' => $item->box ?? '',
+                'out_quantity' => $item->out_quantity ?? 0,
+                'quantity' => $item->quantity ?? 0,
+            ];
+        });
+        
         return $this->successResponse($warehouseAccessories, 'WarehouseAccessory retrieved successfully.', 200);
     }
 
@@ -35,7 +52,8 @@ class WarehouseAccessoryController extends ApiController
                 'out_length' => $item->length ?? '',
                 'unit' => $item->unit ?? '',
                 'box' => $item->box ?? '',
-                'out_quantity' => $item->out_quantity ?? $item->quantity ?? 0
+                'out_quantity' => $item->out_quantity ?? $item->quantity ?? 0,
+
             ];
         });
         

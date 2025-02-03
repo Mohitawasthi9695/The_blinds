@@ -22,7 +22,33 @@ class GodownController extends ApiController
 {
     public function index()
     {
-        $stocks = Godown::with('gatepasses:id,gate_pass_no', 'products')->where('status', 1)->get();
+        $stocks = Godown::with('gatepasses:id,gate_pass_no,gate_pass_date', 'products','products.ProductCategory')->get();
+        $stocks = $stocks->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'gate_pass_id' => $item->gate_pass_id,
+                'gate_pass_no' => $item->gatepasses->gate_pass_no ?? '',
+                'gate_pass_date' => $item->gatepasses->gate_pass_date ?? '',
+                'stock_in_id' => $item->stock_in_id,
+                'product_id' => $item->product_id,
+                'stock_code' => $item->stock_code,
+                'product_type' => $item->product_type,
+                'lot_no' => $item->lot_no,
+                'width' => $item->get_width . ' ' . $item->width_unit,
+                'length' => $item->get_length . ' ' . $item->length_unit,
+                'available_height' => $item->available_height,
+                'available_width' => $item->available_width,
+                'get_quantity' => $item->get_quantity,
+                'type' => $item->type,
+                'rack' => $item->rack ?? '',
+                'status' => $item->status,
+                'product_name' => $item->products->name ?? '',
+                'shade_no' => $item->products->shadeNo ?? '',
+                'purchase_shade_no' => $item->products->purchase_shade_no ?? '',
+                'product_category' => $item->products->ProductCategory->product_category ?? '',
+            ];
+        });
+        
         return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
     }
 

@@ -15,8 +15,28 @@ class GodownAccessoryController extends ApiController
 {
     public function index()
     {
-        $warehouseAccessories = GodownAccessory::with('accessory')->get();
-        return $this->successResponse($warehouseAccessories, 'GodownAccessory retrieved successfully.', 200);
+        $godownAccessory = GodownAccessory::with('accessory')->get();
+        if (!$godownAccessory) {
+            return $this->errorResponse('GodownAccessory not found.', 404);
+        }
+        $godownAccessory = $godownAccessory->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'warehouse_accessory_id' => $item->id, 
+                'product_accessory_id'=>$item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? '',
+                'product_accessory_name' => $item->accessory->accessory_name ?? '',
+                'lot_no' => '', 
+                'items' => $item->items ?? '', 
+                'out_length' => $item->length ?? '',
+                'unit' => $item->unit ?? '',
+                'box' => $item->box ?? '',
+                'out_quantity' => $item->out_quantity ?? 0,
+                'quantity' => $item->quantity ?? 0,
+                'date'=> $item->created_at->format('Y-m-d'),
+            ];
+        });
+        return $this->successResponse($godownAccessory, 'GodownAccessory retrieved successfully.', 200);
     }
 
     public function store(GodownAccessoryStore $request)
@@ -32,6 +52,23 @@ class GodownAccessoryController extends ApiController
         if (!$GodownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
+        $GodownAccessory = $GodownAccessory->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'warehouse_accessory_id' => $item->id, 
+                'product_accessory_id'=>$item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? '',
+                'product_accessory_name' => $item->accessory->accessory_name ?? '',
+                'lot_no' => '', 
+                'items' => $item->items ?? '', 
+                'out_length' => $item->length ?? '',
+                'unit' => $item->unit ?? '',
+                'box' => $item->box ?? '',
+                'out_quantity' => $item->out_quantity ?? 0,
+                'quantity' => $item->quantity ?? 0,
+                'date'=> $item->created_at->format('Y-m-d'),
+            ];
+        });
         return $this->successResponse($GodownAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
 
