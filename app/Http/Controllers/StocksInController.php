@@ -115,21 +115,6 @@ class StocksInController extends ApiController
         });
         return response()->json($stocks);
     }
-
-
-    /**
-     * Truncate the StocksIn table.
-     */
-
-    public function stocks_ins()
-    {
-        StocksIn::truncate();
-
-        return response()->json([
-            'message' => 'stocks_ins table has been truncated successfully.'
-        ]);
-    }
-
     /**
      * Store a newly created resource in storage.
      */

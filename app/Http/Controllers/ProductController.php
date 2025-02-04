@@ -18,7 +18,7 @@ class ProductController extends ApiController
         $products = Product::with('ProductCategory:id,product_category')->get();
         return $this->successResponse($products, 'Products retrieved successfully.', 200);
     }
-    public function GatePassShadeNo($category_id)
+    public function ProductShadeNo($category_id)
     {
         $products = Product::where('status', 1)->where('product_category_id',$category_id)->get();
         if($products->isEmpty()){

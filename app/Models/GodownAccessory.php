@@ -13,4 +13,6 @@ class GodownAccessory extends Model
     protected $guarded = [''];
     protected $hidden = ['created_at', 'updated_at'];
 
+    
+
 }

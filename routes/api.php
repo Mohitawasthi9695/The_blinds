@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\GodownAccessoryController;
 use App\Http\Controllers\GodownController;
 use App\Http\Controllers\PeopleController;
@@ -30,6 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
     Route::resource('/products/category', ProductCategoryController::class);
     Route::resource('/products', ProductController::class);
+    Route::get('/productshadeno/{category_id}', [ProductController::class, 'ProductShadeNo']);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
 
     Route::resource('/stockin/invoice', StockInvoiceController::class);
@@ -37,53 +39,48 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/stockout/invoiceno', [StockoutInoviceController::class, 'invoice_no']);
 
     Route::resource('/stocks', StocksInController::class);
+    Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
     Route::get('/category/rollstock', [StocksInController::class, 'CategoryRollStocks']);
     Route::get('/category/boxstock', [StocksInController::class, 'CategoryBoxStocks']);
 
-    Route::get('/stocks_insrm', [StocksInController::class, 'stocks_ins']);
-    Route::get('/godownsrm', [GodownController::class, 'godowns']);
-    Route::get('/stockout_inovicesrm', [StockoutInoviceController::class, 'stockout_inovices']);
-    Route::get('/stock_out_details', [StockOutController::class, 'stock_out_details']);
-
-    Route::get('/gatepass/shadeno/{category_id}', [ProductController::class, 'GatePassShadeNo']);
-    Route::get('/godowns/gatepassno', [GodownController::class, 'GatePassNo']);
-    Route::get('/stockin/{product_id}', [StocksInController::class, 'CheckStocks']);
+    Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
+    Route::get('/getstocks/{product_id}', [StocksInController::class, 'CheckStocks']);
     Route::resource('/godown', GodownController::class);
 
-    Route::get('/godowns/getStockgatepass', [GodownController::class, 'GetAllGatePass']);
-    Route::get('/godowns/getAccessorygatepass', [GodownAccessoryController::class, 'GetAllGatePass']);
-    Route::post('/godowns/gatepass', [GodownController::class, 'StoreGatePass']);
-    Route::get('/godowns/gatepass/{id}', [GodownController::class, 'GetGatePass']);
+    Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
+    Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
+    Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
+    Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
+
+    Route::post('/godowns/gatepass', [GodownController::class, 'StoreStockGatePass']);
     Route::put('/godowns/gatepass/{id}', [GodownController::class, 'UpdateGatePass']);
     Route::delete('/godowns/gatepass/{id}', [GodownController::class, 'DeleteGatePass']);
-    Route::put('/godowns/gatepass/{id}/approve', [GodownController::class, 'ApproveGatePass']);
-    Route::put('/godowns/gatepass/{id}/reject', [GodownController::class, 'RejectGatePass']);
-    
+    Route::put('/godowns/gatepass/{id}/approve', [GatePassController::class, 'ApproveStockGatePass']);
+    Route::put('/godowns/gatepass/{id}/reject', [GatePassController::class, 'RejectStockGatePass']);
+
     // Assecorries Api
-    
+
     Route::resource('/accessory', ProductAccessoryController::class);
-    Route::get('/accessory/category/{id}', [ProductAccessoryController::class,'GetCategoryAccessory']);
-    
-    Route::resource('/warehouse/accessory', WarehouseAccessoryController::class);
-    Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class,'GetWarehouseAccessory']); 
-    Route::post('godowns/accessory/gatepass', [GodownAccessoryController::class, 'StoreAccessoryGatePass']);
-    Route::put('/godowns/accessory/gatepass/{id}/approve', [GodownAccessoryController::class, 'ApproveGatePass']);
-    Route::put('/godowns/accessory/gatepass/{id}/reject', [GodownAccessoryController::class, 'RejectGatePass']);
-    Route::resource('/godown/accessory', GodownAccessoryController::class);
+    Route::get('/accessory/category/{id}', [ProductAccessoryController::class, 'GetCategoryAccessory']);
+
+    Route::resource('/warehouseAccessory', WarehouseAccessoryController::class);
+    Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class, 'GetWarehouseAccessory']);
+    Route::post('/godowns/accessory/gatepass', [GatePassController::class, 'StoreAccessoryGatePass']);
+    Route::put('/godowns/accessory/gatepass/{id}/approve', [GatePassController::class, 'ApproveGatePass']);
+    Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
+    Route::resource('/godownAccessory', GodownAccessoryController::class);
 
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
-    
+
     Route::resource('stockout', StockoutInoviceController::class);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
-    Route::resource('admin/stockout', StockoutInoviceController::class);
+    Route::resource('admin/stocksout', StockoutInoviceController::class);
     Route::get('/sales', [StockOutController::class, 'Sales']);
     Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
     Route::get('/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
-    Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
-
 });
