@@ -67,15 +67,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('/warehouse/accessory', WarehouseAccessoryController::class);
     Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class,'GetWarehouseAccessory']); 
     Route::post('godowns/accessory/gatepass', [GodownAccessoryController::class, 'StoreAccessoryGatePass']);
-    
+    Route::put('/godowns/accessory/gatepass/{id}/approve', [GodownAccessoryController::class, 'ApproveGatePass']);
+    Route::put('/godowns/accessory/gatepass/{id}/reject', [GodownAccessoryController::class, 'RejectGatePass']);
     Route::resource('/godown/accessory', GodownAccessoryController::class);
 
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
-
-
     
     Route::resource('stockout', StockoutInoviceController::class);
     Route::get('/admin/allstockout', [StockoutInoviceController::class, 'AllStockOut']);

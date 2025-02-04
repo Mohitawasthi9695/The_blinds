@@ -22,11 +22,11 @@ class WarehouseAccessoryController extends ApiController
                 'product_accessory_id'=>$item->product_accessory_id,
                 'product_category' => $item->accessory->productCategory->product_category ?? '',
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
-                'lot_no' => '', 
-                'items' => $item->items ?? '', 
-                'out_length' => $item->length ?? '',
-                'unit' => $item->unit ?? '',
-                'box' => $item->box ?? '',
+                'lot_no' => $item->lot_no ??'N/A', 
+                'items' => $item->items ?? 'N/A', 
+                'out_length' => $item->length ?? 'N/A',
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 'N/A',
                 'out_quantity' => $item->out_quantity ?? 0,
                 'quantity' => $item->quantity ?? 0,
             ];
@@ -47,12 +47,12 @@ class WarehouseAccessoryController extends ApiController
                 'product_accessory_id'=>$item->product_accessory_id,
                 'product_category' => $item->accessory->productCategory->product_category ?? '',
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
-                'lot_no' => '', 
+                'lot_no' => $item->lot_no ??'', 
                 'items' => $item->items ?? '', 
                 'out_length' => $item->length ?? '',
-                'unit' => $item->unit ?? '',
-                'box' => $item->box ?? '',
-                'out_quantity' => $item->out_quantity ?? $item->quantity ?? 0,
+                'length_unit' => $item->length_unit ?? '',
+                'box_bundle' => $item->box_bundle - $item->out_box_bundle ?? 0,
+                'out_quantity' => $item->quantity-$item->out_quantity ?? 0,
 
             ];
         });

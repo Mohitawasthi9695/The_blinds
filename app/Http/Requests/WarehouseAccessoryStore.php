@@ -23,12 +23,13 @@ class WarehouseAccessoryStore extends FormRequest
     {
         return [
             '*.product_accessory_id' => 'required|exists:product_accessories,id',
+            '*.lot_no' => 'nullable|string|max:255',
             '*.length' => 'nullable|numeric|min:0',
-            '*.unit' => 'nullable|string|max:255',
+            '*.length_unit' => 'nullable|string|max:255',
             '*.items' => 'nullable|numeric|min:0',
-            '*.box' => 'nullable|numeric|min:0',
+            '*.box_bundle' => 'nullable|numeric|min:0',
             '*.quantity' => 'nullable|numeric|min:0',
-        ];
+             ];
         
     }
 }

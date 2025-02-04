@@ -16,10 +16,12 @@ return new class extends Migration
             $table->foreignId('gate_pass_id')->constrained('gate_passes')->onDelete('cascade');
             $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
             $table->foreignId('warehouse_accessory_id')->constrained('warehouse_accessories')->onDelete('cascade')->nullable();
+            $table->string('lot_no')->nullable();
             $table->string('length')->nullable();
-            $table->string('unit')->nullable();
+            $table->string('length_unit')->nullable();
             $table->string('items')->nullable();
-            $table->string('box')->nullable();
+            $table->string('box_bundle')->nullable();
+            $table->string('out_box_bundle')->nullable();
             $table->string('quantity')->nullable();
             $table->string('out_quantity')->nullable();
             $table->boolean('status')->default(0);

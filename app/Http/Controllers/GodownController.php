@@ -22,7 +22,7 @@ class GodownController extends ApiController
 {
     public function index()
     {
-        $stocks = Godown::with('gatepasses:id,gate_pass_no,gate_pass_date', 'products','products.ProductCategory')->get();
+        $stocks = Godown::with('gatepasses:id,gate_pass_no,gate_pass_date', 'products', 'products.ProductCategory')->get();
         $stocks = $stocks->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -34,8 +34,10 @@ class GodownController extends ApiController
                 'stock_code' => $item->stock_code,
                 'product_type' => $item->product_type,
                 'lot_no' => $item->lot_no,
-                'width' => $item->get_width . ' ' . $item->width_unit,
-                'length' => $item->get_length . ' ' . $item->length_unit,
+                'width' => $item->get_width,
+                'width_unit' => $item->width_unit,
+                'length' => $item->get_length,
+                'length_unit' => $item->length_unit,
                 'available_height' => $item->available_height,
                 'available_width' => $item->available_width,
                 'get_quantity' => $item->get_quantity,
@@ -48,7 +50,7 @@ class GodownController extends ApiController
                 'product_category' => $item->products->ProductCategory->product_category ?? '',
             ];
         });
-        
+
         return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
     }
 
@@ -274,7 +276,6 @@ class GodownController extends ApiController
         }
     }
 
-
     public function StoreGatePass(GodownStore $request)
     {
         DB::beginTransaction();
@@ -300,23 +301,26 @@ class GodownController extends ApiController
                     return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                 }
 
-                Godown::create([
-                    'gate_pass_id' => $GatePass->id,
-                    'stock_in_id' => $product['stock_available_id'],
-                    'product_id' => $product['product_id'],
-                    'lot_no' => $availableStock->lot_no,
-                    'type' => $availableStock->type,
-                    'product_type' => $product['product_type'] ?? null,
-                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                    'get_quantity' => $product['out_quantity'] ?? null,
-                    'get_width' => round($product['out_width'], 2),
-                    'get_length' => round($product['out_length'], 2),
-                    'available_height' => round($product['out_length'], 2),
-                    'available_width' => round($product['out_width'], 2),
-                    'width_unit' => $product['width_unit'] ?? null,
-                    'length_unit' => $product['length_unit'] ?? null,
-                ]);
+                $outQuantity = $product['out_quantity'] ?? 1; // Default to 1 if not set
 
+                for ($i = 0; $i < $outQuantity; $i++) {
+                    Godown::create([
+                        'gate_pass_id' => $GatePass->id,
+                        'stock_in_id' => $product['stock_available_id'],
+                        'product_id' => $product['product_id'],
+                        'lot_no' => $availableStock->lot_no,
+                        'type' => $availableStock->type,
+                        'product_type' => $product['product_type'] ?? null,
+                        'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                        'get_quantity' => 1,
+                        'get_width' => round($product['out_width'], 2),
+                        'get_length' => round($product['out_length'], 2),
+                        'available_height' => round($product['out_length'], 2),
+                        'available_width' => round($product['out_width'], 2),
+                        'width_unit' => $product['width_unit'] ?? null,
+                        'length_unit' => $product['length_unit'] ?? null,
+                    ]);
+                }
                 $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
                 log::info($newQty);
                 $availableStock->update([
