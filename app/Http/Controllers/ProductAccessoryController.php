@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProductAccessory;
+use App\Models\ProductCategory;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use Exception;
 
 class ProductAccessoryController extends ApiController
 {
@@ -44,6 +47,82 @@ class ProductAccessoryController extends ApiController
         );
         $products = ProductAccessory::create($productsCategory);
         return $this->successResponse($products, 'ProductAccessory created successfully.', 201);
+    }
+    public function ProductAccessoryCsv(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,xlsx,xls',
+        ]);
+
+        try {
+            $data = Excel::toArray([], $request->file('csv_file'));
+
+            if (empty($data) || !isset($data[0])) {
+                return response()->json(['error' => 'File is empty or invalid'], 422);
+            }
+
+            $rows = $data[0];
+            $createdItems = [];
+            $invalidRows = [];
+            $existingRecords = [];
+            $newRecords = [];
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) {
+                    continue;
+                }
+
+                if (empty($row[1]) || empty($row[2])) {
+                    $invalidRows[] = [
+                        'row'   => $index + 1,
+                        'error' => 'Missing required fields: Category or '
+                    ];
+                    continue;
+                }
+                $productCategory = $row[1];
+                $accessory = $row[2];
+                $existProductCategory = ProductCategory::where('product_category', $productCategory)
+                    ->first();
+                if (!$existProductCategory) {
+                    $invalidRows[] = [
+                        'row'   => $index + 1,
+                        'error' => 'Product Category not found'
+                    ];
+                    continue;
+                }
+                $existingProductAccessory = ProductAccessory::Where('accessory_name', $accessory)
+                    ->first();
+
+                if ($existingProductAccessory) {
+                    $existingRecords[] = [
+                        'row'   => $index + 1,
+                        'accessory_name' => $accessory,
+                        'error' => 'Duplicate record exists in the database'
+                    ];
+                    continue;
+                }
+                $newRecords[] = [
+                    'product_category_id'=> $existProductCategory->id,
+                    'accessory_name'           => $row[2],
+                    'created_at'        => now(),
+                    'updated_at'        => now(),
+                ];
+            }
+            if (!empty($newRecords)) {
+                ProductAccessory::insert($newRecords);
+            }
+            return response()->json([
+                'message'       => 'File processed successfully.',
+                'createdCount'  => count($newRecords),
+                'duplicates'    => $existingRecords,
+                'invalidRows'   => $invalidRows,
+            ], 201);
+        } catch (Exception $e) {
+            return response()->json([
+                'error'   => 'Failed to process file',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show($id)

@@ -15,7 +15,10 @@ class AuthController extends ApiController
         $validated = $request->validated();
 
         $user = User::with('roles:name')->where('email', $validated['email'])->first();
-        
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
         Log::info($user);
         try {
             if (!$user || !Hash::check($validated['password'], $user->password) || $user->status == 0) {
@@ -25,7 +28,19 @@ class AuthController extends ApiController
             //     return $this->errorResponse('You are already logged in on another device.', 403);
             // }
             $token = $user->createToken("{$user->name}_token")->plainTextToken;
-
+            $user = [
+                'id'                => $user->id,
+                'name'              => $user->name,
+                'username'          => $user->username,
+                'email'             => $user->email,
+                'phone'             => $user->phone,
+                'status'            => $user->status,
+                'ip'                => $user->ip,
+                'email_verified_at' => $user->email_verified_at,
+                'created_at'        => $user->created_at,
+                'updated_at'        => $user->updated_at,
+                'roles'             => $user->roles->pluck('name')->implode(', '),
+            ];
             return response()->json([
                 'message' => "Login successful",
                 'user' => $user,

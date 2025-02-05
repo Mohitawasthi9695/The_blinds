@@ -54,6 +54,39 @@ class GodownController extends ApiController
         return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
     }
 
+    public function CheckStocks($id)
+    {
+        $stocks = Godown::where('product_id', $id)
+            ->where('status', 1)
+            ->with(['products', 'products.ProductCategory'])->get();
+
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No active stocks found for this product.', 404);
+        }
+
+        $responseData = $stocks->map(function ($stock) {
+            return [
+                'stock_in_id' => $stock->id,
+                'product_id' => $stock->product_id,
+                'lot_no' => $stock->lot_no,
+                'out_length' => $stock->length,
+                'out_width' => $stock->width,
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
+                'product_type' => $stock->type,
+                'out_quantity' => $stock->quantity - $stock->out_quantity,
+                'rack' => $stock->rack,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? 'N/A',
+                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
+                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
+                'product_category' => $stock->products->ProductCategory->product_category ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
+    }
+
     public function show($id)
     {
         $stock = Godown::with('products')->where('id', $id)->first();

@@ -44,7 +44,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/category/boxstock', [StocksInController::class, 'CategoryBoxStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
-    Route::get('/getstocks/{product_id}', [StocksInController::class, 'CheckStocks']);
+    Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
     Route::resource('/godown', GodownController::class);
 
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
@@ -52,8 +52,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
     Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
 
-    Route::post('/godowns/gatepass', [GodownController::class, 'StoreStockGatePass']);
-    Route::put('/godowns/gatepass/{id}', [GodownController::class, 'UpdateGatePass']);
+    Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
+    Route::put('/godowns/gatepass/{id}', [GatePassController::class, 'UpdateGatePass']);
     Route::delete('/godowns/gatepass/{id}', [GodownController::class, 'DeleteGatePass']);
     Route::put('/godowns/gatepass/{id}/approve', [GatePassController::class, 'ApproveStockGatePass']);
     Route::put('/godowns/gatepass/{id}/reject', [GatePassController::class, 'RejectStockGatePass']);
@@ -61,15 +61,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Assecorries Api
 
     Route::resource('/accessory', ProductAccessoryController::class);
+    Route::post('/accessory/import-excel', [ProductAccessoryController::class, 'ProductAccessoryCsv']);
     Route::get('/accessory/category/{id}', [ProductAccessoryController::class, 'GetCategoryAccessory']);
 
     Route::resource('/warehouseAccessory', WarehouseAccessoryController::class);
+    Route::post('/warehouseAccessory/import-file', [WarehouseAccessoryController::class,'storeFromCsv']);
+
     Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class, 'GetWarehouseAccessory']);
     Route::post('/godowns/accessory/gatepass', [GatePassController::class, 'StoreAccessoryGatePass']);
     Route::put('/godowns/accessory/gatepass/{id}/approve', [GatePassController::class, 'ApproveGatePass']);
     Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
 
+    Route::get('/getgodownstocks', [GodownController::class, 'CheckStocks']);
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);

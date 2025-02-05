@@ -14,21 +14,23 @@ class GodownAccessoryController extends ApiController
 {
     public function index()
     {
-        $godownAccessory = GodownAccessory::with('accessory')->get();
+        $godownAccessory = GodownAccessory::with('gatepass:id,gate_pass_no', 'accessory')->get();
+        log::info($godownAccessory);
         if (!$godownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
         $godownAccessory = $godownAccessory->map(function ($item) {
             return [
                 'id' => $item->id,
+                'gate_pass_no' => $item->gatepass->gate_pass_no ?? 'N/A',
                 'warehouse_accessory_id' => $item->id,
                 'product_accessory_id' => $item->product_accessory_id,
-                'product_category' => $item->accessory->productCategory->product_category ?? '',
-                'product_accessory_name' => $item->accessory->accessory_name ?? '',
-                'lot_no' => $item->lot_no ?? '',
-                'items' => $item->items ?? '',
-                'out_length' => $item->length ?? '',
-                'length_unit' => $item->length_unit ?? '',
+                'product_category' => $item->accessory->productCategory->product_category ?? 'N/A',
+                'product_accessory_name' => $item->accessory->accessory_name ?? 'N/A',
+                'lot_no' => $item->lot_no ?? 'N/A',
+                'items' => $item->items ?? 'N/A',
+                'length' => $item->length ?? 'N/A',
+                'length_unit' => $item->length_unit ?? 'N/A',
                 'box_bundle' => $item->box_bundle ?? 0,
                 'out_quantity' => $item->out_quantity ?? 0,
                 'quantity' => $item->quantity ?? 0,
@@ -56,13 +58,13 @@ class GodownAccessoryController extends ApiController
                 'id' => $item->id,
                 'warehouse_accessory_id' => $item->id,
                 'product_accessory_id' => $item->product_accessory_id,
-                'product_category' => $item->accessory->productCategory->product_category ?? '',
-                'product_accessory_name' => $item->accessory->accessory_name ?? '',
-                'lot_no' => '',
-                'items' => $item->items ?? '',
-                'out_length' => $item->length ?? '',
-                'unit' => $item->unit ?? '',
-                'box' => $item->box ?? '',
+                'product_category' => $item->accessory->productCategory->product_category ?? 'N/A',
+                'product_accessory_name' => $item->accessory->accessory_name ?? 'N/A',
+                'lot_no' => 'N/A',
+                'items' => $item->items ?? 'N/A',
+                'out_length' => $item->length ?? 'N/A',
+                'unit' => $item->unit ?? 'N/A',
+                'box' => $item->box ?? 'N/A',
                 'out_quantity' => $item->out_quantity ?? 0,
                 'quantity' => $item->quantity ?? 0,
                 'date' => $item->created_at->format('Y-m-d'),
@@ -87,14 +89,14 @@ class GodownAccessoryController extends ApiController
         return $this->successResponse($GodownAccessory, 'GodownAccessory updated successfully.', 200);
     }
 
-   
+
 
     public function GetGatePass($id)
     {
         $stocks = GatePass::with('godowns')->where('id', $id)->first();
         return response()->json($stocks);
     }
-    
+
     /**
      * Remove the specified resource from storage.
      */

@@ -203,12 +203,11 @@ class StocksInController extends ApiController
         }
     }
 
-    public function CheckStocks($product_id)
+    public function CheckStocks($id)
     {
-        $stocks = StocksIn::where('product_id', $product_id)
+        $stocks = StocksIn::where('product_id', $id)
             ->where('status', 1)
-            ->with(['products', 'products.ProductCategory'])
-            ->get();
+            ->with(['products', 'products.ProductCategory'])->get();
 
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);

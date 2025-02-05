@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GatePassUpdate;
+use App\Http\Requests\GodownStore;
 use App\Models\GodownAccessory;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -93,7 +94,7 @@ class GatePassController extends ApiController
             return $this->successResponse('Failed to reject Gate Pass => ' . $e->getMessage(), 500);
         }
     }
-    public function StoreStockGatePass(GodownAccessoryStore $request)
+    public function StoreStockGatePass(GodownStore $request)
     {
         DB::beginTransaction();
         try {

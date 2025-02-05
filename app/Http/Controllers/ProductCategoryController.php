@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 
@@ -40,13 +41,18 @@ class ProductCategoryController extends ApiController
 
     // DELETE /ProductCategorys/{id} - Delete a ProductCategory
     public function destroy($id)
-    {
-        $ProductCategory = ProductCategory::find($id);
-        if (!$ProductCategory) {
-            return $this->errorResponse('ProductCategory not found.', 404);
-        }
-
-        $ProductCategory->delete();
-        return $this->successResponse([], 'ProductCategory deleted successfully.', 200);
+{
+    // Find the ProductCategory by ID
+    $ProductCategory = ProductCategory::find($id);
+    if (!$ProductCategory) {
+        return $this->errorResponse('ProductCategory not found.', 404);
     }
+    $relatedProducts = Product::where('product_category_id', $id)->exists();
+    if ($relatedProducts) {
+        return $this->errorResponse('Cannot delete ProductCategory because related products exist.', 400);
+    }
+    $ProductCategory->delete();
+    return $this->successResponse([], 'ProductCategory deleted successfully.', 200);
+}
+
 }

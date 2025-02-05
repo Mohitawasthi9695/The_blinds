@@ -13,6 +13,13 @@ class GodownAccessory extends Model
     protected $guarded = [''];
     protected $hidden = ['created_at', 'updated_at'];
 
-    
+    public function gatepass()
+    {
+        return $this->belongsTo(GatePass::class, 'gate_pass_id', 'id');
+    }
 
+    public function accessory()
+    {
+        return $this->belongsTo(ProductAccessory::class, 'product_accessory_id', 'id');
+    }
 }
