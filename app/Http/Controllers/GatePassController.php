@@ -33,8 +33,7 @@ class GatePassController extends ApiController
     }
     public function GetAllStockGatePass()
     {
-        $stocks = GatePass::with(['warehouse_supervisors:id,name', 'godown_supervisors:id,name', 'godowns','godowns.products'])->whereHas('godowns')
-            ->orderBy('id', 'desc')
+        $stocks = GatePass::with(['warehouse_supervisors:id,name', 'godown_supervisors:id,name', 'godowns','godowns.products'])->whereHas('godowns')->orderBy('id', 'desc')
             ->get();
         if (!$stocks) {
             return $this->errorResponse('No GatePass Found', 404);

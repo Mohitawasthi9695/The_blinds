@@ -18,7 +18,7 @@ class GodownController extends ApiController
 {
     public function index()
     {
-        $stocks = Godown::with('gatepasses:id,gate_pass_no,gate_pass_date', 'products', 'products.ProductCategory')->get();
+        $stocks = Godown::with('gatepasses:id,gate_pass_no,gate_pass_date', 'products', 'products.ProductCategory')->where('status',1)->get();
         $stocks = $stocks->map(function ($item) {
             return [
                 'id' => $item->id,
