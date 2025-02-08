@@ -87,19 +87,6 @@ class StockInvoiceController extends ApiController
             'authorised_signatory' => $validatedData['authorised_signatory'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
-
-        $stockInvoice->products()->delete(); 
-        foreach ($validatedData['products'] as $product) {
-            $stockInvoice->products()->create([
-                'product_id' => $product['product_id'],
-                'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                'quantity' => $product['quantity'],
-                'unit' => $product['unit'] ?? null,
-                'rate' => $product['rate'],
-                'amount' => $product['amount'],
-            ]);
-        }
-
         return $this->successResponse($stockInvoice->load('products'), 'StockInvoice updated successfully.', 200);
     }
 
