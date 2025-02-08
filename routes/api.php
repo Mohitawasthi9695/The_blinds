@@ -73,7 +73,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
 
-    Route::get('/getgodownstocks', [GodownController::class, 'CheckStocks']);
+    Route::get('/getgodownstocks/{id}', [GodownController::class, 'CheckStocks']);
     Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
     Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
     Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);

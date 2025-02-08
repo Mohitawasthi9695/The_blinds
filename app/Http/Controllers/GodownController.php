@@ -66,17 +66,18 @@ class GodownController extends ApiController
 
         $responseData = $stocks->map(function ($stock) {
             return [
-                'stock_in_id' => $stock->id,
+                'godown_id' => $stock->id,
                 'product_id' => $stock->product_id,
+                'stock_code'=>$stock->stock_code,
                 'lot_no' => $stock->lot_no,
-                'out_length' => $stock->length,
-                'out_width' => $stock->width,
+                'out_length' => $stock->available_height,
+                'out_width' => $stock->get_width,
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'product_type' => $stock->type,
-                'out_quantity' => $stock->quantity - $stock->out_quantity,
+                'out_quantity' => $stock->get_quantity - $stock->out_quantity,
+                'area'=>$stock->available_height*$stock->get_width,
                 'rack' => $stock->rack,
-                'status' => $stock->status,
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
                 'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',

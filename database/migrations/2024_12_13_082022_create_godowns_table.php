@@ -15,18 +15,17 @@ return new class extends Migration
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('stock_code')->nullable();
-            $table->string('product_type')->nullable();
             $table->string('lot_no')->nullable();
-            $table->decimal('get_width', 10, 5)->nullable();
+            $table->decimal('width', 12, 3)->nullable();
             $table->string('width_unit')->default('meter');
-            $table->decimal('get_length', 10, 5)->nullable();
+            $table->decimal('length', 12, 3)->nullable();
             $table->string('length_unit')->default('meter');
-            $table->decimal('available_height', 15, 5)->nullable();
-            $table->decimal('available_width', 15, 5)->nullable();
-            $table->integer('get_quantity')->nullable();
             $table->string('type')->nullable();
+            $table->integer('pcs')->nullable();
+            $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
 

@@ -35,6 +35,7 @@ class StocksInController extends ApiController
                 'width' => $stock->width,
                 'unit' => $stock->unit,
                 'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
@@ -69,6 +70,7 @@ class StocksInController extends ApiController
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
@@ -102,6 +104,7 @@ class StocksInController extends ApiController
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
@@ -188,8 +191,9 @@ class StocksInController extends ApiController
                     'length_unit' => $row[7] ?? null,
                     'rack'        => $row[8] ?? null,
                     'type'        => $row[9] ?? null,
-                    'quantity'    => $row[10] ?? null,
-                    'warehouse'   => $row[11] ?? null
+                    'pcs'         => $row[10] ?? null,
+                    'quantity'    => $row[11] ?? null,
+                    'warehouse'   => $row[12] ?? null
                 ];
 
                 $createdItem = StocksIn::create($data);
@@ -222,7 +226,8 @@ class StocksInController extends ApiController
                 'out_width' => $stock->width,
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
-                'product_type' => $stock->type,
+                'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
@@ -255,6 +260,7 @@ class StocksInController extends ApiController
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,

@@ -33,7 +33,8 @@ class StockInRequest extends FormRequest
             '*.rack' => 'required|string|max:255',
             '*.warehouse' => 'required|string|max:255',
             '*.type' => 'required|string|max:255',
-            '*.quantity' => 'required|numeric|min:0',
+            '*.pcs' => 'required|numeric|min:1',
+            '*.quantity' => 'required|numeric|min:1',
         ];
 
         return $rules;

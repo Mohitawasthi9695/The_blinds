@@ -21,16 +21,16 @@ return new class extends Migration {
             $table->string('length_unit')->default('meter');
             $table->decimal('width', 15, 3)->nullable();
             $table->string('width_unit')->default('meter');
-            $table->integer('quantity')->nullable(); 
-            $table->integer('out_quantity')->nullable(); 
             $table->string('type')->nullable();
+            $table->integer('quantity')->nullable();
+            $table->integer('pcs')->nullable();
+            $table->integer('out_quantity')->nullable();
             $table->string('rack')->nullable();
             $table->string('warehouse')->nullable();
             $table->boolean('status')->default(1);
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
-    
     }
     public function down(): void
     {

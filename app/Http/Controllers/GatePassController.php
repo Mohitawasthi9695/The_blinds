@@ -104,6 +104,7 @@ class GatePassController extends ApiController
                 'gate_pass_no' => $validatedData['invoice_no'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
+                'gate_pass_time'=>now(),
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
             ]);
 
@@ -130,19 +131,16 @@ class GatePassController extends ApiController
                         'product_id' => $product['product_id'],
                         'lot_no' => $availableStock->lot_no,
                         'type' => $availableStock->type,
-                        'product_type' => $product['product_type'] ?? null,
                         'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                         'get_quantity' => 1,
                         'get_width' => round($product['out_width'], 2),
                         'get_length' => round($product['out_length'], 2),
-                        'available_height' => round($product['out_length'], 2),
-                        'available_width' => round($product['out_width'], 2),
+                        'pcs'=> $product['pcs'] ?? null,
                         'width_unit' => $product['width_unit'] ?? null,
                         'length_unit' => $product['length_unit'] ?? null,
                     ]);
                 }
                 $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                // log::info($newQty);
                 $availableStock->update([
                     'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
                     'status' => ($newQty <= 0) ? 0 : 1,
@@ -152,7 +150,7 @@ class GatePassController extends ApiController
             return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return $this->successResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
         }
     }
     public function UpdateGatePass(GatePassUpdate $request, $id)
