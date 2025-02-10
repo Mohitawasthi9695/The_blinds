@@ -19,22 +19,20 @@ return new class extends Migration {
             $table->string('invoice_no')->nullable();
             $table->string('lot_no')->nullable();
             $table->decimal('length', 15, 3)->nullable();
-            $table->string('length_unit')->nullable();
+            $table->string('length_unit')->default('meter');
             $table->decimal('width', 15, 3)->nullable();
-            $table->string('width_unit')->nullable();
-            $table->decimal('thickness', 15, 3)->nullable();
-            $table->string('thickness_unit')->nullable();
-            $table->decimal('area', 15, 3)->nullable();
-            $table->string('area_unit')->nullable();
+            $table->string('width_unit')->default('meter');
+            $table->integer('quantity')->nullable(); 
+            $table->integer('pcs')->nullable(); 
+            $table->integer('out_quantity')->nullable(); 
             $table->string('type')->nullable();
-            $table->integer('pcs')->nullable();
-            $table->integer('total_quantity')->nullable();
-            $table->integer('out_quantity')->nullable();
             $table->string('rack')->nullable();
             $table->string('warehouse')->nullable();
             $table->boolean('status')->default(1);
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
             $table->timestamps();
         });
+    
     }
     public function down(): void
     {

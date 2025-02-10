@@ -24,19 +24,23 @@ class GodownStore extends FormRequest
         $rules = [
             'invoice_no' => 'required|string|max:255',
             'godown_supervisor_id' => 'required|integer|exists:users,id',
+            'vehicle_no' => 'nullable|string|max:255',
+            'place_of_supply' => 'nullable|string|max:255',
+            'driver_name' => 'nullable|string|max:255',
+            'driver_phone' => 'nullable|string|max:255',
             'date' => 'nullable|date',
             'out_products' => 'required|array',
             'out_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',
             'out_products.*.product_id' => 'required|integer|exists:products,id',
             'out_products.*.type' => 'nullable|string|max:255',
             'out_products.*.hsn_sac_code' => 'nullable|string|max:255',
-            'out_products.*.out_width' => 'required|numeric|min:1',
-            'out_products.*.out_length' => 'required|numeric|min:1',
+            'out_products.*.width' => 'required|numeric|min:1',
+            'out_products.*.length' => 'required|numeric|min:1',
             'out_products.*.pcs' => 'required|numeric|min:1',
             'out_products.*.out_quantity' => 'nullable|numeric|min:1',
             'out_products.*.length_unit' => 'required|string|max:50',
             'out_products.*.width_unit' => 'required|string|max:50',
         ];
-           return $rules;
+        return $rules;
     }
 }

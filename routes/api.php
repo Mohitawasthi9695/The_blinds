@@ -40,8 +40,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::resource('/stocks', StocksInController::class);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
-    Route::get('/category/rollstock', [StocksInController::class, 'CategoryRollStocks']);
-    Route::get('/category/boxstock', [StocksInController::class, 'CategoryBoxStocks']);
+    Route::get('/category/rollerstock', [StocksInController::class, 'RollerStocks']);
+    Route::get('/category/woodenstock', [StocksInController::class, 'WoodenStocks']);
+    Route::get('/category/verticalstock', [StocksInController::class, 'VerticalStocks']);
+    Route::get('/category/honeycombstock', [StocksInController::class, 'HoneyCombStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);

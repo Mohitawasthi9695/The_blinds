@@ -132,12 +132,13 @@ class GatePassController extends ApiController
                         'lot_no' => $availableStock->lot_no,
                         'type' => $availableStock->type,
                         'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                        'get_quantity' => 1,
-                        'get_width' => round($product['out_width'], 2),
-                        'get_length' => round($product['out_length'], 2),
+                        'quantity' => 1,
+                        'width' => round($product['width'], 2),
+                        'length' => round($product['length'], 2),
                         'pcs'=> $product['pcs'] ?? null,
                         'width_unit' => $product['width_unit'] ?? null,
                         'length_unit' => $product['length_unit'] ?? null,
+                        'user_id' => Auth::id(),
                     ]);
                 }
                 $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
