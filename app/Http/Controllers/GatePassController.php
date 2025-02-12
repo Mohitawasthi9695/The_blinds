@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\GatePassUpdate;
 use App\Http\Requests\GodownStore;
 use App\Models\GodownAccessory;
+use App\Models\GodownHoneyCombStock;
+use App\Models\GodownRollerStock;
+use App\Models\GodownVerticalStock;
+use App\Models\GodownWoodenStock;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\WarehouseAccessory;
@@ -34,39 +38,109 @@ class GatePassController extends ApiController
     }
     public function GetAllStockGatePass()
     {
-        $stocks = GatePass::with(['warehouse_supervisors:id,name', 'godown_supervisors:id,name', 'godowns','godowns.products'])->whereHas('godowns')->orderBy('id', 'desc')
-            ->get();
-        if (!$stocks) {
+        $stocks = GatePass::with([
+            'warehouse_supervisors:id,name',
+            'godown_supervisors:id,name',
+            'godown_roller_stock.products',
+            'godown_wooden_stock.products',
+            'godown_vertical_stock.products',
+            'godown_honeycomb_stock.products'
+        ])->where('type','stock')->orderBy('id', 'desc')->get();
+
+        if ($stocks->isEmpty()) {
             return $this->errorResponse('No GatePass Found', 404);
         }
-        return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
+
+        // Transforming the data to merge stocks
+        $formattedStocks = $stocks->map(function ($stock) {
+            $allStock = collect()
+                ->merge($stock->godown_roller_stock)
+                ->merge($stock->godown_wooden_stock)
+                ->merge($stock->godown_vertical_stock)
+                ->merge($stock->godown_honeycomb_stock)
+                ->values();
+
+            return [
+                'id' => $stock->id,
+                'gate_pass_no' => $stock->gate_pass_no,
+                'gate_pass_date' => $stock->gate_pass_date,
+                'warehouse_supervisor' => $stock->warehouse_supervisors,
+                'godown_supervisor' => $stock->godown_supervisors,
+                'status' => $stock->status,
+                'all_stocks' => $allStock,
+            ];
+        });
+        return $this->successResponse($formattedStocks, 'GatePass With Stock Retrieved Successfully', 200);
     }
+
     public function GetStockGatePass($id)
     {
-        $stocks = GatePass::with(['warehouse_supervisors:id,name', 'godown_supervisors:id,name', 'godowns'])->whereHas('godowns')
-            ->where('id', $id)->get();
-        if (!$stocks) {
+        $stocks = GatePass::with([
+            'warehouse_supervisors:id,name',
+            'godown_supervisors:id,name',
+            'godown_roller_stock.products',
+            'godown_wooden_stock.products',
+            'godown_vertical_stock.products',
+            'godown_honeycomb_stock.products'
+        ])->where('id', $id)->get();
+
+        if ($stocks->isEmpty()) {
             return $this->errorResponse('No GatePass Found', 404);
         }
-        return $this->successResponse($stocks, 'GatePass With Godown Retreived Successfully', 200);
+
+        // Transforming the data to merge stocks
+        $formattedStocks = $stocks->map(function ($stock) {
+            $allStock = collect()
+                ->merge($stock->godown_roller_stock)
+                ->merge($stock->godown_wooden_stock)
+                ->merge($stock->godown_vertical_stock)
+                ->merge($stock->godown_honeycomb_stock)
+                ->values();
+
+            return [
+                'id' => $stock->id,
+                'gate_pass_no' => $stock->gate_pass_no,
+                'gate_pass_date' => $stock->gate_pass_date,
+                'warehouse_supervisor' => $stock->warehouse_supervisors,
+                'godown_supervisor' => $stock->godown_supervisors,
+                'all_stocks' => $allStock,
+            ];
+        });
+        return $this->successResponse($formattedStocks, 'GatePass With Godown Retreived Successfully', 200);
     }
     public function ApproveStockGatePass($id)
     {
         DB::beginTransaction();
         try {
-            $gatePass = GatePass::where('id', $id)->first();
+            $gatePass = GatePass::with([
+                'godown_roller_stock',
+                'godown_wooden_stock',
+                'godown_vertical_stock',
+                'godown_honeycomb_stock'
+            ])->where('id', $id)->first();
+
             if (!$gatePass) {
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
+
+            // Update GatePass status
             $gatePass->update(['status' => 1]);
-            Godown::where('gate_pass_id', $gatePass->id)->update(['status' => 1]);
+            $gatePass->godown_roller_stock()->update(['status' => 1]);
+            $gatePass->godown_wooden_stock()->update(['status' => 1]);
+            $gatePass->godown_vertical_stock()->update(['status' => 1]);
+            $gatePass->godown_honeycomb_stock()->update(['status' => 1]);
+
             DB::commit();
             return response()->json(['success' => 'Gate Pass approved successfully.'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Failed to approve Gate Pass.', 'message' => $e->getMessage()], 500);
+            return response()->json([
+                'error' => 'Failed to approve Gate Pass.',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
+
     public function RejectStockGatePass($id)
     {
         DB::beginTransaction();
@@ -99,12 +173,13 @@ class GatePassController extends ApiController
         DB::beginTransaction();
         try {
             $validatedData = $request->validated();
-
+log::info($validatedData);
             $GatePass = GatePass::create([
                 'gate_pass_no' => $validatedData['invoice_no'],
+                'type'=>$validatedData['type'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
-                'gate_pass_time'=>now(),
+                'gate_pass_time' => now(),
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
             ]);
 
@@ -112,6 +187,7 @@ class GatePassController extends ApiController
                 $availableStock = StocksIn::where('id', $product['stock_available_id'])
                     ->where('status', '1')
                     ->first();
+                log::info($availableStock);
                 if (!$availableStock) {
                     DB::rollBack();
                     return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
@@ -123,29 +199,100 @@ class GatePassController extends ApiController
                 }
 
                 $outQuantity = $product['out_quantity'] ?? 1;
-
-                for ($i = 0; $i < $outQuantity; $i++) {
-                    Godown::create([
-                        'gate_pass_id' => $GatePass->id,
-                        'stock_in_id' => $product['stock_available_id'],
-                        'product_id' => $product['product_id'],
-                        'lot_no' => $availableStock->lot_no,
-                        'type' => $availableStock->type,
-                        'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                        'quantity' => 1,
-                        'width' => round($product['width'], 2),
-                        'length' => round($product['length'], 2),
-                        'pcs'=> $product['pcs'] ?? null,
-                        'width_unit' => $product['width_unit'] ?? null,
-                        'length_unit' => $product['length_unit'] ?? null,
-                        'user_id' => Auth::id(),
+                if ($availableStock->product_category_id == 1) {
+                    for ($i = 0; $i < $outQuantity; $i++) {
+                        GodownRollerStock::create([
+                            'gate_pass_id' => $GatePass->id,
+                            'stock_in_id' => $product['stock_available_id'],
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'lot_no' => $availableStock->lot_no,
+                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                            'quantity' => 1,
+                            'width' => round($product['width'], 2),
+                            'length' => round($product['length'], 2),
+                            'width_unit' => $product['width_unit'] ?? null,
+                            'length_unit' => $product['length_unit'] ?? null,
+                            'user_id' => Auth::id(),
+                        ]);
+                    }
+                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+                    $availableStock->update([
+                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                        'status' => ($newQty <= 0) ? 0 : 1,
                     ]);
                 }
-                $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                $availableStock->update([
-                    'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                    'status' => ($newQty <= 0) ? 0 : 1,
-                ]);
+                if ($availableStock->product_category_id == 2) {
+                    for ($i = 0; $i < $outQuantity; $i++) {
+                        GodownWoodenStock::create([
+                            'gate_pass_id' => $GatePass->id,
+                            'stock_in_id' => $product['stock_available_id'],
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'lot_no' => $availableStock->lot_no,
+                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                            'quantity' => 1,
+                            'pcs' => $product['pcs'] ?? null,
+                            'width' => round($product['width'], 2),
+                            'length' => round($product['length'], 2),
+                            'width_unit' => $product['width_unit'] ?? null,
+                            'length_unit' => $product['length_unit'] ?? null,
+                            'user_id' => Auth::id(),
+                        ]);
+                    }
+                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+                    $availableStock->update([
+                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                        'status' => ($newQty <= 0) ? 0 : 1,
+                    ]);
+                }
+                if ($availableStock->product_category_id == 3) {
+                    for ($i = 0; $i < $outQuantity; $i++) {
+                        GodownVerticalStock::create([
+                            'gate_pass_id' => $GatePass->id,
+                            'stock_in_id' => $product['stock_available_id'],
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'lot_no' => $availableStock->lot_no,
+                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                            'quantity' => 1,
+                            'pcs' => $product['pcs'] ?? null,
+                            'width' => round($product['width'], 2),
+                            'length' => round($product['length'], 2),
+                            'width_unit' => $product['width_unit'] ?? null,
+                            'length_unit' => $product['length_unit'] ?? null,
+                            'user_id' => Auth::id(),
+                        ]);
+                    }
+                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+                    $availableStock->update([
+                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                        'status' => ($newQty <= 0) ? 0 : 1,
+                    ]);
+                }
+                if ($availableStock->product_category_id == 4) {
+                    for ($i = 0; $i < $outQuantity; $i++) {
+                        GodownHoneyCombStock::create([
+                            'gate_pass_id' => $GatePass->id,
+                            'stock_in_id' => $product['stock_available_id'],
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'lot_no' => $availableStock->lot_no,
+                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                            'quantity' => 1,
+                            'width' => round($product['width'], 2),
+                            'length' => round($product['length'], 2),
+                            'width_unit' => $product['width_unit'] ?? null,
+                            'length_unit' => $product['length_unit'] ?? null,
+                            'user_id' => Auth::id(),
+                        ]);
+                    }
+                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+                    $availableStock->update([
+                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                        'status' => ($newQty <= 0) ? 0 : 1,
+                    ]);
+                }
             }
             DB::commit();
             return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
@@ -154,11 +301,12 @@ class GatePassController extends ApiController
             return $this->errorResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
         }
     }
+
     public function UpdateGatePass(GatePassUpdate $request, $id)
     {
         $validatedData = $request->validated();
-        $gatePass=GatePass::find($id);
-        if(!$gatePass){
+        $gatePass = GatePass::find($id);
+        if (!$gatePass) {
             return response()->json(['error' => 'Gate Pass not found.'], 404);
         }
         $gatePass->update([
@@ -347,6 +495,4 @@ class GatePassController extends ApiController
             return $this->successResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
         }
     }
-
-    
 }

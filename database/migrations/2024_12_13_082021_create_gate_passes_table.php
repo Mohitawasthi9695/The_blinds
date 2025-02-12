@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreign('warehouse_supervisor_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('godown_supervisor_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('gate_pass_no')->unique();
+            $table->string('type')->nullable();
             $table->string('gate_pass_date')->now()->nullable();
             $table->string('gate_pass_time')->now()->nullable();
             $table->string('vehicle_no')->nullable();

@@ -20,9 +20,21 @@ class GatePass extends Model
     {
         return $this->belongsTo(User::class, 'godown_supervisor_id');
     }
-    public function godowns()
+    public function godown_roller_stock()
     {
-        return $this->hasMany(Godown::class);
+        return $this->hasMany(GodownRollerStock::class);
+    }
+    public function godown_wooden_stock()
+    {
+        return $this->hasMany(GodownWoodenStock::class);
+    }
+    public function godown_vertical_stock()
+    {
+        return $this->hasMany(GodownVerticalStock::class);
+    }
+    public function godown_honeycomb_stock()
+    {
+        return $this->hasMany(GodownHoneyCombStock::class);
     }
     public function godown_accessories()
     {

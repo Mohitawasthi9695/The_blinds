@@ -28,6 +28,7 @@ class GodownStore extends FormRequest
             'place_of_supply' => 'nullable|string|max:255',
             'driver_name' => 'nullable|string|max:255',
             'driver_phone' => 'nullable|string|max:255',
+            'type' => 'nullable|string|in:stock,accessory',
             'date' => 'nullable|date',
             'out_products' => 'required|array',
             'out_products.*.stock_available_id' => 'required|integer|exists:stocks_ins,id',

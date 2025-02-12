@@ -5,6 +5,7 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\GodownAccessoryController;
 use App\Http\Controllers\GodownController;
+use App\Http\Controllers\GodownRollerStockController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProductAccessoryController;
 use App\Http\Controllers\ProductCategoryController;
@@ -48,7 +49,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
     Route::resource('/godown', GodownController::class);
-
+    Route::resource('/godownrollerstock', GodownRollerStockController::class);
+    Route::get('/godownwoodenstock', [StocksInController::class, 'WoodenStocks']);
+    Route::get('/godownverticalstock', [StocksInController::class, 'VerticalStocks']);
+    Route::get('/godownhoneycombstock', [StocksInController::class, 'HoneyCombStocks']);
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
     Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
