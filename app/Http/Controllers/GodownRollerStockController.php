@@ -25,8 +25,6 @@ class GodownRollerStockController extends ApiController
         // Convert width to feet and meters
         $width_ft = ($stock->width_unit == 'feet') ? $stock->width : $stock->width * 3.28084;
         $width_m = ($stock->width_unit == 'meter') ? $stock->width : $stock->width / 3.28084;
-
-        // Calculate area
         $total_area_sq_ft = $length_ft * $width_ft;
         $total_area_m2 = $length_m * $width_m;
         $area_sq_ft = $width_ft*$avaible_length_ft;

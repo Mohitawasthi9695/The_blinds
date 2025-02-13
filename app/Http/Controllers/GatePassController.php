@@ -150,17 +150,6 @@ class GatePassController extends ApiController
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
             $gatePass->update(['status' => 2]);
-            Godown::where('gate_pass_id', $gatePass->id)->update(['status' => 2]);
-            $godownRecords = Godown::where('gate_pass_id', $gatePass->id)->get();
-            foreach ($godownRecords as $godownRecord) {
-                $stock = StocksIn::where('id', $godownRecord->stock_in_id)->first();
-                if ($stock) {
-                    $stock->update([
-                        'out_quantity' => $stock->out_quantity - $godownRecord->get_quantity,
-                        'status' => ($stock->quantity - $stock->out_quantity) > 0 ? 1 : 0,
-                    ]);
-                }
-            }
             DB::commit();
             return $this->successResponse([], 'Gate Pass rejected and stock quantities rolled back successfully.', 200);
         } catch (\Exception $e) {
@@ -301,89 +290,6 @@ log::info($validatedData);
             return $this->errorResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
         }
     }
-
-    public function UpdateGatePass(GatePassUpdate $request, $id)
-    {
-        $validatedData = $request->validated();
-        $gatePass = GatePass::find($id);
-        if (!$gatePass) {
-            return response()->json(['error' => 'Gate Pass not found.'], 404);
-        }
-        $gatePass->update([
-            'gate_pass_date' => $validatedData['date'],
-            'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
-        ]);
-
-        foreach ($validatedData['out_products'] as $product) {
-            $availableStock = StocksIn::where('id', $product['stock_available_id'])
-                ->where('status', '1')
-                ->first();
-
-            if (!$availableStock) {
-                return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
-            }
-
-            $godownRecord = Godown::where('gate_pass_id', $id)
-                ->where('stock_in_id', $product['stock_available_id'])->first();
-            if ($godownRecord) {
-
-                $adjustedAvailableStock = $availableStock->quantity - $availableStock->out_quantity + $godownRecord->get_quantity;
-                if ($product['out_quantity'] > $adjustedAvailableStock) {
-                    return response()->json(["error" => "Insufficient stock available for Stock-in ID {$product['stock_available_id']}."], 400);
-                }
-
-                $availableStock->update(['out_quantity' => $availableStock->out_quantity - $godownRecord->get_quantity]);
-
-                $godownRecord->update([
-                    'stock_in_id' => $product['stock_available_id'],
-                    'product_id' => $product['product_id'],
-                    'lot_no' => $availableStock->lot_no,
-                    'type' => $availableStock->type,
-                    'product_type' => $product['product_type'] ?? null,
-                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                    'get_quantity' => 1,
-                    'get_width' => round($product['out_width'], 2),
-                    'get_length' => round($product['out_length'], 2),
-                    'available_height' => round($product['out_length'], 2),
-                    'available_width' => round($product['out_width'], 2),
-                    'width_unit' => $product['width_unit'] ?? null,
-                    'length_unit' => $product['length_unit'] ?? null,
-                ]);
-            } else {
-                $remainingStock = $availableStock->quantity - $availableStock->out_quantity;
-
-                if ($product['out_quantity'] > $remainingStock) {
-                    return response()->json(["error" => "Insufficient stock available for Stock-in ID {$product['stock_available_id']}."], 400);
-                }
-
-                Godown::create([
-                    'gate_pass_id' => $id,
-                    'stock_in_id' => $product['stock_available_id'],
-                    'product_id' => $product['product_id'],
-                    'lot_no' => $availableStock->lot_no,
-                    'type' => $availableStock->type,
-                    'product_type' => $product['product_type'] ?? null,
-                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                    'get_quantity' => 1,
-                    'get_width' => round($product['out_width'], 2),
-                    'get_length' => round($product['out_length'], 2),
-                    'available_height' => round($product['out_length'], 2),
-                    'available_width' => round($product['out_width'], 2),
-                    'width_unit' => $product['width_unit'] ?? null,
-                    'length_unit' => $product['length_unit'] ?? null,
-                ]);
-            }
-
-            $newQty = $availableStock->quantity - $product['out_quantity'];
-
-            $availableStock->update([
-                'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                'status' => ($newQty <= 0) ? 0 : 1,
-            ]);
-        }
-
-        return response()->json(['success' => 'Gate Pass and stock details successfully updated.'], 200);
-    }
     public function GetAllAccessoryGatePass()
     {
         $stocks = GatePass::with(['warehouse_supervisors:id,name', 'godown_supervisors:id,name', 'godown_accessories'])->whereHas('godown_accessories')
@@ -493,6 +399,22 @@ log::info($validatedData);
             return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
         } catch (\Exception $e) {
             return $this->successResponse('Failed to Add Gate Pass => ' . $e->getMessage(), 500);
+        }
+    }
+    public function DeleteGatePass($id)
+    {
+        DB::beginTransaction();
+        try {
+            $gatePass = GatePass::where('id', $id)->first();
+            if (!$gatePass) {
+                return response()->json(['error' => 'Gate Pass not found.'], 404);
+            }
+            $gatePass->delete();
+            DB::commit();
+            return response()->json(['success' => 'Gate Pass and related records successfully deleted.'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to delete Gate Pass.', 'message' => $e->getMessage()], 500);
         }
     }
 }

@@ -26,8 +26,4 @@ class Product extends Model
     {
         return $this->hasMany(StockOutDetail::class, 'product_id');
     }
-    public function godowns()
-    {
-        return $this->hasMany(Godown::class, 'product_id');
-    }
 }

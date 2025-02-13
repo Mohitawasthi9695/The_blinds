@@ -23,7 +23,6 @@ return new class extends Migration
             $table->string('width_unit')->default('meter');
             $table->decimal('length', 12, 3)->nullable();
             $table->string('length_unit')->default('meter');
-            $table->string('type')->nullable();
             $table->integer('pcs')->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();

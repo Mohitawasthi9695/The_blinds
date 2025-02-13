@@ -4,8 +4,10 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\GodownAccessoryController;
-use App\Http\Controllers\GodownController;
+use App\Http\Controllers\GodownHoneyCombStockController;
 use App\Http\Controllers\GodownRollerStockController;
+use App\Http\Controllers\GodownVerticalStockController;
+use App\Http\Controllers\GodownWoodenStockController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProductAccessoryController;
 use App\Http\Controllers\ProductCategoryController;
@@ -47,20 +49,23 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/category/honeycombstock', [StocksInController::class, 'HoneyCombStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
+
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
-    Route::resource('/godown', GodownController::class);
-    Route::resource('/godownrollerstock', GodownRollerStockController::class);
-    Route::get('/godownwoodenstock', [StocksInController::class, 'WoodenStocks']);
-    Route::get('/godownverticalstock', [StocksInController::class, 'VerticalStocks']);
-    Route::get('/godownhoneycombstock', [StocksInController::class, 'HoneyCombStocks']);
+    
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
     Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
+
+    Route::resource('/godownrollerstock', GodownRollerStockController::class);
+    Route::resource('/godownwoodenstock', GodownWoodenStockController::class);
+    Route::resource('/godownverticalstock', GodownVerticalStockController::class);
+    Route::resource('/godownhoneycombstock', GodownHoneyCombStockController::class);
+
+   
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
     Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
-
     Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
     Route::put('/godowns/gatepass/{id}', [GatePassController::class, 'UpdateGatePass']);
-    Route::delete('/godowns/gatepass/{id}', [GodownController::class, 'DeleteGatePass']);
+    Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'DeleteGatePass']);
     Route::put('/godowns/gatepass/{id}/approve', [GatePassController::class, 'ApproveStockGatePass']);
     Route::put('/godowns/gatepass/{id}/reject', [GatePassController::class, 'RejectStockGatePass']);
 
@@ -79,10 +84,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
 
-    Route::get('/getgodownstocks/{id}', [GodownController::class, 'CheckStocks']);
-    Route::get('/Cproducts', [GodownController::class, 'GetStockProducts']);
-    Route::get('/godowncheckout/{id}', [GodownController::class, 'GetStockCheckout']);
-    Route::post('godownstockout', [GodownController::class, 'GodownStockOut']);
+    Route::get('/getgodownstocks/{id}', [GodownRollerStockController::class, 'CheckStocks']);
+    Route::get('/Cproducts', [GodownRollerStockController::class, 'GetStockProducts']);
+    Route::get('/godowncheckout/{id}', [GodownRollerStockController::class, 'GetStockCheckout']);
+    Route::post('godownstockout', [GodownRollerStockController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
 
     Route::resource('stockout', StockoutInoviceController::class);
