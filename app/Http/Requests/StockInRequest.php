@@ -32,8 +32,6 @@ class StockInRequest extends FormRequest
             '*.length_unit' => 'nullable|string|max:255',
             '*.width_unit' => 'nullable|string|max:255',
             '*.rack' => 'nullable|string|max:255',
-            '*.warehouse' => 'nullable|string|max:255',
-            '*.type' => 'nullable|string|max:255',
             '*.pcs' => 'nullable|numeric|min:1',
             '*.quantity' => 'required|numeric|min:1',
         ];

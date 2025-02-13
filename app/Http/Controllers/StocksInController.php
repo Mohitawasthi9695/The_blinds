@@ -191,7 +191,7 @@ class StocksInController extends ApiController
             $createdItems = [];
 
             foreach ($validatedData as $data) {
-                $data['user_id'] =  Auth::id();;
+                $data['user_id'] =  Auth::id();
                 $createdItems = StocksIn::create($data);
             }
 
@@ -240,6 +240,7 @@ class StocksInController extends ApiController
                     return response()->json(['error' => "Invoice with invoice_no {$invoiceNo} not found"], 422);
                 }
                 $data = [
+                    'product_category_id'=>$product->ProductCategory->id,
                     'product_id'  => $product->id,
                     'invoice_id'  => $invoice->id,
                     'user_id'     => Auth::id(),
@@ -250,10 +251,8 @@ class StocksInController extends ApiController
                     'length'      => $row[6] ?? null,
                     'length_unit' => $row[7] ?? null,
                     'rack'        => $row[8] ?? null,
-                    'type'        => $row[9] ?? null,
-                    'pcs'         => $row[10] ?? null,
-                    'quantity'    => $row[11] ?? null,
-                    'warehouse'   => $row[12] ?? null
+                    'pcs'         => $row[9] ?? null,
+                    'quantity'    => $row[10] ?? null,
                 ];
 
                 $createdItem = StocksIn::create($data);
@@ -266,7 +265,6 @@ class StocksInController extends ApiController
             return response()->json(['error' => 'Failed to process file', 'message' => $e->getMessage()], 500);
         }
     }
-
     public function CheckStocks($id)
     {
         $stocks = StocksIn::where('product_id', $id)
@@ -284,9 +282,8 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'width' => $stock->width,
-                'length_unit' => $stock->length_unit,
-                'width_unit' => $stock->width_unit,
-                'type' => $stock->type,
+                'length_unit' => $stock->length_unit?? 'N/A',
+                'width_unit' => $stock->width_unit?? 'N/A',
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
