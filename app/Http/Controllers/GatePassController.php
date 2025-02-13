@@ -162,7 +162,7 @@ class GatePassController extends ApiController
         DB::beginTransaction();
         try {
             $validatedData = $request->validated();
-log::info($validatedData);
+            log::info($validatedData);
             $GatePass = GatePass::create([
                 'gate_pass_no' => $validatedData['invoice_no'],
                 'type'=>$validatedData['type'],
@@ -244,12 +244,10 @@ log::info($validatedData);
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
                             'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
+                        
                             'quantity' => 1,
-                            'pcs' => $product['pcs'] ?? null,
-                            'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? null,
-                            'length_unit' => $product['length_unit'] ?? null,
+                            'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
                         ]);
                     }

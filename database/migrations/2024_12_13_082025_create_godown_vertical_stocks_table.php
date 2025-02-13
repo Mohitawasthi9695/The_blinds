@@ -18,13 +18,11 @@ return new class extends Migration
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('stock_code')->nullable();
+            $table->string('roll_code')->nullable();
             $table->string('lot_no')->nullable();
-            $table->decimal('width', 12, 3)->nullable();
-            $table->string('width_unit')->default('meter');
             $table->decimal('length', 12, 3)->nullable();
+            $table->decimal('out_length', 12, 3)->nullable();
             $table->string('length_unit')->default('meter');
-            $table->string('type')->nullable();
-            $table->integer('pcs')->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);
@@ -32,20 +30,35 @@ return new class extends Migration
             $table->timestamps();
         });
         DB::unprepared('
-    CREATE TRIGGER auto_increment_vertical_stock_code
-    BEFORE INSERT ON godown_vertical_stocks
-    FOR EACH ROW
-    BEGIN
-        DECLARE next_number INT;
-        DECLARE next_code VARCHAR(10);
-        SELECT COALESCE(MAX(CAST(SUBSTRING(stock_code, 3, 2) AS UNSIGNED)), 0) + 1 
-        INTO next_number
-        FROM godown_vertical_stocks;
-        SET next_code = CONCAT("VT", LPAD(next_number, 2, "0"));
-        IF NEW.stock_code IS NULL THEN
-            SET NEW.stock_code = next_code;
-        END IF;
-    END');
+        CREATE TRIGGER auto_increment_vertical_stock_code
+        BEFORE INSERT ON godown_vertical_stocks
+        FOR EACH ROW
+        BEGIN
+            DECLARE next_number INT;
+            DECLARE next_code VARCHAR(10);
+            SELECT COALESCE(MAX(CAST(SUBSTRING(stock_code, 3, 2) AS UNSIGNED)), 0) + 1 
+            INTO next_number
+            FROM godown_vertical_stocks;
+            SET next_code = CONCAT("VT", LPAD(next_number, 2, "0"));
+            IF NEW.stock_code IS NULL THEN
+                SET NEW.stock_code = next_code;
+            END IF;
+        END');
+        DB::unprepared('
+        CREATE TRIGGER auto_increment_vertical_roll_code
+        BEFORE INSERT ON godown_vertical_stocks
+        FOR EACH ROW
+        BEGIN
+            DECLARE next_number INT;
+            DECLARE next_code VARCHAR(10);
+            SELECT COALESCE(MAX(CAST(SUBSTRING(roll_code, 3, 2) AS UNSIGNED)), 0) + 1 
+            INTO next_number
+            FROM godown_vertical_stocks;
+            SET next_code = CONCAT("VT", LPAD(next_number, 2, "0"));
+            IF NEW.roll_code IS NULL THEN
+                SET NEW.roll_code = next_code;
+            END IF;
+        END');
     }
 
 

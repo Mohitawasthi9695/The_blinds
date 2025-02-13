@@ -32,10 +32,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/sub_supervisor', [UserController::class, 'Sub_supervisor']);
     Route::get('/data', [PeopleController::class, 'supplierStocks']);
     Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
+
     Route::resource('/products/category', ProductCategoryController::class);
     Route::resource('/products', ProductController::class);
-    Route::get('/productshadeno/{category_id}', [ProductController::class, 'ProductShadeNo']);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
+
+    Route::get('/productshadeno/{category_id}', [ProductController::class, 'ProductShadeNo']);
 
     Route::resource('/stockin/invoice', StockInvoiceController::class);
 

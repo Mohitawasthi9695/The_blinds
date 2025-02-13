@@ -40,8 +40,8 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Supervisor',
-                'username' => 'Super123',
+                'name' => 'Vishals',
+                'username' => 'Vishals123',
                 'email' => 'super@gmail.com',
                 'phone' => '9876543210',
                 'status' => 1, // Inactive
@@ -52,8 +52,8 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'name' => 'Sub_Supervisor',
-                'username' => 'Sub_super123',
+                'name' => 'Himanshu Godown',
+                'username' => 'Himanshu123',
                 'email' => 'sub_super@gmail.com',
                 'phone' => '9876543210',
                 'status' => 1,

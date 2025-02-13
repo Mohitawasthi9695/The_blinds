@@ -19,9 +19,9 @@ return new class extends Migration {
             $table->string('invoice_no')->nullable();
             $table->string('lot_no')->nullable();
             $table->decimal('length', 15, 3)->nullable();
-            $table->string('length_unit')->default('meter');
+            $table->string('length_unit')->default('meter')->nullable();
             $table->decimal('width', 15, 3)->nullable();
-            $table->string('width_unit')->default('meter');
+            $table->string('width_unit')->default('meter')->nullable();
             $table->integer('quantity')->nullable(); 
             $table->integer('pcs')->nullable(); 
             $table->integer('out_quantity')->nullable(); 

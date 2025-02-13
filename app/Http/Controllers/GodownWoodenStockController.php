@@ -31,6 +31,7 @@ class GodownWoodenStockController extends ApiController
                 'width' => $stock->width,
                 'width_unit' => $stock->width_unit,
                 'pcs' => $stock->pcs,
+                'out_pcs'=> $stock->out_pcs??0,
                 'quantity'=>$stock->quantity,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
