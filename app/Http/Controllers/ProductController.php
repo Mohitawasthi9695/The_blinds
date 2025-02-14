@@ -35,7 +35,7 @@ class ProductController extends ApiController
             return [
                 'product_id' => $product->id,
                 'product_name' => $product->name,
-                'product_shadeNo' => $product->shadeNo,
+                'shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
                 'stock_in' => $product->stockAvailable->sum(function ($stock) {
                     return round($stock->length * $stock->width * 10.7639, 2);

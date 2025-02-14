@@ -23,7 +23,8 @@ return new class extends Migration
             $table->decimal('width', 12, 3)->nullable();
             $table->string('width_unit')->default('meter');
             $table->decimal('length', 12, 3)->nullable();
-            $table->decimal('available_length', 12, 3)->nullable();
+            $table->decimal('out_length', 12, 3)->nullable();
+            $table->decimal('wastage', 12, 3)->nullable();
             $table->string('length_unit')->default('meter');
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();

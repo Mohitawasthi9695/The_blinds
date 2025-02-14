@@ -29,10 +29,11 @@ class StocksInController extends ApiController
                 'id' => $stock->id,
                 'invoice_id' => $stock->invoice_id,
                 'product_id' => $stock->product_id,
+                'date' => $stock->stockInvoice->date,
                 'lot_no' => $stock->lot_no,
                 'invoice_no' => $stock->invoice_no,
-                'length' => $stock->length ?? '',
-                'width' => $stock->width ?? '',
+                'length' => $stock->length??'',
+                'width' => $stock->width??'',
                 'unit' => $stock->unit,
                 'type' => $stock->type,
                 'pcs' => $stock->pcs,
@@ -63,7 +64,7 @@ class StocksInController extends ApiController
                 'invoice_id' => $stock->invoice_id,
                 'product_id' => $stock->product_id,
                 'date' => $stock->stockInvoice->date,
-                'supplier' => $stock->stockInvoice->supplier,
+                'supplier' => $stock->stockInvoice->supplier->name,
                 'lot_no' => $stock->lot_no,
                 'invoice_no' => $stock->invoice_no,
                 'length' => $stock->length,
@@ -86,7 +87,7 @@ class StocksInController extends ApiController
     }
     public function WoodenStocks()
     {
-        $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
+        $stocks = StocksIn::with(relations: ['products', 'stockInvoice','supplier'])
             ->where('product_category_id', 2)
             ->get();
         if ($stocks->isEmpty()) {
@@ -96,8 +97,9 @@ class StocksInController extends ApiController
             return [
                 'id' => $stock->id,
                 'invoice_id' => $stock->invoice_id,
-                'date' => $stock->stockInvoice->date,
                 'product_id' => $stock->product_id,
+                'date' => $stock->stockInvoice->date,
+                'supplier' => $stock->stockInvoice->supplier->name,
                 'lot_no' => $stock->lot_no,
                 'invoice_no' => $stock->invoice_no,
                 'length' => $stock->length,
@@ -119,7 +121,7 @@ class StocksInController extends ApiController
     }
     public function VerticalStocks()
     {
-        $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
+        $stocks = StocksIn::with(relations: ['products', 'stockInvoice','supplier'])
             ->where('product_category_id', 3)
             ->get();
         if ($stocks->isEmpty()) {
@@ -130,6 +132,8 @@ class StocksInController extends ApiController
                 'id' => $stock->id,
                 'invoice_id' => $stock->invoice_id,
                 'product_id' => $stock->product_id,
+                'date' => $stock->stockInvoice->date,
+                'supplier' => $stock->stockInvoice->supplier->name,
                 'lot_no' => $stock->lot_no,
                 'invoice_no' => $stock->invoice_no,
                 'length' => $stock->length,
@@ -151,7 +155,7 @@ class StocksInController extends ApiController
     }
     public function HoneyCombStocks()
     {
-        $stocks = StocksIn::with(relations: ['products', 'stockInvoice'])
+        $stocks = StocksIn::with(relations: ['products', 'stockInvoice','supplier'])
             ->where('product_category_id', 4)
             ->get();
         if ($stocks->isEmpty()) {
@@ -164,6 +168,8 @@ class StocksInController extends ApiController
                 'product_id' => $stock->product_id,
                 'lot_no' => $stock->lot_no,
                 'invoice_no' => $stock->invoice_no,
+                'date' => $stock->stockInvoice->date,
+                'supplier' => $stock->stockInvoice->supplier->name,
                 'length' => $stock->length,
                 'width' => $stock->width,
                 'length_unit' => $stock->length_unit,
@@ -238,7 +244,7 @@ class StocksInController extends ApiController
                     return response()->json(['error' => "Invoice with invoice_no {$invoiceNo} not found"], 422);
                 }
                 $data = [
-                    'product_category_id' => $product->ProductCategory->id,
+                    'product_category_id'=>$product->ProductCategory->id,
                     'product_id'  => $product->id,
                     'invoice_id'  => $invoice->id,
                     'user_id'     => Auth::id(),
@@ -279,8 +285,8 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'width' => $stock->width,
-                'length_unit' => $stock->length_unit ?? 'N/A',
-                'width_unit' => $stock->width_unit ?? 'N/A',
+                'length_unit' => $stock->length_unit?? 'N/A',
+                'width_unit' => $stock->width_unit?? 'N/A',
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,

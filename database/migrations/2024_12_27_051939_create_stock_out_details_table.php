@@ -14,15 +14,14 @@ return new class extends Migration
         Schema::create('stock_out_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
-            $table->string('stock_code')->nullable()->unique();
+            $table->unsignedBigInteger('godown_id');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->string('product_type')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->decimal('out_width', 10, 5)->nullable();
             $table->decimal('out_length', 10, 5)->nullable();
-            $table->decimal('out_quantity', 15, 5)->nullable();
-            $table->string('waste_width')->nullable();
-            $table->string('unit')->nullable();
+            $table->decimal('out_pcs', 15, 5)->nullable();
+            $table->string('width_unit')->nullable();
+            $table->string('length_unit')->nullable();
             $table->string('type')->nullable();
             $table->decimal('gst', 10, 5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();

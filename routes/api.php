@@ -63,7 +63,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownverticalstock/{id}', [GodownVerticalStockController::class,'show']);
     Route::put('/godownverticalstock/{id}', [GodownVerticalStockController::class,'update']);
     Route::resource('/godownhoneycombstock', GodownHoneyCombStockController::class);
-
    
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
     Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
