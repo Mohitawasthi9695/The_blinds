@@ -7,12 +7,14 @@ use App\Models\StockInvoice;
 use App\Models\StockInvoiceDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class StockInvoiceController extends ApiController
 {
     public function index()
     {
-        $StockInvoices = StockInvoice::with(['supplier','user:id,name,phone','stock_in'])->get();
+        $StockInvoices = StockInvoice::with(['supplier','user:id,name,phone','stock_in','stock_in.products','stock_in.products.ProductCategory'])->get();
+        Log::info($StockInvoices);
         return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
 
@@ -49,7 +51,8 @@ class StockInvoiceController extends ApiController
     // GET /StockInvoices/{id} - Show a single StockInvoice
     public function show($id)
     {
-        $StockInvoice = StockInvoice::with(['supplier', 'peoples','products'])->get()->find($id);
+        $StockInvoice = StockInvoice::with(['supplier', 'peoples','products','stock_in','stock_in.products'])->get()->find($id);
+        Log::info($StockInvoice);
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
         }

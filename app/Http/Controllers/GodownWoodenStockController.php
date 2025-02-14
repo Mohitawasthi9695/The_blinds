@@ -57,7 +57,18 @@ class GodownWoodenStockController extends ApiController
      */
     public function store(Request $request)
     {
-        //
+
+        $validatedData = $request->validated();
+        try {
+            $createdItems = [];
+
+            foreach ($validatedData as $data) {
+                $createdItems = GodownWoodenStock::create($data);
+            }
+            return $this->successResponse($createdItems, 'GodownRollerStock entries created successfully.', 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to create GodownRollerStock entries.', 500, $e->getMessage());
+        }
     }
 
     /**

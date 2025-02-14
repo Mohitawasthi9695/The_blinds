@@ -101,12 +101,10 @@ class StocksInController extends ApiController
                 'width' => $stock->width,
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
-                'type' => $stock->type,
                 'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
-                'warehouse' => $stock->warehouse,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
@@ -135,12 +133,10 @@ class StocksInController extends ApiController
                 'width' => $stock->width,
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
-                'type' => $stock->type,
                 'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
-                'warehouse' => $stock->warehouse,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
@@ -169,11 +165,10 @@ class StocksInController extends ApiController
                 'width' => $stock->width,
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
-                'type' => $stock->type,
+                'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
-                'warehouse' => $stock->warehouse,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
@@ -251,8 +246,8 @@ class StocksInController extends ApiController
                     'length'      => $row[6] ?? null,
                     'length_unit' => $row[7] ?? null,
                     'rack'        => $row[8] ?? null,
-                    'pcs'         => $row[9] ?? null,
-                    'quantity'    => $row[10] ?? null,
+                    'pcs'         => $row[9] ?? 1,
+                    'quantity'    => $row[10] ?? 1,
                 ];
 
                 $createdItem = StocksIn::create($data);
@@ -278,7 +273,6 @@ class StocksInController extends ApiController
         $responseData = $stocks->map(function ($stock) {
             return [
                 'stock_available_id' => $stock->id,
-                'product_id' => $stock->product_id,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'width' => $stock->width,
@@ -287,7 +281,6 @@ class StocksInController extends ApiController
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
-                'status' => $stock->status,
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
                 'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
@@ -335,7 +328,6 @@ class StocksInController extends ApiController
     public function update(StockInUpdate $request, $id)
     {
         $stock = StocksIn::findOrFail($id);
-
         $validatedData = $request->validated();
         $stock->update($validatedData);
         return $this->successResponse($stock, 'Stock entry updated successfully.', 200);

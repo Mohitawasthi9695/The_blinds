@@ -73,7 +73,6 @@ class GodownRollerStockController extends ApiController
     public function store(Request $request)
     {
         $validatedData = $request->validated();
-
         try {
             $createdItems = [];
 

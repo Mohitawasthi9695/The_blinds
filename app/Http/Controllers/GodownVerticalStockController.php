@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\VerticalStock;
 use App\Models\GodownVerticalStock;
 use Illuminate\Http\Request;
 
@@ -53,9 +54,18 @@ class GodownVerticalStockController extends ApiController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(VerticalStock $request)
     {
-        //
+        $validatedData = $request->validated();
+        try {
+            $createdItems = [];
+            foreach ($validatedData as $data) {
+                $createdItems = GodownVerticalStock::create($data);
+            }
+            return $this->successResponse($createdItems, 'GodownRollerStock entries created successfully.', 201);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to create GodownRollerStock entries.', 500, $e->getMessage());
+        }
     }
 
     /**

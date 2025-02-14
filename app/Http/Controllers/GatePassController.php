@@ -45,7 +45,7 @@ class GatePassController extends ApiController
             'godown_wooden_stock.products',
             'godown_vertical_stock.products',
             'godown_honeycomb_stock.products'
-        ])->where('type','stock')->orderBy('id', 'desc')->get();
+        ])->where('type', 'stock')->orderBy('id', 'desc')->get();
 
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No GatePass Found', 404);
@@ -72,7 +72,6 @@ class GatePassController extends ApiController
         });
         return $this->successResponse($formattedStocks, 'GatePass With Stock Retrieved Successfully', 200);
     }
-
     public function GetStockGatePass($id)
     {
         $stocks = GatePass::with([
@@ -140,7 +139,6 @@ class GatePassController extends ApiController
             ], 500);
         }
     }
-
     public function RejectStockGatePass($id)
     {
         DB::beginTransaction();
@@ -161,11 +159,11 @@ class GatePassController extends ApiController
     {
         DB::beginTransaction();
         try {
+
             $validatedData = $request->validated();
-            log::info($validatedData);
             $GatePass = GatePass::create([
                 'gate_pass_no' => $validatedData['invoice_no'],
-                'type'=>$validatedData['type'],
+                'type' => $validatedData['type'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
                 'gate_pass_time' => now(),
@@ -173,21 +171,19 @@ class GatePassController extends ApiController
             ]);
 
             foreach ($validatedData['out_products'] as $product) {
-                $availableStock = StocksIn::where('id', $product['stock_available_id'])
-                    ->where('status', '1')
-                    ->first();
-                log::info($availableStock);
+
+                $availableStock = StocksIn::where('id', $product['stock_available_id'])->where('status', '1')->first();
                 if (!$availableStock) {
                     DB::rollBack();
-                    return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
+                    return response()->json(['error' => 'Stock not available for the specified configuration.'], 422);
                 }
-
                 if ($product['out_quantity'] > $availableStock->quantity - $availableStock->out_quantity) {
                     DB::rollBack();
                     return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                 }
 
                 $outQuantity = $product['out_quantity'] ?? 1;
+
                 if ($availableStock->product_category_id == 1) {
                     for ($i = 0; $i < $outQuantity; $i++) {
                         GodownRollerStock::create([
@@ -196,7 +192,6 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
-                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                             'quantity' => 1,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
@@ -205,11 +200,6 @@ class GatePassController extends ApiController
                             'user_id' => Auth::id(),
                         ]);
                     }
-                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                    $availableStock->update([
-                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                        'status' => ($newQty <= 0) ? 0 : 1,
-                    ]);
                 }
                 if ($availableStock->product_category_id == 2) {
                     for ($i = 0; $i < $outQuantity; $i++) {
@@ -219,7 +209,6 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
-                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                             'quantity' => 1,
                             'pcs' => $product['pcs'] ?? null,
                             'width' => round($product['width'], 2),
@@ -229,11 +218,6 @@ class GatePassController extends ApiController
                             'user_id' => Auth::id(),
                         ]);
                     }
-                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                    $availableStock->update([
-                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                        'status' => ($newQty <= 0) ? 0 : 1,
-                    ]);
                 }
                 if ($availableStock->product_category_id == 3) {
                     for ($i = 0; $i < $outQuantity; $i++) {
@@ -243,19 +227,12 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
-                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                        
                             'quantity' => 1,
                             'length' => round($product['length'], 2),
                             'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
                         ]);
                     }
-                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                    $availableStock->update([
-                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                        'status' => ($newQty <= 0) ? 0 : 1,
-                    ]);
                 }
                 if ($availableStock->product_category_id == 4) {
                     for ($i = 0; $i < $outQuantity; $i++) {
@@ -265,8 +242,8 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
-                            'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
                             'quantity' => 1,
+                            'pcs' => $product['pcs'] ?? null,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
                             'width_unit' => $product['width_unit'] ?? null,
@@ -274,12 +251,12 @@ class GatePassController extends ApiController
                             'user_id' => Auth::id(),
                         ]);
                     }
-                    $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
-                    $availableStock->update([
-                        'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
-                        'status' => ($newQty <= 0) ? 0 : 1,
-                    ]);
                 }
+                $newQty = $availableStock->quantity - ($availableStock->out_quantity + $product['out_quantity']);
+                $availableStock->update([
+                    'out_quantity' => $availableStock->out_quantity + $product['out_quantity'],
+                    'status' => ($newQty <= 0) ? 0 : 1,
+                ]);
             }
             DB::commit();
             return response()->json(['success' => 'Stock has been successfully transferred to Godown.'], 200);
