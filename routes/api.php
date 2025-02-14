@@ -59,7 +59,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::resource('/godownrollerstock', GodownRollerStockController::class);
     Route::resource('/godownwoodenstock', GodownWoodenStockController::class);
-    Route::resource('/godownverticalstock', GodownVerticalStockController::class);
+    Route::get('/godownverticalstock', [GodownVerticalStockController::class,'index']);
+    Route::get('/godownverticalstock/{id}', [GodownVerticalStockController::class,'show']);
+    Route::put('/godownverticalstock/{id}', [GodownVerticalStockController::class,'update']);
     Route::resource('/godownhoneycombstock', GodownHoneyCombStockController::class);
 
    

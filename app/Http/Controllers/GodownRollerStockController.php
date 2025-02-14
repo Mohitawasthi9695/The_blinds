@@ -13,7 +13,7 @@ class GodownRollerStockController extends ApiController
      */
     public function index()
     {
-        $stocks = GodownRollerStock::with(relations: ['gatepasses', 'products', 'products.ProductCategory'])->get();
+        $stocks = GodownRollerStock::with(relations: ['gatepass', 'products', 'products.ProductCategory'])->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -34,8 +34,8 @@ class GodownRollerStockController extends ApiController
             return [
                 'id' => $stock->id,
                 'gate_pass_id' => $stock->gate_pass_id,
-                'gate_pass_no' => $stock->gatepasses->gate_pass_no,
-                'gate_pass_date' => $stock->gatepasses->gate_pass_date,
+                'gate_pass_no' => $stock->gatepass->gate_pass_no,
+                'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,

@@ -25,6 +25,10 @@ class StocksIn extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+    public function supplier()
+    {
+        return $this->belongsTo(People::class, 'supplier_id');
+    }
 
 
 }

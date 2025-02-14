@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateVerticalStock;
 use App\Http\Requests\VerticalStock;
 use App\Models\GodownVerticalStock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class GodownVerticalStockController extends ApiController
 {
@@ -14,7 +15,7 @@ class GodownVerticalStockController extends ApiController
      */
     public function index()
     {
-        $stocks = GodownVerticalStock::with(relations: ['gatepasses', 'products', 'products.ProductCategory'])->get();
+        $stocks = GodownVerticalStock::with(relations: ['gatepass', 'products', 'products.ProductCategory'])->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -23,8 +24,8 @@ class GodownVerticalStockController extends ApiController
             return [
                 'id' => $stock->id,
                 'gate_pass_id' => $stock->gate_pass_id,
-                'gate_pass_no' => $stock->gatepasses->gate_pass_no,
-                'gate_pass_date' => $stock->gatepasses->gate_pass_date,
+                'gate_pass_no' => $stock->gatepass->gate_pass_no,
+                'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
@@ -40,7 +41,7 @@ class GodownVerticalStockController extends ApiController
                 'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
             ];
         });
-        return $this->successResponse($stocks,'Godown Vetical Returive',200);
+        return $this->successResponse($stocks, 'Godown Vetical Returive', 200);
     }
 
     /**
@@ -63,10 +64,11 @@ class GodownVerticalStockController extends ApiController
     /**
      * Display the specified resource.
      */
-    public function show(GodownVerticalStock $godownVerticalStock)
+    public function show($id)
     {
-        $stock = GodownVerticalStock::with(['gatepass', 'product', 'product.ProductCategory'])
-            ->find($godownVerticalStock->id);
+        Log::info($id);
+        $stock = GodownVerticalStock::with(['gatepass', 'products', 'products.ProductCategory'])
+            ->find($id);
         if (!$stock) {
             return response()->json(['message' => 'Stock not found.'], 404);
         }
@@ -84,19 +86,20 @@ class GodownVerticalStockController extends ApiController
             'length_unit' => $stock->length_unit,
             'rack' => $stock->rack,
             'status' => $stock->status,
-            'product_name' => optional($stock->product)->name,
-            'shadeNo' => optional($stock->product)->shadeNo,
-            'purchase_shade_no' => optional($stock->product)->purchase_shade_no,
-            'product_category_name' => optional(optional($stock->product)->ProductCategory)->product_category,
+            'product_name' => optional($stock->products)->name,
+            'shadeNo' => optional($stock->products)->shadeNo,
+            'purchase_shade_no' => optional($stock->products)->purchase_shade_no,
+            'product_category_name' => optional(optional($stock->products)->ProductCategory)->product_category,
         ];
-        return $this->successResponse($data,'Godown Vetical Returive',200);
+        return $this->successResponse($data, 'Godown Vetical Returive', 200);
     }
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateVerticalStock $request, GodownVerticalStock $godownVerticalStock)
+    public function update(UpdateVerticalStock $request, $id)
     {
+        $godownVerticalStock = GodownVerticalStock::findOrFail($id);
         $godownVerticalStock->update($request->validated());
-        return $this->successResponse($godownVerticalStock,'Godown Vetical Update',200);
+        return $this->successResponse([], 'Godown Vertical Stock Updated', 200);
     }
 }

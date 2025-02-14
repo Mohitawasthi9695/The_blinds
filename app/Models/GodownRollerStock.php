@@ -16,7 +16,7 @@ class GodownRollerStock extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
-    public function gatepasses()
+    public function gatepass()
     {
         return $this->belongsTo(GatePass::class, 'gate_pass_id');
     }
