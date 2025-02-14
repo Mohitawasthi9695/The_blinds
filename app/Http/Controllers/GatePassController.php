@@ -221,6 +221,7 @@ class GatePassController extends ApiController
                 }
                 if ($availableStock->product_category_id == 3) {
                     for ($i = 0; $i < $outQuantity; $i++) {
+                        for ($i = 0; $i < $product['pcs']; $i++) {
                         GodownVerticalStock::create([
                             'gate_pass_id' => $GatePass->id,
                             'stock_in_id' => $product['stock_available_id'],
@@ -232,6 +233,7 @@ class GatePassController extends ApiController
                             'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
                         ]);
+                    }
                     }
                 }
                 if ($availableStock->product_category_id == 4) {

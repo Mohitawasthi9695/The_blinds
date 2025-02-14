@@ -216,7 +216,7 @@ class StocksInController extends ApiController
                     continue;
                 }
 
-                if (empty($row[1]) || empty($row[2])) {
+                if (empty($row[1]) || empty($row[3])) {
                     DB::rollBack();
                     return response()->json(['error' => 'Required fields shadeNo or invoice_no are missing'], 422);
                 }
