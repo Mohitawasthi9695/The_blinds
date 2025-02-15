@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateRollerStock;
 use App\Models\GodownRollerStock;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -19,18 +20,6 @@ class GodownRollerStockController extends ApiController
         }
         
         $stocks = $stocks->map(function ($stock) {
-        $length_ft = ($stock->length_unit == 'feet') ? $stock->length : $stock->length * 3.28084;
-        $length_m = ($stock->length_unit == 'meter') ? $stock->length : $stock->length / 3.28084;
-        $avaible_length_ft = ($stock->length_unit == 'feet') ? $stock->available_length : $stock->available_length * 3.28084;
-        $avaible_length_m = ($stock->length_unit == 'meter') ? $stock->available_length : $stock->available_length / 3.28084;
-        // Convert width to feet and meters
-        $width_ft = ($stock->width_unit == 'feet') ? $stock->width : $stock->width * 3.28084;
-        $width_m = ($stock->width_unit == 'meter') ? $stock->width : $stock->width / 3.28084;
-        $total_area_sq_ft = $length_ft * $width_ft;
-        $total_area_m2 = $length_m * $width_m;
-        $area_sq_ft = $width_ft*$avaible_length_ft;
-        $area_m2= $width_ft*$avaible_length_m;
-
             return [
                 'id' => $stock->id,
                 'gate_pass_id' => $stock->gate_pass_id,
@@ -40,14 +29,10 @@ class GodownRollerStockController extends ApiController
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
+                'out_length' => $stock->out_length??0,
                 'length_unit' => $stock->length_unit,
                 'width' => $stock->width,
                 'width_unit' => $stock->width_unit,
-                'pcs' => $stock->pcs,
-                'area_sq_ft' => round($area_sq_ft, 2),
-                'area_m2' => round($area_m2, 2),
-                'total_area_sq_ft' => round($total_area_sq_ft, 2),
-                'total_area_m2' => round($total_area_m2, 2),
                 'rack' => $stock->rack,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
@@ -57,14 +42,6 @@ class GodownRollerStockController extends ApiController
             ];
         });
         return response()->json($stocks);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -85,35 +62,10 @@ class GodownRollerStockController extends ApiController
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(GodownRollerStock $godownRollerStock)
+    public function update(UpdateRollerStock $request, $id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(GodownRollerStock $godownRollerStock)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, GodownRollerStock $godownRollerStock)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(GodownRollerStock $godownRollerStock)
-    {
-        //
+        $godownGodownRollerStock = GodownRollerStock::findOrFail($id);
+        $godownGodownRollerStock->update($request->validated());
+        return $this->successResponse([], 'GodownRollerStock Stock Updated', 200);
     }
 }

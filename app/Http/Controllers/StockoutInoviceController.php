@@ -15,120 +15,79 @@ class StockoutInoviceController extends ApiController
 
     public function index()
     {
-        $stockOutInvoices = StockoutInovice::with('customer', 'receiver', 'stockOutDetails.product')->get();
-        return $this->successResponse($stockOutInvoices, 'StockOutInovices retrieved successfully.');
+        $stockOutInvoices = StockoutInovice::with([
+            'stockOutDetails',
+            'stockOutDetails.product',
+            'stockOutDetails.product.productCategory',
+            'customer',
+            'receiver'
+        ])->get();
+        $formattedData = $stockOutInvoices->map(function ($invoice) {
+            return [
+                'id' => $invoice->id,
+                'invoice_no' => $invoice->invoice_no,
+                'date' => $invoice->date,
+                'customer' => $invoice->customer->name ?? null,
+                'receiver' => $invoice->receiver->name ?? null,
+                'place_of_supply' => $invoice->place_of_supply,
+                'vehicle_no' => $invoice->vehicle_no,
+                'station' => $invoice->station,
+                'ewaybill' => $invoice->ewaybill,
+                'reverse_charge' => $invoice->reverse_charge,
+                'gr_rr' => $invoice->gr_rr,
+                'transport' => $invoice->transport,
+                'irn' => $invoice->irn,
+                'ack_no' => $invoice->ack_no,
+                'ack_date' => $invoice->ack_date,
+                'total_amount' => $invoice->total_amount,
+                'cgst_percentage' => $invoice->cgst_percentage,
+                'sgst_percentage' => $invoice->sgst_percentage,
+                'payment_mode' => $invoice->payment_mode,
+                'payment_status' => $invoice->payment_status,
+                'payment_date' => $invoice->payment_date,
+                'payment_Bank' => $invoice->payment_Bank,
+                'payment_account_no' => $invoice->payment_account_no,
+                'payment_ref_no' => $invoice->payment_ref_no,
+                'payment_amount' => $invoice->payment_amount,
+                'payment_remarks' => $invoice->payment_remarks,
+                'qr_code' => $invoice->qr_code,
+                'status' => $invoice->status,
+                'stock_out_details' => $invoice->stockOutDetails->map(function ($detail) use ($invoice) {
+                    return [
+                        'id' => $detail->id,
+                        'stockout_invoice_id' => $detail->stockout_inovice_id,
+                        'godown_id' => $detail->godown_id,
+                        'product_id' => $detail->product_id,
+                        'stock_code' => $detail->stock_code,
+                        'out_width' => $detail->out_width,
+                        'out_length' => $detail->out_length,
+                        'out_pcs' => $detail->out_pcs,
+                        'width_unit' => $detail->width_unit,
+                        'length_unit' => $detail->length_unit,
+                        'type' => $detail->type,
+                        'gst' => $detail->gst,
+                        'rate' => $detail->rate,
+                        'amount' => $detail->amount,
+                        'rack' => $detail->rack,
+                        'status' => $detail->status,
+                        'product_name' => $detail->product->name ?? null,
+                        'product_shadeNo' => $detail->product->shadeNo ?? null,
+                        'product_purchase_shade_no' => $detail->product->purchase_shade_no ?? null,
+                        'product_category' => $detail->product->productCategory->product_category ?? null,
+                    ];
+                }),
+            ];
+        });
+
+        return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
+
     public function AllStockOut()
     {
         $stockOutInvoices = StockoutInovice::select('id', 'invoice_no', 'date')
             ->with('stockOutDetails.product')
             ->get();
         return $this->successResponse($stockOutInvoices, 'StockOutInvoices retrieved successfully.');
-    }
-
-
-    public function store(StockOutRequest $request)
-    {
-        $validatedData = $request->validated();
-        Log::info($validatedData);
-
-        DB::beginTransaction(); // Start transaction
-
-        try {
-            $stockOutInvoice = StockoutInovice::create([
-                'invoice_no' => $validatedData['invoice_no'],
-                'customer_id' => $validatedData['customer_id'],
-                'date' => $validatedData['date'],
-                'place_of_supply' => $validatedData['place_of_supply'],
-                'vehicle_no' => $validatedData['vehicle_no'] ?? null,
-                'station' => $validatedData['station'] ?? null,
-                'ewaybill' => $validatedData['ewaybill'] ?? null,
-                'reverse_charge' => $validatedData['reverse_charge'] ?? false,
-                'gr_rr' => $validatedData['gr_rr'] ?? null,
-                'transport' => $validatedData['transport'] ?? null,
-                'receiver_id' => $validatedData['receiver_id'],
-                'irn' => $validatedData['irn'] ?? null,
-                'ack_no' => $validatedData['ack_no'] ?? null,
-                'ack_date' => $validatedData['ack_date'] ?? null,
-                'total_amount' => $validatedData['total_amount'],
-                'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
-                'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
-                'payment_mode' => $validatedData['payment_mode'] ?? null,
-                'payment_status' => $validatedData['payment_status'] ?? null,
-                'payment_date' => $validatedData['payment_date'] ?? null,
-                'payment_Bank' => $validatedData['payment_bank'] ?? null,
-                'payment_account_no' => $validatedData['payment_account_no'] ?? null,
-                'payment_ref_no' => $validatedData['payment_ref_no'] ?? null,
-                'payment_amount' => $validatedData['payment_amount'] ?? null,
-                'payment_remarks' => $validatedData['payment_remarks'] ?? null,
-                'qr_code' => $validatedData['qr_code'] ?? null,
-                'status' => 0,
-            ]);
-
-            foreach ($validatedData['out_products'] as $product) {
-                // Validate stock availability
-                $availableStock = Godown::where('id', $product['stock_available_id'])
-                    ->where('status', '1')
-                    ->first();
-
-                if (!$availableStock) {
-                    DB::rollBack();
-                    return response()->json(['error' => 'Stock not available for the specified product configuration.'], 422);
-                }
-
-                if ($availableStock->qty < $product['out_quantity']) {
-                    DB::rollBack();
-                    return response()->json(['error' => 'Insufficient quantity available in stock.'], 422);
-                }
-
-                // Validate units and convert
-                $outLength = $product['out_length'];
-                $outWidth = $product['out_width'];
-                if ($product['unit'] === 'inches') {
-                    $outLength *= 0.0254;
-                    $outWidth *= 0.0254;
-                } elseif ($product['unit'] === 'feet') {
-                    $outLength *= 0.3048;
-                    $outWidth *= 0.3048;
-                } elseif ($product['unit'] !== 'meters') {
-                    DB::rollBack();
-                    return response()->json(['error' => 'Invalid unit provided.'], 422);
-                }
-
-                $restLength = $availableStock->length - $outLength;
-                $restWidth = $availableStock->width - $outWidth;
-
-                if ($restLength < 0 || $restWidth < 0) {
-                    DB::rollBack();
-                    return response()->json(['error' => 'Insufficient stock dimensions.'], 422);
-                }
-                log::info($product);
-                StockOutDetail::create([
-                    'stockout_inovice_id' => $stockOutInvoice->id,
-                    'stock_code' => $stockOutInvoice->stock_code,
-                    'stock_in_id' => $product['stock_available_id'],
-                    'product_id' => $product['product_id'],
-                    'product_type' => $product['product_type'],
-                    'hsn_sac_code' => $product['hsn_sac_code'] ?? null,
-                    'out_quantity' => $product['out_quantity'],
-                    'out_width' => round($outWidth, 5),
-                    'out_length' => round($outLength, 5),
-                    'unit' => $product['unit'] ?? null,
-                    'waste_width' => $restWidth,
-                    'rack' => null,
-                    'rate' => $product['rate'],
-                    'amount' => $product['amount'],
-                    'status' => 0,
-                ]);
-            }
-
-            DB::commit();
-            return $this->successResponse($stockOutInvoice, 'StocksInvoice created successfully.', 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error storing stock out invoice: ' . $e->getMessage());
-            return response()->json(['error' => 'Something went wrong.'], 500);
-        }
     }
 
     public function invoice_no()
@@ -147,7 +106,7 @@ class StockoutInoviceController extends ApiController
 
         return $this->successResponse($invoice_no, 'Invoice number retrieved successfully.');
     }
-    
+
     public function show($id)
     {
         $stockOutInvoice = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->find($id);

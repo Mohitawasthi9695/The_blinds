@@ -31,7 +31,7 @@ class GodownVerticalStockController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'out_length' => $stock->out_length,
-                'get_length' => $stock->get_length,
+                'roll_length' => $stock->roll_length,
                 'length_unit' => $stock->length_unit,
                 'rack' => $stock->rack,
                 'status' => $stock->status,
@@ -41,7 +41,7 @@ class GodownVerticalStockController extends ApiController
                 'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
             ];
         });
-        return $this->successResponse($stocks, 'Godown Vetical Returive', 200);
+        return response()->json($stocks);
     }
 
     /**
