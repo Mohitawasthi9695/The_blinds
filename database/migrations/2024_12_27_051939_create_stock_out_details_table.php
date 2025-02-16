@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('godown_id');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('hsn_sac_code')->nullable();
+            $table->date('date')->nullable();
             $table->decimal('out_width', 10, 5)->nullable();
             $table->decimal('out_length', 10, 5)->nullable();
             $table->decimal('out_pcs', 15, 5)->nullable();

@@ -31,6 +31,7 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2);
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
+            $table->decimal('igst_percentage', 5, 2)->nullable();
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

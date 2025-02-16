@@ -22,17 +22,22 @@ class StockInUpdate extends FormRequest
     public function rules(): array
     {
         $rules = [
-            'lot_no' => 'nullable|string|max:255', 
-            'stock_invoice_details_id' => 'nullable|exists:stock_invoice_details,id',
-            'invoice_id' => 'nullable|exists:stock_invoices,id',
-            'invoice_no' => 'nullable|exists:stock_invoices,invoice_no',
-            'product_id' => 'nullable|exists:products,id',
-            'width' => 'nullable|numeric|min:0',
-            'length' => 'nullable|numeric|min:0',
-            'unit' => 'nullable|string|max:255',
-            'type' => 'nullable|string|max:255',
-            'qty' => 'nullable|numeric|min:0',
+            'lot_no' => 'sometimes|string|max:255', 
+            'stock_invoice_details_id' => 'sometimes|exists:stock_invoice_details,id',
+            'invoice_id' => 'sometimes|exists:stock_invoices,id',
+            'product_id' => 'sometimes|exists:products,id',
+            'product_category_id' => 'sometimes|exists:product_categories,id', 
+            'width' => 'sometimes|numeric|min:0',
+            'length' => 'sometimes|numeric|min:0',
+            'length_unit' => 'sometimes|string|max:255', 
+            'width_unit' => 'sometimes|string|max:255', 
+            'rack' => 'sometimes|string|max:255', 
+            'pcs' => 'sometimes|numeric|min:0', 
+            'quantity' => 'sometimes|numeric|min:0',
+            'date' => 'sometimes|date', 
         ];
+        
         return $rules;
+        
     }
 }

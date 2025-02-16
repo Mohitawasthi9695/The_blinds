@@ -139,22 +139,6 @@ class GatePassController extends ApiController
             ], 500);
         }
     }
-    public function RejectStockGatePass($id)
-    {
-        DB::beginTransaction();
-        try {
-            $gatePass = GatePass::where('id', $id)->first();
-            if (!$gatePass) {
-                return response()->json(['error' => 'Gate Pass not found.'], 404);
-            }
-            $gatePass->update(['status' => 2]);
-            DB::commit();
-            return $this->successResponse([], 'Gate Pass rejected and stock quantities rolled back successfully.', 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return $this->successResponse('Failed to reject Gate Pass => ' . $e->getMessage(), 500);
-        }
-    }
     public function StoreStockGatePass(GodownStore $request)
     {
         DB::beginTransaction();
@@ -192,11 +176,12 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
+                            'date' => $validatedData['date'],
                             'quantity' => 1,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? null,
-                            'length_unit' => $product['length_unit'] ?? null,
+                            'width_unit' => $product['width_unit'] ?? 'meter',
+                            'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
                         ]);
                     }
@@ -209,31 +194,32 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
+                            'date' => $validatedData['date'],
                             'quantity' => 1,
-                            'pcs' => $product['pcs'] ?? null,
+                            'pcs' => $product['pcs'] ?? 1,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? null,
-                            'length_unit' => $product['length_unit'] ?? null,
+                            'width_unit' => $product['width_unit'] ?? 'mm',
+                            'length_unit' => $product['length_unit'] ?? 'feet',
                             'user_id' => Auth::id(),
                         ]);
                     }
                 }
                 if ($availableStock->product_category_id == 3) {
                     for ($i = 0; $i < $outQuantity; $i++) {
-                        for ($i = 0; $i < $product['pcs']; $i++) {
                         GodownVerticalStock::create([
                             'gate_pass_id' => $GatePass->id,
                             'stock_in_id' => $product['stock_available_id'],
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
+                            'type' => 'Gatepass',
                             'lot_no' => $availableStock->lot_no,
+                            'date' => $validatedData['date'],
                             'quantity' => 1,
                             'length' => round($product['length'], 2),
                             'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
                         ]);
-                    }
                     }
                 }
                 if ($availableStock->product_category_id == 4) {
@@ -244,12 +230,13 @@ class GatePassController extends ApiController
                             'product_category_id' => $availableStock->product_category_id,
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
+                            'date' => $validatedData['date'],
                             'quantity' => 1,
-                            'pcs' => $product['pcs'] ?? null,
+                            'pcs' => $product['pcs'] ?? 1,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? null,
-                            'length_unit' => $product['length_unit'] ?? null,
+                            'width_unit' => $product['width_unit'] ?? '',
+                            'length_unit' => $product['length_unit'] ?? '',
                             'user_id' => Auth::id(),
                         ]);
                     }
@@ -382,13 +369,35 @@ class GatePassController extends ApiController
     {
         DB::beginTransaction();
         try {
-            $gatePass = GatePass::where('id', $id)->first();
+            $gatePass = GatePass::find($id);
             if (!$gatePass) {
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
+
+            if ($gatePass->status == 1) {
+                return response()->json(['error' => 'Approved Gate Pass cannot be deleted.'], 403);
+            }
+            $godownStocks = [
+                GodownRollerStock::where('gate_pass_id', $id)->get(),
+                GodownWoodenStock::where('gate_pass_id', $id)->get(),
+                GodownVerticalStock::where('gate_pass_id', $id)->get(),
+                GodownHoneyCombStock::where('gate_pass_id', $id)->get()
+            ];
+            foreach ($godownStocks as $stockGroup) {
+                foreach ($stockGroup as $stock) {
+                    $availableStock = StocksIn::where('id', $stock->stock_in_id)->first();
+                    if ($availableStock) {
+                        $availableStock->update([
+                            'out_quantity' => max(0, $availableStock->out_quantity - $stock->quantity),
+                            'status' => 1,
+                        ]);
+                    }
+                    $stock->delete();
+                }
+            }
             $gatePass->delete();
             DB::commit();
-            return response()->json(['success' => 'Gate Pass and related records successfully deleted.'], 200);
+            return response()->json(['success' => 'Gate Pass and associated records deleted successfully.'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['error' => 'Failed to delete Gate Pass.', 'message' => $e->getMessage()], 500);

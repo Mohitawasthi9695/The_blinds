@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('stock_code')->nullable();
+            $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
             $table->decimal('width', 12, 3)->nullable();
             $table->string('width_unit')->default('meter');

@@ -4,14 +4,22 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateVerticalStock extends FormRequest
+class UpdateHoneyCombStock extends FormRequest
 {
-    public function authorize()
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
     {
-        return true; // Change this if you need authorization logic
+        return true;
     }
 
-    public function rules()
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
     {
         return [
             'gate_pass_id' => 'sometimes|required|integer|exists:gate_passes,id',
@@ -24,10 +32,8 @@ class UpdateVerticalStock extends FormRequest
             'out_length' => 'sometimes|nullable|numeric|min:0',
             'length_unit' => 'sometimes|required|string|in:meter,feet',
             'width' => 'sometimes|required|numeric|min:0.1',
-            'width_unit' => 'sometimes|required|string|in:meter,feet',
+            'width_unit' => 'sometimes|required|string|in:mm',
             'rack' => 'required|string|max:50',
-            'type' => 'required|string|max:50|in:GatePass,Stock',
-            'status' => 'sometimes|required|boolean',
         ];
     }
 }

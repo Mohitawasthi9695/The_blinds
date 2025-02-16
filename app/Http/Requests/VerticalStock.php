@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RollerStock extends FormRequest
+class VerticalStock extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -30,10 +30,8 @@ class RollerStock extends FormRequest
             'lot_no' => 'required|string|max:50',
             'length' => 'required|numeric|min:0',
             'length_unit' => 'required|string|in:meter,feet',
-            'width' => 'required|numeric|min:0',
-            'width_unit' => 'required|string|in:meter,feet',
-            'rack' => 'nullable|string|max:50',
+            'type' => 'required|string|max:50|in:stock',
+            'rack' => 'required|string|max:50',
         ];
-        
     }
 }

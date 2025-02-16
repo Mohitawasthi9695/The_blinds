@@ -33,29 +33,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/data', [PeopleController::class, 'supplierStocks']);
     Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
 
-    Route::resource('/products/category', ProductCategoryController::class);
+    Route::get('/products/category', [ProductCategoryController::class,'index']);
     Route::resource('/products', ProductController::class);
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
-
     Route::get('/productshadeno/{category_id}', [ProductController::class, 'ProductShadeNo']);
 
     Route::resource('/stockin/invoice', StockInvoiceController::class);
+    Route::resource('/stocks', StocksInController::class);
 
     Route::get('/stockout/invoiceno', [StockoutInoviceController::class, 'invoice_no']);
 
-    Route::resource('/stocks', StocksInController::class);
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
-    Route::get('/category/rollerstock', [StocksInController::class, 'RollerStocks']);
-    Route::get('/category/woodenstock', [StocksInController::class, 'WoodenStocks']);
-    Route::get('/category/verticalstock', [StocksInController::class, 'VerticalStocks']);
-    Route::get('/category/honeycombstock', [StocksInController::class, 'HoneyCombStocks']);
+    Route::get('/category/getstock/{id}', [StocksInController::class, 'GetStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
 
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
+    Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
     
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
     Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
+    Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'DeleteGatePass']);
 
     Route::resource('/godownrollerstock', GodownRollerStockController::class);
     Route::resource('/godownwoodenstock', GodownWoodenStockController::class);
@@ -66,9 +64,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
    
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
     Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
-    Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
     Route::put('/godowns/gatepass/{id}', [GatePassController::class, 'UpdateGatePass']);
-    Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'DeleteGatePass']);
     Route::put('/godowns/gatepass/{id}/approve', [GatePassController::class, 'ApproveStockGatePass']);
     Route::put('/godowns/gatepass/{id}/reject', [GatePassController::class, 'RejectStockGatePass']);
 

@@ -28,19 +28,20 @@ class StockInvoiceController extends ApiController
             'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
-            'vehicle_no' => $validatedData['vehicle_no'] ?? null,
-            'station' => $validatedData['station'] ?? null,
-            'ewaybill' => $validatedData['ewaybill'] ?? null,
+            'vehicle_no' => $validatedData['vehicle_no'] ?? '-',
+            'station' => $validatedData['station'] ?? '-',
+            'ewaybill' => $validatedData['ewaybill'] ?? '-',
             'reverse_charge' => $validatedData['reverse_charge'] ?? false,
-            'gr_rr' => $validatedData['gr_rr'] ?? null,
-            'transport' => $validatedData['transport'] ?? null,
-            'agent' => $validatedData['agent'],
-            'warehouse' => $validatedData['warehouse'],
-            'irn' => $validatedData['irn'] ?? null,
-            'ack_no' => $validatedData['ack_no'] ?? null,
-            'ack_date' => $validatedData['ack_date'] ?? null,
+            'gr_rr' => $validatedData['gr_rr'] ?? '',
+            'transport' => $validatedData['transport'] ?? '-',
+            'agent' => $validatedData['agent']?? '-',
+            'warehouse' => $validatedData['warehouse']?? '-',
+            'irn' => $validatedData['irn'] ?? '-',
+            'ack_no' => $validatedData['ack_no'] ?? 0,
+            'ack_date' => $validatedData['ack_date'],
             'total_amount' => $validatedData['total_amount'],
             'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
+            'igst_percentage' => $validatedData['igst_percentage'] ?? null,
             'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
             'qr_code' => $validatedData['qr_code'] ?? null,
         ]);
@@ -51,7 +52,7 @@ class StockInvoiceController extends ApiController
     // GET /StockInvoices/{id} - Show a single StockInvoice
     public function show($id)
     {
-        $StockInvoice = StockInvoice::with(['supplier', 'peoples','products','stock_in','stock_in.products'])->get()->find($id);
+        $StockInvoice = StockInvoice::with(['supplier','user:id,name,phone','stock_in','stock_in.products','stock_in.products.ProductCategory'])->get()->find($id);
         Log::info($StockInvoice);
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
@@ -67,30 +68,29 @@ class StockInvoiceController extends ApiController
         $validatedData = $request->validated();
 
         $stockInvoice->update([
-            'people_id' => $validatedData['people_id'],
+            'invoice_no' => $validatedData['invoice_no'],
+            'supplier_id' => $validatedData['supplier_id'],
             'user_id' => Auth::id(),
             'date' => $validatedData['date'],
             'place_of_supply' => $validatedData['place_of_supply'],
-            'vehicle_no' => $validatedData['vehicle_no'] ?? null,
-            'station' => $validatedData['station'] ?? null,
-            'ewaybill' => $validatedData['ewaybill'] ?? null,
-            'reverse_charge' => $validatedData['reverse_charge'] ?? false,
-            'gr_rr' => $validatedData['gr_rr'] ?? null,
-            'transport' => $validatedData['transport'] ?? null,
-            'agent' => $validatedData['agent'],
-            'warehouse' => $validatedData['warehouse'],
-            'irn' => $validatedData['irn'] ?? null,
-            'ack_no' => $validatedData['ack_no'] ?? null,
-            'ack_date' => $validatedData['ack_date'] ?? null,
+            'vehicle_no' => $validatedData['vehicle_no'] ?? '-',
+            'station' => $validatedData['station'] ?? '-',
+            'ewaybill' => $validatedData['ewaybill'] ?? '-',
+            'reverse_charge' => $validatedData['reverse_charge'] ?? 0,
+            'gr_rr' => $validatedData['gr_rr'] ?? '',
+            'transport' => $validatedData['transport'] ?? '-',
+            'agent' => $validatedData['agent']?? '-',
+            'warehouse' => $validatedData['warehouse']?? '-',
+            'irn' => $validatedData['irn'] ?? '-',
+            'ack_no' => $validatedData['ack_no'] ?? 0,
+            'ack_date' => $validatedData['ack_date']?? 0,
             'total_amount' => $validatedData['total_amount'],
-            'cgst_percentage' => $validatedData['cgst_percentage'] ?? null,
-            'sgst_percentage' => $validatedData['sgst_percentage'] ?? null,
-            'bank_id' => $validatedData['bank_id'],
-            'receiver_signature' => $validatedData['receiver_signature'] ?? null,
-            'authorised_signatory' => $validatedData['authorised_signatory'] ?? null,
-            'qr_code' => $validatedData['qr_code'] ?? null,
+            'cgst_percentage' => $validatedData['cgst_percentage'] ?? 0,
+            'igst_percentage' => $validatedData['igst_percentage'] ?? 0,
+            'sgst_percentage' => $validatedData['sgst_percentage'] ?? 0,
+            'qr_code' => $validatedData['qr_code'] ?? 0,
         ]);
-        return $this->successResponse($stockInvoice->load('products'), 'StockInvoice updated successfully.', 200);
+        return $this->successResponse($stockInvoice, 'StockInvoice updated successfully.', 200);
     }
 
 
@@ -101,7 +101,6 @@ class StockInvoiceController extends ApiController
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
         }
-
         $StockInvoice->delete();
         return $this->successResponse([], 'StockInvoice deleted successfully.', 200);
     }

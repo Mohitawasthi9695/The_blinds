@@ -138,14 +138,11 @@ class ProductController extends ApiController
             ], 500);
         }
     }
-
-
     public function store(ProductRequest $request)
     {
         $products = Product::create($request->validated());
         return $this->successResponse($products, 'Product created successfully.', 201);
     }
-
     public function show($id)
     {
         $Product = Product::find($id);

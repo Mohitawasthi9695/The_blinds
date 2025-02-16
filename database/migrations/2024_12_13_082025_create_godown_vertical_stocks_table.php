@@ -18,11 +18,12 @@ return new class extends Migration
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('stock_code')->nullable();
+            $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
+            $table->string('type')->nullable();
             $table->decimal('length', 12, 3)->nullable();
-            $table->decimal('out_length', 12, 3)->nullable();
-            $table->decimal('roll_length', 12, 3)->nullable();
             $table->string('length_unit')->default('meter');
+            $table->decimal('out_length', 12, 3)->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);

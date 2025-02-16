@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateVerticalStock;
 use App\Http\Requests\VerticalStock;
 use App\Models\GodownVerticalStock;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class GodownVerticalStockController extends ApiController
@@ -26,6 +27,7 @@ class GodownVerticalStockController extends ApiController
                 'gate_pass_id' => $stock->gate_pass_id,
                 'gate_pass_no' => $stock->gatepass->gate_pass_no,
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
+                'date' => $stock->date,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
@@ -47,7 +49,7 @@ class GodownVerticalStockController extends ApiController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(VerticalStock $request)
     {
         $validatedData = $request->validated();
         try {
@@ -101,5 +103,26 @@ class GodownVerticalStockController extends ApiController
         $godownVerticalStock = GodownVerticalStock::findOrFail($id);
         $godownVerticalStock->update($request->validated());
         return $this->successResponse([], 'Godown Vertical Stock Updated', 200);
+    }
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+        try {
+            $stock = GodownVerticalStock::findorFail($id);
+            if (!$stock) {
+                return response()->json(['error' => 'GodownWooden Stock  not found.'], 404);
+            }
+            if($stock->status!=1)
+            {
+                return response()->json(['error' => 'GodownWooden Stock Approved Cant able to Delete.'], 404);
+            }
+
+            $stock->delete();
+            DB::commit();
+            return response()->json(['success' => 'Roller Stock and related records successfully deleted.'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to delete Roller Stock.', 'message' => $e->getMessage()], 500);
+        }
     }
 }

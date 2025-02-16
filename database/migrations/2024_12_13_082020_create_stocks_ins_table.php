@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('invoice_no')->nullable();
             $table->string('lot_no')->nullable();
+            $table->date('date')->nullable();
             $table->decimal('length', 15, 3)->nullable();
             $table->string('length_unit')->default('meter')->nullable();
             $table->decimal('width', 15, 3)->nullable();
