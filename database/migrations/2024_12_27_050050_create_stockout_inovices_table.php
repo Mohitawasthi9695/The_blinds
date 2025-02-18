@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('invoice_no')->unique();
             $table->date('date');
             $table->unsignedBigInteger('customer_id');
-            $table->unsignedBigInteger('receiver_id');
+            $table->unsignedBigInteger('company_id');
             $table->string('place_of_supply')->nullable();
             $table->string('vehicle_no')->nullable();
             $table->string('station')->nullable();
@@ -30,6 +30,7 @@ return new class extends Migration
             $table->decimal('total_amount', 15, 2)->nullable();
             $table->decimal('cgst_percentage', 5, 2)->nullable();
             $table->decimal('sgst_percentage', 5, 2)->nullable();
+            $table->decimal('igst_percentage', 5, 2)->nullable();
             $table->string('payment_mode')->nullable();
             $table->string('payment_status')->nullable();
             $table->string('payment_date')->nullable();
@@ -41,7 +42,7 @@ return new class extends Migration
             $table->string('qr_code')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
-            $table->foreign('receiver_id')->references('id')->on('peoples')->onDelete('cascade');
+            $table->foreign('company_id')->references('id')->on('peoples')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('peoples')->onDelete('cascade');
         });
     }

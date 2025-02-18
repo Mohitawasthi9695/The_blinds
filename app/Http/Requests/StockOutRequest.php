@@ -25,7 +25,7 @@ class StockOutRequest extends FormRequest
             'invoice_no' => 'required|string|max:255',
             'date' => 'required|date',
             'customer_id' => 'required|integer|exists:peoples,id',
-            'receiver_id' => 'nullable|integer|exists:peoples,id',
+            'company_id' => 'required|integer|exists:peoples,id',
             'place_of_supply' => 'nullable|string|max:255',
             'vehicle_no' => 'nullable|string|max:50',
             'station' => 'nullable|string|max:255',

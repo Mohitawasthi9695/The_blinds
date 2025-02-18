@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
             $table->unsignedBigInteger('godown_id');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->string('stock_code')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->date('date')->nullable();
             $table->decimal('out_width', 10, 5)->nullable();

@@ -18,6 +18,10 @@ class GodownVerticalStock extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    public function stocks()
+    {
+        return $this->belongsTo(StocksIn::class, 'stock_in_id');
+    }
     public function gatepass()
     {
         return $this->belongsTo(GatePass::class, 'gate_pass_id');

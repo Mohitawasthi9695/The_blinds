@@ -17,9 +17,9 @@ class StockoutInovice extends Model
     {
         return $this->belongsTo(People::class,'customer_id');
     }
-    public function receiver()
+    public function company()
     {
-        return $this->belongsTo(People::class,'receiver_id');
+        return $this->belongsTo(People::class,'company_id');
     }
 
     public function stockOutDetails()

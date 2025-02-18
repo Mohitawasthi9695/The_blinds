@@ -26,6 +26,7 @@ return new class extends Migration
             $table->string('length_unit')->default('meter');
             $table->string('type')->nullable();
             $table->integer('pcs')->nullable();
+            $table->integer('out_pcs')->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);

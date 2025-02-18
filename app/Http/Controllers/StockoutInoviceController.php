@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StockOutRequest;
 use App\Models\Godown;
+use App\Models\GodownHoneyCombStock;
+use App\Models\GodownRollerStock;
+use App\Models\GodownVerticalStock;
+use App\Models\GodownWoodenStock;
 use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
@@ -20,7 +24,7 @@ class StockoutInoviceController extends ApiController
             'stockOutDetails.product',
             'stockOutDetails.product.productCategory',
             'customer',
-            'receiver'
+            'company'
         ])->get();
         $formattedData = $stockOutInvoices->map(function ($invoice) {
             return [
@@ -28,7 +32,7 @@ class StockoutInoviceController extends ApiController
                 'invoice_no' => $invoice->invoice_no,
                 'date' => $invoice->date,
                 'customer' => $invoice->customer->name ?? null,
-                'receiver' => $invoice->receiver->name ?? null,
+                'company' => $invoice->company->name ?? null,
                 'place_of_supply' => $invoice->place_of_supply,
                 'vehicle_no' => $invoice->vehicle_no,
                 'station' => $invoice->station,
@@ -109,37 +113,133 @@ class StockoutInoviceController extends ApiController
 
     public function show($id)
     {
-        $stockOutInvoice = StockoutInovice::with('customer', 'receiver', 'stockOutDetails')->find($id);
+        $stockOutInvoice = StockoutInovice::with([
+            'stockOutDetails',
+            'stockOutDetails.product',
+            'stockOutDetails.product.productCategory',
+            'customer',
+            'company'
+        ])->find($id);
+
         if (!$stockOutInvoice) {
             return $this->errorResponse('StockOutInvoice not found.', 404);
         }
-        return $this->successResponse($stockOutInvoice, 'StockOutInvoice retrieved successfully.');
+
+        $formattedData = [
+            'id' => $stockOutInvoice->id,
+            'invoice_no' => $stockOutInvoice->invoice_no,
+            'date' => $stockOutInvoice->date,
+            'customer' => $stockOutInvoice->customer->name ?? null,
+            'company' => $stockOutInvoice->company->name ?? null,
+            'place_of_supply' => $stockOutInvoice->place_of_supply,
+            'vehicle_no' => $stockOutInvoice->vehicle_no,
+            'station' => $stockOutInvoice->station,
+            'ewaybill' => $stockOutInvoice->ewaybill,
+            'reverse_charge' => $stockOutInvoice->reverse_charge,
+            'gr_rr' => $stockOutInvoice->gr_rr,
+            'transport' => $stockOutInvoice->transport,
+            'irn' => $stockOutInvoice->irn,
+            'ack_no' => $stockOutInvoice->ack_no,
+            'ack_date' => $stockOutInvoice->ack_date,
+            'total_amount' => $stockOutInvoice->total_amount,
+            'cgst_percentage' => $stockOutInvoice->cgst_percentage,
+            'sgst_percentage' => $stockOutInvoice->sgst_percentage,
+            'payment_mode' => $stockOutInvoice->payment_mode,
+            'payment_status' => $stockOutInvoice->payment_status,
+            'payment_date' => $stockOutInvoice->payment_date,
+            'payment_Bank' => $stockOutInvoice->payment_Bank,
+            'payment_account_no' => $stockOutInvoice->payment_account_no,
+            'payment_ref_no' => $stockOutInvoice->payment_ref_no,
+            'payment_amount' => $stockOutInvoice->payment_amount,
+            'payment_remarks' => $stockOutInvoice->payment_remarks,
+            'qr_code' => $stockOutInvoice->qr_code,
+            'status' => $stockOutInvoice->status,
+            'stock_out_details' => $stockOutInvoice->stockOutDetails->map(function ($detail) {
+                return [
+                    'id' => $detail->id,
+                    'stockout_invoice_id' => $detail->stockout_inovice_id,
+                    'godown_id' => $detail->godown_id,
+                    'product_id' => $detail->product_id,
+                    'stock_code' => $detail->stock_code,
+                    'width' => $detail->out_width,
+                    'length' => $detail->out_length,
+                    'out_pcs' => $detail->out_pcs,
+                    'width_unit' => $detail->width_unit,
+                    'length_unit' => $detail->length_unit,
+                    'type' => $detail->type,
+                    'gst' => $detail->gst,
+                    'rate' => $detail->rate,
+                    'amount' => $detail->amount,
+                    'rack' => $detail->rack,
+                    'status' => $detail->status,
+                    'product_name' => $detail->product->name ?? null,
+                    'product_shadeNo' => $detail->product->shadeNo ?? null,
+                    'product_purchase_shade_no' => $detail->product->purchase_shade_no ?? null,
+                    'product_category' => $detail->product->productCategory->product_category ?? null,
+                ];
+            }),
+        ];
+
+        return $this->successResponse($formattedData, 'StockOutInvoice retrieved successfully.');
     }
+
 
     public function destroy($id)
     {
         $stockOutInvoice = StockoutInovice::find($id);
-        log::info($stockOutInvoice);
+
         if (!$stockOutInvoice) {
             return $this->errorResponse('StockOutInvoice not found.', 404);
         }
+
         DB::transaction(function () use ($stockOutInvoice) {
             foreach ($stockOutInvoice->stockOutDetails as $detail) {
-                log::info($detail);
-                $availableStock = StocksIn::find($detail->stock_in_id);
-                if ($availableStock) {
-                    log::info($detail->out_length);
-                    log::info($detail->out_width);
-                    $availableStock->update([
-                        'available_height' => $availableStock->available_height + $detail->out_length,
-                        'available_width' => $availableStock->available_width + $detail->out_width,
-                        'status' => 1,
-                    ]);
+                $availableStock = null;
+
+                // Determine which stock table to update based on product_category_id
+                if ($detail->product->product_category_id === 1) {
+                    $availableStock = GodownRollerStock::find($detail->godown_id);
+                    if ($availableStock) {
+                        $availableStock->update([
+                            'out_length' => max($availableStock->out_length - $detail->out_length, 0),
+                            'status' => 1,
+                            'quantity' => 1,
+                        ]);
+                    }
+                } elseif ($detail->product->product_category_id === 2) {
+                    $availableStock = GodownWoodenStock::find($detail->godown_id);
+                    if ($availableStock) {
+                        $availableStock->update([
+                            'out_pcs' => max($availableStock->out_pcs - $detail->out_pcs, 0),
+                            'status' => 1,
+                            'quantity' => 1,
+                        ]);
+                    }
+                } elseif ($detail->product->product_category_id === 3) {
+                    $availableStock = GodownVerticalStock::find($detail->godown_id);
+                    if ($availableStock) {
+                        $availableStock->update([
+                            'out_length' => max($availableStock->out_length - $detail->out_length, 0),
+                            'status' => 1,
+                            'quantity' => 1,
+                        ]);
+                    }
+                } elseif ($detail->product->product_category_id === 4) {
+                    $availableStock = GodownHoneyCombStock::find($detail->godown_id);
+                    if ($availableStock) {
+                        $availableStock->update([
+                            'out_pcs' => max($availableStock->out_pcs - $detail->out_pcs, 0),
+                            'status' => 1,
+                            'quantity' => 1,
+                        ]);
+                    }
                 }
+                Log::info("Stock updated: ", $availableStock ? $availableStock->toArray() : []);
                 $detail->delete();
             }
             $stockOutInvoice->delete();
         });
+
         return $this->successResponse(null, 'StockOutInvoice and associated records deleted successfully.');
     }
 }

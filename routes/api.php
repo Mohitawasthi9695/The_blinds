@@ -87,11 +87,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/godownstockout', [StockOutController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
 
-    Route::get('/stockout', [StockoutInoviceController::class,'index']);
+    Route::get('/godownstockout', [StockoutInoviceController::class,'index']);
+    Route::get('/godownstockout/{id}', [StockoutInoviceController::class,'show']);
+    Route::delete('/godownstockout/{id}', [StockoutInoviceController::class,'destroy']);
+    Route::get('/stockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::resource('admin/stocksout', StockoutInoviceController::class);
     Route::get('/sales', [StockOutController::class, 'Sales']);
     Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
-    Route::get('/allstockout', [StockoutInoviceController::class, 'AllStockOut']);
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
 });

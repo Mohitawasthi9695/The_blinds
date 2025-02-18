@@ -118,7 +118,7 @@ class StockOutController extends ApiController
                 'width' => $stock->width,
                 'length_unit' => $stock->length_unit ?? 'N/A',
                 'width_unit' => $stock->width_unit ?? 'N/A',
-                'out_pcs' => $stock->pcs - ($stock->out_pcs ?? 0) ?? 1,
+                'out_pcs' => ($stock->pcs - $stock->out_pcs) ?? 1,
                 'rack' => $stock->rack ?? 'N/A',
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
@@ -136,11 +136,12 @@ class StockOutController extends ApiController
         try {
 
             $validatedData = $request->validated();
+            log:info($validatedData);
             $stockoutInvoice = StockoutInovice::create([
                 'invoice_no' => $validatedData['invoice_no'],
                 'date' => $validatedData['date'],
                 'customer_id' => $validatedData['customer_id'],
-                'receiver_id' => $validatedData['receiver_id'] ?? null,
+                'company_id' => $validatedData['company_id'] ?? null,
                 'place_of_supply' => $validatedData['place_of_supply'] ?? null,
                 'vehicle_no' => $validatedData['vehicle_no'] ?? null,
                 'station' => $validatedData['station'] ?? null,
@@ -181,7 +182,7 @@ class StockOutController extends ApiController
                     ]);
                 } elseif ($product['product_category_id'] === 2) {
                     $availableStock = GodownWoodenStock::findorFail($product['godown_id']);
-                    if ($product['pcs'] > $availableStock->pcs - $availableStock->out_pcs) {
+                    if ($product['out_pcs'] > $availableStock->pcs - $availableStock->out_pcs) {
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                     }
@@ -205,7 +206,7 @@ class StockOutController extends ApiController
                     ]);
                 } elseif ($product['product_category_id'] === 1) {
                     $availableStock = GodownHoneyCombStock::findorFail($product['godown_id']);
-                    if ($product['pcs'] > $availableStock->pcs - $availableStock->out_pcs) {
+                    if ($product['out_pcs'] > $availableStock->pcs - $availableStock->out_pcs) {
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                     }
@@ -223,6 +224,7 @@ class StockOutController extends ApiController
                 StockOutDetail::create([
                     'stockout_inovice_id' => $stockoutInvoice->id,
                     'godown_id' =>  $availableStock->id,
+                    'stock_code' =>  $availableStock->stock_code,
                     'product_id' => $availableStock->product_id,
                     'out_width' => round($product['width'], 2),
                     'out_length' => round($product['length'], 2),

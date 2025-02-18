@@ -41,9 +41,13 @@ class GatePassController extends ApiController
         $stocks = GatePass::with([
             'warehouse_supervisors:id,name',
             'godown_supervisors:id,name',
+            'godown_roller_stock.stocks:id,stock_code',
             'godown_roller_stock.products',
+            'godown_wooden_stock.stocks:id,stock_code',
             'godown_wooden_stock.products',
+            'godown_vertical_stock.stocks:id,stock_code',
             'godown_vertical_stock.products',
+            'godown_honeycomb_stock.stocks:id,stock_code',
             'godown_honeycomb_stock.products'
         ])->where('type', 'stock')->orderBy('id', 'desc')->get();
 
@@ -58,8 +62,27 @@ class GatePassController extends ApiController
                 ->merge($stock->godown_wooden_stock)
                 ->merge($stock->godown_vertical_stock)
                 ->merge($stock->godown_honeycomb_stock)
-                ->values();
-
+                ->values()->map(function ($stockItem) {
+                    return [
+                        'id' => $stockItem->id,
+                        'gate_pass_id' => $stockItem->gate_pass_id,
+                        'stock_in_id' => $stockItem->stock_in_id,
+                        'product_id' => $stockItem->product_id,
+                        'stockin_code' => $stockItem->stocks->stock_code ?? null,
+                        'stock_code' => $stockItem->stock_code ?? null,
+                        'date' => $stockItem->date,
+                        'lot_no' => $stockItem->lot_no,
+                        'width' => $stockItem->width,
+                        'width_unit' => $stockItem->width_unit,
+                        'length' => $stockItem->length,
+                        'length_unit' => $stockItem->length_unit,
+                        'pcs' => $stockItem->pcs ?? 1,
+                        'quantity' => $stockItem->quantity,
+                        'status' => $stockItem->status,
+                        'products_shadeNo' => $stockItem->products->shadeNo,
+                        'products_purchase_shade_no' => $stockItem->products->purchase_shade_no,
+                    ];
+                });
             return [
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
@@ -77,9 +100,13 @@ class GatePassController extends ApiController
         $stocks = GatePass::with([
             'warehouse_supervisors:id,name',
             'godown_supervisors:id,name',
+            'godown_roller_stock.stocks:id,stock_code',
             'godown_roller_stock.products',
+            'godown_wooden_stock.stocks:id,stock_code',
             'godown_wooden_stock.products',
+            'godown_vertical_stock.stocks:id,stock_code',
             'godown_vertical_stock.products',
+            'godown_honeycomb_stock.stocks:id,stock_code',
             'godown_honeycomb_stock.products'
         ])->where('id', $id)->get();
 
@@ -87,15 +114,35 @@ class GatePassController extends ApiController
             return $this->errorResponse('No GatePass Found', 404);
         }
 
-        // Transforming the data to merge stocks
+        // Transforming the data to merge stocks and extract stock_code
         $formattedStocks = $stocks->map(function ($stock) {
             $allStock = collect()
                 ->merge($stock->godown_roller_stock)
                 ->merge($stock->godown_wooden_stock)
                 ->merge($stock->godown_vertical_stock)
                 ->merge($stock->godown_honeycomb_stock)
-                ->values();
-
+                ->values()
+                ->map(function ($stockItem) {
+                    return [
+                        'id' => $stockItem->id,
+                        'gate_pass_id' => $stockItem->gate_pass_id,
+                        'stock_in_id' => $stockItem->stock_in_id,
+                        'product_id' => $stockItem->product_id,
+                        'stockin_code' => $stockItem->stocks->stock_code ?? null,
+                        'stock_code' => $stockItem->stock_code ?? null,
+                        'date' => $stockItem->date,
+                        'lot_no' => $stockItem->lot_no,
+                        'width' => $stockItem->width,
+                        'width_unit' => $stockItem->width_unit,
+                        'length' => $stockItem->length,
+                        'length_unit' => $stockItem->length_unit,
+                        'pcs' => $stockItem->pcs ?? 1,
+                        'quantity' => $stockItem->quantity,
+                        'status' => $stockItem->status,
+                        'products_shadeNo' => $stockItem->products->shadeNo,
+                        'products_purchase_shade_no' => $stockItem->products->purchase_shade_no,
+                    ];
+                });
             return [
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
@@ -105,8 +152,9 @@ class GatePassController extends ApiController
                 'all_stocks' => $allStock,
             ];
         });
-        return $this->successResponse($formattedStocks, 'GatePass With Godown Retreived Successfully', 200);
+        return $this->successResponse($formattedStocks, 'GatePass With Stock Retrieved Successfully', 200);
     }
+
     public function ApproveStockGatePass($id)
     {
         DB::beginTransaction();
@@ -178,6 +226,7 @@ class GatePassController extends ApiController
                             'lot_no' => $availableStock->lot_no,
                             'date' => $validatedData['date'],
                             'quantity' => 1,
+                            'pcs'=> 1,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
                             'width_unit' => $product['width_unit'] ?? 'meter',
@@ -216,6 +265,7 @@ class GatePassController extends ApiController
                             'lot_no' => $availableStock->lot_no,
                             'date' => $validatedData['date'],
                             'quantity' => 1,
+                            'pcs'=> 1,
                             'length' => round($product['length'], 2),
                             'length_unit' => $product['length_unit'] ?? 'meter',
                             'user_id' => Auth::id(),
