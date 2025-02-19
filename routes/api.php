@@ -82,18 +82,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
 
-    Route::get('/getgodownstocks/{id}', [StockOutController::class, 'CheckStocks']);
-    Route::get('/godowncheckout/{id}', [StockOutController::class, 'GetStockCheckout']);
-    Route::post('/godownstockout', [StockOutController::class, 'GodownStockOut']);
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
-
+    
+    Route::get('/getgodownstocks/{id}', [StockOutController::class, 'CheckStocks']);
+    Route::post('/godownstockout', [StockoutInoviceController::class, 'store']);
+    Route::put('/godownstockout/approve/{id}', [StockoutInoviceController::class, 'approve']);
     Route::get('/godownstockout', [StockoutInoviceController::class,'index']);
     Route::get('/godownstockout/{id}', [StockoutInoviceController::class,'show']);
     Route::delete('/godownstockout/{id}', [StockoutInoviceController::class,'destroy']);
     Route::get('/stockout', [StockoutInoviceController::class, 'AllStockOut']);
-    Route::resource('admin/stocksout', StockoutInoviceController::class);
-    Route::get('/sales', [StockOutController::class, 'Sales']);
-    Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
-    Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
-    Route::get('/barData', [ProductController::class, 'BarGraphData']);
+    
+    // Route::get('/sales', [StockOutController::class, 'Sales']);
+    // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
+    // Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
+    // Route::get('/barData', [ProductController::class, 'BarGraphData']);
 });

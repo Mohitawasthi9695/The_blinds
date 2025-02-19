@@ -39,6 +39,7 @@ class StockOutRequest extends FormRequest
             'total_amount' => 'required|numeric|min:0',
             'cgst_percentage' => 'nullable|numeric|min:0|max:100',
             'sgst_percentage' => 'nullable|numeric|min:0|max:100',
+            'igst_percentage' => 'nullable|numeric|min:0|max:100',
             'payment_mode' => 'nullable|string|in:cash,card,online,cheque,other',
             'payment_status' => 'nullable|string|in:paid,pending,failed',
             'payment_date' => 'nullable|date',
