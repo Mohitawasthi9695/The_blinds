@@ -47,6 +47,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/category/getstock/{id}', [StocksInController::class, 'GetStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
+    Route::get( '/getaccessorycode', [GodownAccessoryController::class, 'Stock_code']);     
+    Route::post('/godownaccessoryout', [GodownAccessoryController::class, 'StockOut']);
 
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
     Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
@@ -58,7 +60,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('/godownrollerstock', GodownRollerStockController::class);
     Route::resource('/godownwoodenstock', GodownWoodenStockController::class);
     Route::resource('/godownverticalstock',GodownVerticalStockController::class);
-    Route::get('/godownverticalgodownstock',[GodownVerticalStockController::class,'GodownStock']);
+    Route::get('/godownverticalstock/stock/{id}',[GodownVerticalStockController::class,'GodownStock']);
     Route::resource('/godownhoneycombstock', GodownHoneyCombStockController::class);
    
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
@@ -90,7 +92,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownstockout', [StockoutInoviceController::class,'index']);
     Route::get('/godownstockout/{id}', [StockoutInoviceController::class,'show']);
     Route::delete('/godownstockout/{id}', [StockoutInoviceController::class,'destroy']);
-    Route::get('/stockout', [StockoutInoviceController::class, 'AllStockOut']);
+    Route::get('/stockout', [StockOutController::class, 'AllStockOut']);
     
     // Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);

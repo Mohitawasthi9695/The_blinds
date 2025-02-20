@@ -34,13 +34,13 @@ return new class extends Migration
             $table->string('payment_mode')->nullable();
             $table->string('payment_status')->nullable();
             $table->string('payment_date')->nullable();
-            $table->string('payment_Bank')->nullable();
+            $table->string('payment_bank')->nullable();
             $table->string('payment_account_no')->nullable();
             $table->string('payment_ref_no')->nullable();
             $table->decimal('payment_amount',15,2)->nullable();
             $table->string('payment_remarks')->nullable();
             $table->string('qr_code')->nullable();
-            $table->boolean('status')->default(1);
+            $table->boolean('status')->default(0);
             $table->timestamps();
             $table->foreign('company_id')->references('id')->on('peoples')->onDelete('cascade');
             $table->foreign('customer_id')->references('id')->on('peoples')->onDelete('cascade');

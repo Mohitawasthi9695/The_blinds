@@ -28,6 +28,7 @@ class WarehouseAccessoryController extends ApiController
                 'product_category' => $item->accessory->productCategory->product_category ?? '',
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
                 'lot_no' => $item->lot_no ?? 'N/A',
+                'stock_code' => $item->stock_code ?? 'N/A',
                 'items' => $item->items ?? 'N/A',
                 'out_length' => $item->length ?? 'N/A',
                 'length_unit' => $item->length_unit ?? 'N/A',
@@ -44,7 +45,7 @@ class WarehouseAccessoryController extends ApiController
     {
         $warehouseAccessories = WarehouseAccessory::with('accessory', 'accessory.productCategory')->where('product_accessory_id', $id)->where('status', 1)->get();
         if ($warehouseAccessories->isEmpty()) {
-            return $this->errorResponse('WarehouseAccessory not found.', 404);
+            return $this->errorResponse('No active stocks found for this product.', 404);
         }
         $formattedData = $warehouseAccessories->map(function ($item) {
             return [
@@ -52,6 +53,7 @@ class WarehouseAccessoryController extends ApiController
                 'product_accessory_id' => $item->product_accessory_id,
                 'product_category' => $item->accessory->productCategory->product_category ?? '',
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
+                'stock_code' => $item->stock_code ?? '',
                 'lot_no' => $item->lot_no ?? '',
                 'items' => $item->items ?? '',
                 'out_length' => $item->length ?? '',

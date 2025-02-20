@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stock_out_details', function (Blueprint $table) {
+        Schema::create('stockout_accessory', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
-            $table->unsignedBigInteger('godown_id');
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('godown_accessory_id')->constrained('godown_accessories')->onDelete('cascade');
+            $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
             $table->string('stock_code')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->date('date')->nullable();
-            $table->decimal('out_width', 10, 5)->nullable();
-            $table->decimal('out_length', 10, 5)->nullable();
-            $table->integer('out_pcs')->nullable();
-            $table->string('width_unit')->nullable();
+            $table->string('lot_no')->nullable();
+            $table->string('length')->nullable();
             $table->string('length_unit')->nullable();
-            $table->string('type')->nullable();
+            $table->string('items')->nullable();
+            $table->string('box_bundle')->nullable();
             $table->decimal('gst', 10, 5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();
@@ -39,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stock_out_details');
+        Schema::dropIfExists('stockout_accessory');
     }
 };

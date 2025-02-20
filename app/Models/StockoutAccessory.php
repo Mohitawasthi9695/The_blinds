@@ -6,19 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
 
-class StockOutDetail extends Model
+class StockoutAccessory extends Model
 {
     use HasApiTokens, HasFactory;
     protected $guarded = [];
 
     protected $hidden = ['created_at', 'updated_at'];
-    protected $table = 'stock_out_details';
+    protected $table = 'stockout_accessory';
     public function stockOutInvoice()
     {
-        return $this->belongsTo(StockoutInovice::class,'stockout_inovice_id');
+        return $this->belongsTo(StockoutInovice::class);
     }
-    public function product()
+    public function accessory()
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(ProductAccessory::class);
     }
 }

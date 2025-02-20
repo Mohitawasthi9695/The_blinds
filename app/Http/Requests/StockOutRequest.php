@@ -59,6 +59,7 @@ class StockOutRequest extends FormRequest
             'out_products.*.out_pcs' => 'nullable|numeric|min:1',
             'out_products.*.length_unit' => 'required|string|max:50',
             'out_products.*.width_unit' => 'required|string|max:50',
+            'out_products.*.date' => 'nullable|date',
             'out_products.*.rate' => 'required|numeric|min:0',
             'out_products.*.amount' => 'required|numeric|min:0',
         ];

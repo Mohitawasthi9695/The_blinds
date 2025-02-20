@@ -49,7 +49,7 @@ class StockoutInoviceController extends ApiController
                 'payment_mode' => $invoice->payment_mode,
                 'payment_status' => $invoice->payment_status,
                 'payment_date' => $invoice->payment_date,
-                'payment_Bank' => $invoice->payment_Bank,
+                'payment_bank' => $invoice->payment_bank,
                 'payment_account_no' => $invoice->payment_account_no,
                 'payment_ref_no' => $invoice->payment_ref_no,
                 'payment_amount' => $invoice->payment_amount,
@@ -63,15 +63,15 @@ class StockoutInoviceController extends ApiController
                         'godown_id' => $detail->godown_id,
                         'product_id' => $detail->product_id,
                         'stock_code' => $detail->stock_code,
-                        'out_width' => $detail->out_width,
-                        'out_length' => $detail->out_length,
-                        'out_pcs' => $detail->out_pcs,
+                        'out_width' => round($detail->out_width, 2),
+                        'out_length' => round($detail->out_length, 2),
+                        'out_pcs' => round($detail->out_pcs),
                         'width_unit' => $detail->width_unit,
                         'length_unit' => $detail->length_unit,
                         'type' => $detail->type,
                         'gst' => $detail->gst,
-                        'rate' => $detail->rate,
-                        'amount' => $detail->amount,
+                        'rate' => round($detail->rate,3),
+                        'amount' => round($detail->amount,3),
                         'rack' => $detail->rack,
                         'status' => $detail->status,
                         'product_name' => $detail->product->name ?? null,
@@ -86,13 +86,7 @@ class StockoutInoviceController extends ApiController
         return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
 
-    public function AllStockOut()
-    {
-        $stockOutInvoices = StockoutInovice::select('id', 'invoice_no', 'date')
-            ->with('stockOutDetails.product')
-            ->get();
-        return $this->successResponse($stockOutInvoices, 'StockOutInvoices retrieved successfully.');
-    }
+    
     public function invoice_no()
     {
         $lastInvoice = StockoutInovice::select('invoice_no')->orderBy('id', 'desc')->first();
@@ -159,8 +153,8 @@ class StockoutInoviceController extends ApiController
                     'godown_id' => $detail->godown_id,
                     'product_id' => $detail->product_id,
                     'stock_code' => $detail->stock_code,
-                    'width' => $detail->out_width,
-                    'length' => $detail->out_length,
+                    'width' => round($detail->out_width, 2),
+                    'length' => round($detail->out_length, 2),
                     'out_pcs' => $detail->out_pcs,
                     'width_unit' => $detail->width_unit,
                     'length_unit' => $detail->length_unit,
@@ -294,8 +288,9 @@ class StockoutInoviceController extends ApiController
                     'godown_id' =>  $availableStock->id,
                     'stock_code' =>  $availableStock->stock_code,
                     'product_id' => $availableStock->product_id,
-                    'out_width' => round($product['width'], 2),
-                    'out_length' => round($product['length'], 2),
+                    'date' => $product['date']?? null,
+                    'out_width' => $product['width'],
+                    'out_length' => $product['length'],
                     'width_unit' => $product['width_unit'] ?? null,
                     'length_unit' => $product['length_unit'] ?? null,
                     'out_pcs' => $product['out_pcs'] ?? 1,

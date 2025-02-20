@@ -29,6 +29,7 @@ class GodownVerticalStockController extends ApiController
                 'gate_pass_no' => $stock->gatepass->gate_pass_no,
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'date' => $stock->date,
+                'stock_in_id' => $stock->stock_in_id,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
@@ -46,10 +47,11 @@ class GodownVerticalStockController extends ApiController
         return response()->json($stocks);
     }
 
-    public function GodownStock()
+    public function GodownStock($id)
     {
-        $stocks = GodownVerticalStock::with(relations: ['gatepass', 'products', 'products.ProductCategory'])->where('type', 'stock')->get();
-        if ($stocks->isEmpty()) {
+        $stocks = GodownVerticalStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('stock_in_id',$id)->where('type', 'stock')->get();
+        log::info($stocks);
+        if($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
 
@@ -115,6 +117,7 @@ class GodownVerticalStockController extends ApiController
             'gate_pass_id' => $stock->gate_pass_id,
             'gate_pass_no' => optional($stock->gatepass)->gate_pass_no,
             'gate_pass_date' => optional($stock->gatepass)->gate_pass_date,
+            'stock_in_id' => $stock->stock_in_id,
             'product_id' => $stock->product_id,
             'stock_code' => $stock->stock_code,
             'lot_no' => $stock->lot_no,
