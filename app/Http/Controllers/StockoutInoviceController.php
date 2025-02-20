@@ -239,8 +239,8 @@ class StockoutInoviceController extends ApiController
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],
-                        'status' => ($NewLength <= 0) ? 0 : 1,
-                        'quantity' => ($NewLength <= 0) ? 0 : 1,
+                        'status' => ($NewLength <= 0) ? 2 : 1,
+                        'quantity' => ($NewLength <= 0) ? 2 : 1,
                     ]);
                 } elseif ($product['product_category_id'] === 2) {
                     $availableStock = GodownWoodenStock::findorFail($product['godown_id']);
@@ -251,8 +251,8 @@ class StockoutInoviceController extends ApiController
                     $NewPcs = $availableStock->pcs - ($availableStock->out_pcs + $product['out_pcs']);
                     $availableStock->update([
                         'out_pcs' => $availableStock->out_pcs + $product['out_pcs'],
-                        'status' => ($NewPcs <= 0) ? 0 : 1,
-                        'quantity' => ($NewPcs <= 0) ? 0 : 1,
+                        'status' => ($NewPcs <= 0) ? 2 : 1,
+                        'quantity' => ($NewPcs <= 0) ? 2 : 1,
                     ]);
                 } elseif ($product['product_category_id'] === 1) {
                     $availableStock = GodownVerticalStock::findorFail($product['godown_id']);
@@ -263,8 +263,8 @@ class StockoutInoviceController extends ApiController
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],
-                        'status' => ($NewLength <= 0) ? 0 : 1,
-                        'quantity' => ($NewLength <= 0) ? 0 : 1,
+                        'status' => ($NewLength <= 0) ? 2 : 1,
+                        'quantity' => ($NewLength <= 0) ? 2 : 1,
                     ]);
                 } elseif ($product['product_category_id'] === 1) {
                     $availableStock = GodownHoneyCombStock::findorFail($product['godown_id']);
@@ -275,8 +275,8 @@ class StockoutInoviceController extends ApiController
                     $NewPcs = $availableStock->pcs - ($availableStock->out_pcs + $product['out_pcs']);
                     $availableStock->update([
                         'out_pcs' => $availableStock->out_pcs + $product['out_pcs'],
-                        'status' => ($NewPcs <= 0) ? 0 : 1,
-                        'quantity' => ($NewPcs <= 0) ? 0 : 1,
+                        'status' => ($NewPcs <= 0) ? 2 : 1,
+                        'quantity' => ($NewPcs <= 0) ? 2 : 1,
                     ]);
                 }
                 if (!$availableStock) {

@@ -49,9 +49,9 @@ class GodownVerticalStockController extends ApiController
 
     public function GodownStock($id)
     {
-        $stocks = GodownVerticalStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('stock_in_id',$id)->where('type', 'stock')->get();
+        $stocks = GodownVerticalStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('stock_in_id', $id)->where('type', 'stock')->get();
         log::info($stocks);
-        if($stocks->isEmpty()) {
+        if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
 
@@ -62,7 +62,7 @@ class GodownVerticalStockController extends ApiController
                 'gate_pass_no' => $stock->gatepass->gate_pass_no,
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'date' => $stock->date,
-                'stock_in_id'=> $stock->stock_in_id,
+                'stock_in_id' => $stock->stock_in_id,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
@@ -91,6 +91,7 @@ class GodownVerticalStockController extends ApiController
             $createdItems = [];
             foreach ($validatedData as $data) {
                 $data['user_id'] =  Auth::id();
+                $data['status'] = 1;
                 $createdItems[] = GodownVerticalStock::create($data);
             }
             return $this->successResponse($createdItems, 'GodownRollerStock entries created successfully.', 201);

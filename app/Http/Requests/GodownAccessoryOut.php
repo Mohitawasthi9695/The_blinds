@@ -30,7 +30,7 @@ class GodownAccessoryOut extends FormRequest
             '*.items' => 'nullable|numeric|min:0',
             '*.out_length' => 'nullable|numeric|min:0',
             '*.box_bundle' => 'nullable|numeric|min:0',
-            '*.out_quantity' => 'nullable|numeric|min:0',
+            '*.out_quantity' => 'nullable|numeric|min:1',
             '*.length_unit' => 'nullable|string|max:50',
         ];
         return $rules;

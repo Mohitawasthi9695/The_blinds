@@ -37,6 +37,7 @@ class GodownAccessoryController extends ApiController
                 'box_bundle' => $item->box_bundle ?? 0,
                 'out_quantity' => $item->out_quantity ?? 0,
                 'quantity' => $item->quantity ?? 0,
+                'status' => $item->status ?? 0,
                 'date' => $item->created_at->format('Y-m-d'),
             ];
         });
@@ -55,20 +56,41 @@ class GodownAccessoryController extends ApiController
     public function StockOut(GodownAccessoryOut $request)
     {
         $StockoutAccessory = $request->validated();
+
         try {
             $createdItems = [];
+
             foreach ($StockoutAccessory as $data) {
-                $createdItems = StockoutAccessory::create($data);
+                $exist = GodownAccessory::find($data['godown_accessory_id']);
+                if (!$exist) {
+                    return $this->errorResponse('Accessory not found in stock.', 404);
+                }
+                if ($exist->quantity < ($exist->out_quantity + $data['out_quantity'])) {
+                    return $this->errorResponse('Not enough stock available.', 400);
+                }
+                $createdItem = StockoutAccessory::create($data);
+                $createdItems[] = $createdItem;
+                $total_out = $exist->out_quantity + $data['out_quantity'];
+                Log::info("Total Out Quantity: " . $total_out);
+                $newStatus = ($total_out >= $exist->quantity) ? 2 : 1;
+                $exist->update([
+                    'out_quantity' => $total_out,
+                    'status' => $newStatus,
+                ]);
             }
+
             return $this->successResponse($createdItems, 'StockoutAccessory entries created successfully.', 201);
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to create stock entries.', 500, $e->getMessage());
         }
     }
+
+
     public function store(GodownAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
-        log:info($warehouseAccessories);
+        log:
+        info($warehouseAccessories);
         $GodownAccessories = GodownAccessory::create($warehouseAccessories);
         return $this->successResponse($GodownAccessories, 'GodownAccessory created successfully.', 201);
     }
@@ -94,6 +116,7 @@ class GodownAccessoryController extends ApiController
             'box_bundle' => $GodownAccessory->box_bundle ?? 'N/A',
             'out_quantity' => $GodownAccessory->out_quantity ?? 0,
             'quantity' => $GodownAccessory->quantity ?? 0,
+            'available_qty' => ($GodownAccessory->quantity - $GodownAccessory->out_quantity) ?? 0,
             'date' => $GodownAccessory->created_at->format('Y-m-d'),
         ];
 
