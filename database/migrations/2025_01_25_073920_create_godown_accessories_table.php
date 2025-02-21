@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('gate_pass_id')->constrained('gate_passes')->onDelete('cascade');
             $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
             $table->foreignId('warehouse_accessory_id')->constrained('warehouse_accessories')->onDelete('cascade')->nullable();
-            $table->string('stock_code')->nullable();
+            $table->string('stock_code');
             $table->string('lot_no')->nullable();
             $table->string('length')->nullable();
             $table->string('length_unit')->nullable();

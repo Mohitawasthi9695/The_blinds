@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('product_accessories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
-            $table->string('accessory_name')->unquie()->nullable();
+            $table->string('accessory_name')->unquie();
             $table->boolean('status')->default(1);
             $table->timestamps();
         });
