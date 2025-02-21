@@ -198,6 +198,10 @@ class GatePassController extends ApiController
                 'type' => $validatedData['type'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
+                'vehicle_no' => $validatedData['vehicle_no']??'',
+                'place_of_supply' => $validatedData['place_of_supply']??'',
+                'driver_name' => $validatedData['driver_name']??'',
+                'driver_phone' => $validatedData['driver_phone']??'',
                 'gate_pass_time' => now(),
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
             ]);

@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('hsn_sac_code')->nullable();
             $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
-            $table->string('length')->nullable();
+            $table->decimal('length',13,2)->nullable();
             $table->string('length_unit')->nullable();
-            $table->string('items')->nullable();
+            $table->integer('items')->nullable();
+            $table->integer('out_quantity')->nullable();
             $table->string('box_bundle')->nullable();
             $table->decimal('gst', 10, 5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();

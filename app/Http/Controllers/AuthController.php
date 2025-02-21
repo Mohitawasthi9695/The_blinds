@@ -15,6 +15,7 @@ class AuthController extends ApiController
         $validated = $request->validated();
 
         $user = User::with('roles:name')->where('email', $validated['email'])->first();
+        
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
         }

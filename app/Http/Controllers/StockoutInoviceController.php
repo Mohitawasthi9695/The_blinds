@@ -237,8 +237,10 @@ class StockoutInoviceController extends ApiController
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['godown_id']}.", 400);
                     }
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
+                    $wastage=$product['length']* ($availableStock->width-$product['width']);
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],
+                        'wastage' => max(($availableStock->wastage + $wastage), 0),
                         'status' => ($NewLength <= 0) ? 2 : 1,
                         'quantity' => ($NewLength <= 0) ? 2 : 1,
                     ]);
@@ -260,6 +262,7 @@ class StockoutInoviceController extends ApiController
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                     }
+                    
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],

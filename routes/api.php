@@ -94,8 +94,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/godownstockout/{id}', [StockoutInoviceController::class,'destroy']);
     Route::get('/stockout', [StockOutController::class, 'AllStockOut']);
     
-    // Route::get('/sales', [StockOutController::class, 'Sales']);
+    Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
     // Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
-    // Route::get('/barData', [ProductController::class, 'BarGraphData']);
+    Route::get('/barData', [ProductController::class, 'BarGraphData']);
 });
