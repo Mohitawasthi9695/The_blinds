@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::create('warehouse_accessories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
-            $table->string('stock_code');
+            $table->string('stock_code')->nullable();
             $table->string('lot_no')->nullable();
             $table->string('length')->nullable();
             $table->string('length_unit')->nullable();
