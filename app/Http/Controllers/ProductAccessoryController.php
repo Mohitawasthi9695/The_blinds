@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductAccessory;
 use App\Models\ProductCategory;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Exception;
@@ -21,6 +22,7 @@ class ProductAccessoryController extends ApiController
                 'id' => $product->id,
                 'product_category' => $product->productCategory->product_category,
                 'accessory_name' => $product->accessory_name,
+                'date' => $product->date,
                 'status' => $product->status,
             ];
         });
@@ -43,6 +45,7 @@ class ProductAccessoryController extends ApiController
             [
                 'product_category_id' => 'required|numeric|exists:product_categories,id',
                 'accessory_name' => 'required|string|max:255',
+                'date'=>'required|date',
             ]
         );
         $products = ProductAccessory::create($productsCategory);
@@ -104,6 +107,7 @@ class ProductAccessoryController extends ApiController
                 $newRecords[] = [
                     'product_category_id'=> $existProductCategory->id,
                     'accessory_name'           => $row[2],
+                    'date'           => $row[3]?? Carbon::now(),
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
@@ -127,10 +131,19 @@ class ProductAccessoryController extends ApiController
 
     public function show($id)
     {
-        $ProductAccessory = ProductAccessory::find($id);
+        $ProductAccessory = ProductAccessory::with('productCategory')->find($id);
         if (!$ProductAccessory) {
             return $this->errorResponse('ProductAccessory not found.', 404);
         }
+        $ProductAccessory=$ProductAccessory->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'product_category' => $product->productCategory->product_category,
+                'accessory_name' => $product->accessory_name,
+                'date' => $product->date,
+                'status' => $product->status,
+            ];
+        });
         return $this->successResponse($ProductAccessory, 'ProductAccessory retrieved successfully.', 200);
     }
 

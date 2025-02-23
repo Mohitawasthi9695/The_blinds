@@ -6,6 +6,7 @@ use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\ProductAccessory;
 use App\Models\WarehouseAccessory;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,7 @@ class WarehouseAccessoryController extends ApiController
                 'product_category' => $item->accessory->productCategory->product_category ?? '',
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
                 'lot_no' => $item->lot_no ?? 'N/A',
+                'date' => $item->date ?? 'N/A',
                 'stock_code' => $item->stock_code ?? 'N/A',
                 'items' => $item->items ?? 'N/A',
                 'out_length' => $item->length ?? 'N/A',
@@ -55,6 +57,7 @@ class WarehouseAccessoryController extends ApiController
                 'product_accessory_name' => $item->accessory->accessory_name ?? '',
                 'stock_code' => $item->stock_code ?? '',
                 'lot_no' => $item->lot_no ?? '',
+                'date' => $item->date ?? '',
                 'items' => $item->items ?? '',
                 'out_length' => $item->length ?? '',
                 'length_unit' => $item->length_unit ?? '',
@@ -119,7 +122,8 @@ class WarehouseAccessoryController extends ApiController
                     'length_unit'    => $row[4] ?? null,
                     'items'          => $row[5] ?? null,
                     'box_bundle'     => $row[6] ?? null,
-                    'quantity'       => $row[7] ?? null
+                    'quantity'       => $row[6]*$row[5] ?? null,
+                    'date'           =>  $row[7] ?? Carbon::today(),
                 ];
                 $createdItem = WarehouseAccessory::create($data);
                 $createdItems[] = $createdItem;

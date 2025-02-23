@@ -8,6 +8,7 @@ use App\Models\ProductCategory;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\Godown;
 use Exception;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -113,6 +114,7 @@ class ProductController extends ApiController
                     'name'           => $row[2],
                     'shadeNo'           => $shadeNo,
                     'purchase_shade_no' => $purchaseShadeNo,
+                    'date' =>   $row[5]?? Carbon::today(),
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];

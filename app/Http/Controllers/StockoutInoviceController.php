@@ -11,6 +11,7 @@ use App\Models\GodownWoodenStock;
 use App\Models\StocksIn;
 use App\Models\StockOutDetail;
 use App\Models\StockoutInovice;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -70,8 +71,8 @@ class StockoutInoviceController extends ApiController
                         'length_unit' => $detail->length_unit,
                         'type' => $detail->type,
                         'gst' => $detail->gst,
-                        'rate' => round($detail->rate,3),
-                        'amount' => round($detail->amount,3),
+                        'rate' => round($detail->rate, 3),
+                        'amount' => round($detail->amount, 3),
                         'rack' => $detail->rack,
                         'status' => $detail->status,
                         'product_name' => $detail->product->name ?? null,
@@ -86,7 +87,7 @@ class StockoutInoviceController extends ApiController
         return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
 
-    
+
     public function invoice_no()
     {
         $lastInvoice = StockoutInovice::select('invoice_no')->orderBy('id', 'desc')->first();
@@ -237,7 +238,33 @@ class StockoutInoviceController extends ApiController
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['godown_id']}.", 400);
                     }
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
-                    $wastage=$product['length']* ($availableStock->width-$product['width']);
+                    $cutwidth =$availableStock->width-$product['width'];
+                    $cutlength = $product['length'];
+                    if ($cutwidth > 0 && $cutlength > 0) {
+
+                        GodownRollerStock::create([
+                            'stock_in_id'=> $availableStock->stock_in_id,
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'gate_pass_id' => $availableStock->gate_pass_id,
+                            'gate_pass_no' => $availableStock->gatepass->gate_pass_no,
+                            'gate_pass_date' => $availableStock->gatepass->gate_pass_date,
+                            'date' => $availableStock->date,
+                            'stock_code' => $availableStock->stock_code,
+                            'lot_no' => $availableStock->lot_no,
+                            'length' => $cutlength,
+                            'out_length' => 0,
+                            'length_unit' => $availableStock->length_unit,
+                            'width' => $cutwidth,
+                            'width_unit' => $availableStock->width_unit,
+                            'wastage' =>0,
+                            'rack' => $availableStock->rack,
+                            'user_id'=>Auth::id(),
+                        ]);
+                        $wastage=0;
+                    } else {
+                        $wastage = $product['length'] * ($availableStock->width - $product['width']);
+                    }
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],
                         'wastage' => max(($availableStock->wastage + $wastage), 0),
@@ -262,7 +289,7 @@ class StockoutInoviceController extends ApiController
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
                     }
-                    
+
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
                     $availableStock->update([
                         'out_length' => $availableStock->out_length + $product['length'],
@@ -291,7 +318,7 @@ class StockoutInoviceController extends ApiController
                     'godown_id' =>  $availableStock->id,
                     'stock_code' =>  $availableStock->stock_code,
                     'product_id' => $availableStock->product_id,
-                    'date' => $product['date']?? null,
+                    'date' => $product['date'] ?? null,
                     'out_width' => $product['width'],
                     'out_length' => $product['length'],
                     'width_unit' => $product['width_unit'] ?? null,

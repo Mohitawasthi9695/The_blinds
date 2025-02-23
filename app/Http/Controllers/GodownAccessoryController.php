@@ -89,7 +89,6 @@ class GodownAccessoryController extends ApiController
     public function store(GodownAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
-        log:
         info($warehouseAccessories);
         $GodownAccessories = GodownAccessory::create($warehouseAccessories);
         return $this->successResponse($GodownAccessories, 'GodownAccessory created successfully.', 201);

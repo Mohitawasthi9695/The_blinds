@@ -24,7 +24,12 @@ class GodownAccessoryStore extends FormRequest
         $rules = [
             'invoice_no' => 'required|string|max:255',
             'godown_supervisor_id' => 'required|integer|exists:users,id',
-            'date' => 'nullable|date',
+            'vehicle_no' => 'required|string|max:255',
+            'place_of_supply' => 'required|string|max:255',
+            'driver_name' => 'required|string|max:255',
+            'driver_phone' => 'nullable|string|max:255',
+            'type' => 'required|string|in:accessory',
+            'date' => 'required|date',
             'out_products' => 'required|array',
             'out_products.*.warehouse_accessory_id' => 'required|integer|exists:warehouse_accessories,id',
             'out_products.*.lot_no' => 'nullable|string|max:255',
