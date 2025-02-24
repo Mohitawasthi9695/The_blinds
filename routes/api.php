@@ -81,7 +81,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class, 'GetWarehouseAccessory']);
     Route::post('/godowns/accessory/gatepass', [GatePassController::class, 'StoreAccessoryGatePass']);
     Route::put('/godowns/accessory/gatepass/{id}/approve', [GatePassController::class, 'ApproveGatePass']);
-    Route::put('/godowns/accessory/gatepass/{id}/reject', [GatePassController::class, 'RejectGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
 
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
@@ -93,6 +92,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownstockout/{id}', [StockoutInoviceController::class,'show']);
     Route::delete('/godownstockout/{id}', [StockoutInoviceController::class,'destroy']);
     Route::get('/stockout', [StockOutController::class, 'AllStockOut']);
+    Route::get('/accessoryout', [GodownAccessoryController::class, 'AllStockOut']);
     
     Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);

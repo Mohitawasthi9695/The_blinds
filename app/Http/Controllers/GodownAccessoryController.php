@@ -85,7 +85,39 @@ class GodownAccessoryController extends ApiController
         }
     }
 
+    public function AllStockOut()
+    {
+        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice','accessory'])->get();
 
+        if ($stockOutInvoices->isEmpty()) {
+            return $this->errorResponse('No stock-out invoices found.', 404);
+        }
+
+        $formattedData = $stockOutInvoices->map(function ($item) {
+            return [
+                'stock_code' => $item->stock_code,
+                'lot_no' => $item->lot_no,
+                'product_name' => $item->product->name ?? null,
+                'product_category' => $item->product->ProductCategory->product_category ?? null,
+                'product_shade_no' => $item->product->shadeNo ?? null,
+                'product_pur_shade_no' => $item->product->purchase_shade_no ?? null,
+                'invoice_no' => $item->stockOutInvoice->invoice_no ?? null,
+                'length' =>round($item->out_length,2) ?? 0,
+                'width' => round($item->out_width,2)??0,
+                'date' => $item->date??0,
+                'hsn_sac_code ' => $item->hsn_sac_code ??0,
+                'pcs' => round($item->out_pcs)??0,
+                'gst' => $item->gst??0,
+                'rate' => round($item->rate,2)??0,
+                'amount' => round($item->amount,2)??0,
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'width_unit' => $item->width_unit ?? 'N/A',
+                'rack' => $item->rack ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
+    }
     public function store(GodownAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
