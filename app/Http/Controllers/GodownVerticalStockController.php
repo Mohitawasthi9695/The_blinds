@@ -95,9 +95,10 @@ class GodownVerticalStockController extends ApiController
                 $data['user_id'] =  Auth::id();
                 $data['status'] = 1;
                 $data['length'] = convertToMeters($data['length'], $data['length_unit'], 2);
-                // $data['width'] = convertToFeet($data['width'], $data['width_unit'], 2) ?? 0;
-                // $data['width_unit'] = 'ft';
+                $data['width'] = convertToFeet($data['width'], $data['width_unit'], 2) ?? 0;
+                $data['width_unit'] = 'ft';
                 $data['length_unit']='m';
+                $data['pcs']=1;
                 $createdItems[] = GodownVerticalStock::create($data);
             }
             return $this->successResponse($createdItems, 'GodownVertical entries created successfully.', 201);

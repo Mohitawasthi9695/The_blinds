@@ -29,6 +29,7 @@ return new class extends Migration
             $table->integer('pcs')->nullable();
             $table->integer('out_pcs')->nullable();
             $table->integer('quantity')->nullable();
+            $table->decimal('wastage', 12, 3)->nullable();
             $table->string('rack')->nullable();
             $table->integer('status')->default(0);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');

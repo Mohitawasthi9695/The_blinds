@@ -56,28 +56,68 @@ class GodownAccessoryController extends ApiController
     public function StockOut(GodownAccessoryOut $request)
     {
         $StockoutAccessory = $request->validated();
-
+        log::info($StockoutAccessory);
         try {
             $createdItems = [];
-
             foreach ($StockoutAccessory as $data) {
                 $exist = GodownAccessory::find($data['godown_accessory_id']);
+
                 if (!$exist) {
                     return $this->errorResponse('Accessory not found in stock.', 404);
                 }
-                if ($exist->quantity < ($exist->out_quantity + $data['out_quantity'])) {
+                if ($exist->quantity < ($exist->out_quantity + ($data['out_quantity'] ?? 0))) {
                     return $this->errorResponse('Not enough stock available.', 400);
                 }
+                $out_length = $data['length'] ?? 0;
+                $out_quantity = $data['out_quantity'] ?? 0;
+                if ($out_length < $exist->length) {
+                    $cut_length = $exist->length - $out_length;
+                    Log::info("Cut Length: " . $cut_length);
+                    if ($cut_length > 0) {
+
+                        GodownAccessory::create([
+                            'gate_pass_id' => $exist->gate_pass_id,
+                            'product_accessory_id' => $exist->product_accessory_id,
+                            'warehouse_accessory_id' => $exist->warehouse_accessory_id,
+                            'lot_no' => $exist->lot_no ?? null,
+                            'items' => 1,
+                            'quantity' => 1,
+                            'length' => $cut_length,
+                            'length_unit' => $exist->length_unit ?? 'N/A',
+                            'out_length' => 0,
+                            'box_bundle' => 1,
+                            'out_box_bundle' => 0,
+                            'out_quantity' => 0,
+                            'rack' => $exist->rack ?? 'N/A',
+                            'status' => 1,
+                        ]);
+                    }
+                }
+
+                $data['stock_code']=$exist->stock_code;
+                $data['gate_pass_id']=$exist->gate_pass_id;
+                $data['product_accessory_id']=$exist->product_accessory_id;
+                
                 $createdItem = StockoutAccessory::create($data);
                 $createdItems[] = $createdItem;
-                $total_out = $exist->out_quantity + $data['out_quantity'];
-                Log::info("Total Out Quantity: " . $total_out);
-                $newStatus = ($total_out >= $exist->quantity) ? 2 : 1;
+
+                // Update existing record
+                $new_out_quantity = $exist->out_quantity + $out_quantity;
+                $new_out_length = $exist->out_length + $out_length;
+
+                Log::info("Total Out Quantity: " . $new_out_quantity);
+                Log::info("Total Out Length: " . $new_out_length);
+
+                $newStatus = ($new_out_quantity >= $exist->quantity) ? 2 : 1;
+
                 $exist->update([
-                    'out_quantity' => $total_out,
+                    'out_quantity' => $new_out_quantity,
+                    'out_length' => $new_out_length,
                     'status' => $newStatus,
                 ]);
             }
+
+
 
             return $this->successResponse($createdItems, 'StockoutAccessory entries created successfully.', 201);
         } catch (\Exception $e) {
@@ -87,7 +127,7 @@ class GodownAccessoryController extends ApiController
 
     public function AllStockOut()
     {
-        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice','accessory'])->get();
+        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice', 'accessory'])->get();
 
         if ($stockOutInvoices->isEmpty()) {
             return $this->errorResponse('No stock-out invoices found.', 404);
@@ -97,19 +137,16 @@ class GodownAccessoryController extends ApiController
             return [
                 'stock_code' => $item->stock_code,
                 'lot_no' => $item->lot_no,
-                'product_name' => $item->product->name ?? null,
-                'product_category' => $item->product->ProductCategory->product_category ?? null,
-                'product_shade_no' => $item->product->shadeNo ?? null,
-                'product_pur_shade_no' => $item->product->purchase_shade_no ?? null,
+                'accessory_name' => $item->accessory->name ?? null,
                 'invoice_no' => $item->stockOutInvoice->invoice_no ?? null,
-                'length' =>round($item->out_length,2) ?? 0,
-                'width' => round($item->out_width,2)??0,
-                'date' => $item->date??0,
-                'hsn_sac_code ' => $item->hsn_sac_code ??0,
-                'pcs' => round($item->out_pcs)??0,
-                'gst' => $item->gst??0,
-                'rate' => round($item->rate,2)??0,
-                'amount' => round($item->amount,2)??0,
+                'length' => round($item->length, 2) ?? 0,
+                'width' => round($item->width, 2) ?? 0,
+                'date' => $item->date ?? 0,
+                'hsn_sac_code ' => $item->hsn_sac_code ?? 0,
+                'pcs' => round($item->out_pcs) ?? 0,
+                'gst' => $item->gst ?? 0,
+                'rate' => round($item->rate, 2) ?? 0,
+                'amount' => round($item->amount, 2) ?? 0,
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'width_unit' => $item->width_unit ?? 'N/A',
                 'rack' => $item->rack ?? 'N/A',

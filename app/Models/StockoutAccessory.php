@@ -15,10 +15,10 @@ class StockoutAccessory extends Model
     protected $table = 'stockout_accessory';
     public function stockOutInvoice()
     {
-        return $this->belongsTo(StockoutInovice::class);
+        return $this->belongsTo(StockoutInovice::class,'stockout_inovice_id');
     }
     public function accessory()
     {
-        return $this->belongsTo(ProductAccessory::class);
+        return $this->belongsTo(ProductAccessory::class,'product_accessory_id');
     }
 }

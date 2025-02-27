@@ -249,7 +249,7 @@ class StockoutInoviceController extends ApiController
                     }
                     $NewLength = $availableStock->length - ($availableStock->out_length + $sellLength);
                     $cutwidth =$availableStock->width- $sellWidth;
-                    if ($cutwidth > 0.5 || $sellLength > 1) {
+                    if ($cutwidth > 0.5 && $sellLength > 1) {
 
                         GodownRollerStock::create([
                             'stock_in_id'=> $availableStock->stock_in_id,
@@ -259,7 +259,6 @@ class StockoutInoviceController extends ApiController
                             'gate_pass_no' => $availableStock->gatepass->gate_pass_no,
                             'gate_pass_date' => $availableStock->gatepass->gate_pass_date,
                             'date' => $availableStock->date,
-                            'stock_code' => $availableStock->stock_code,
                             'lot_no' => $availableStock->lot_no,
                             'length' => $sellLength,
                             'out_length' => 0,
@@ -294,20 +293,52 @@ class StockoutInoviceController extends ApiController
                         'status' => ($NewPcs <= 0) ? 2 : 1,
                         'quantity' => ($NewPcs <= 0) ? 2 : 1,
                     ]);
-                } elseif ($product['product_category_id'] === 1) {
+                } elseif ($product['product_category_id'] === 3) {
                     $availableStock = GodownVerticalStock::findorFail($product['godown_id']);
-                    if ($product['length'] > $availableStock->length - $availableStock->out_length) {
-                        DB::rollBack();
-                        return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['stock_available_id']}.", 400);
+                    if(!$availableStock)
+                    {
+                        return $this->errorResponse("SomeThing Worng Occurs godown not found", 400);
                     }
+                    $sellLength=convertToMeters($product['length'],$product['length_unit'],2);
+                    if ($sellLength > $availableStock->length - $availableStock->out_length) {
+                        DB::rollBack();
+                        return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['godown_id']}.", 400);
+                    }
+                    $NewLength = $availableStock->length - ($availableStock->out_length + $sellLength);
+                    if ($sellLength > 1) {
 
-                    $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
+                        GodownVerticalStock::create([
+                            'stock_in_id'=> $availableStock->stock_in_id,
+                            'product_category_id' => $availableStock->product_category_id,
+                            'product_id' => $availableStock->product_id,
+                            'gate_pass_id' => $availableStock->gate_pass_id,
+                            'gate_pass_no' => $availableStock->gatepass->gate_pass_no,
+                            'gate_pass_date' => $availableStock->gatepass->gate_pass_date,
+                            'type' => 'stock',
+                            'date' => $availableStock->date,
+                            'lot_no' => $availableStock->lot_no,
+                            'length' => $sellLength,
+                            'out_length' => 0,
+                            'rack' =>  $availableStock->rack ?? '',
+                            'pcs' => 1,
+                            'out_pcs' => 0,
+                            'length_unit' => $availableStock->length_unit,
+                            'wastage' =>0,
+                            'status' =>1,
+                            'rack' => $availableStock->rack,
+                            'user_id'=>Auth::id(),
+                        ]);
+                        $wastage=0;
+                    } else {
+                        $wastage = $sellLength;
+                    }
                     $availableStock->update([
-                        'out_length' => $availableStock->out_length + $product['length'],
+                        'out_length' => $availableStock->out_length + $sellLength,
+                        'wastage' => max(($availableStock->wastage + $wastage), 0),
                         'status' => ($NewLength <= 0) ? 2 : 1,
                         'quantity' => ($NewLength <= 0) ? 2 : 1,
                     ]);
-                } elseif ($product['product_category_id'] === 1) {
+                } elseif ($product['product_category_id'] === 4) {
                     $availableStock = GodownHoneyCombStock::findorFail($product['godown_id']);
                     if ($product['out_pcs'] > $availableStock->pcs - $availableStock->out_pcs) {
                         DB::rollBack();
