@@ -94,10 +94,13 @@ class GodownVerticalStockController extends ApiController
             foreach ($validatedData as $data) {
                 $data['user_id'] =  Auth::id();
                 $data['status'] = 1;
-                $data['status'] = 1;
+                $data['length'] = convertToMeters($data['length'], $data['length_unit'], 2);
+                // $data['width'] = convertToFeet($data['width'], $data['width_unit'], 2) ?? 0;
+                // $data['width_unit'] = 'ft';
+                $data['length_unit']='m';
                 $createdItems[] = GodownVerticalStock::create($data);
             }
-            return $this->successResponse($createdItems, 'GodownRollerStock entries created successfully.', 201);
+            return $this->successResponse($createdItems, 'GodownVertical entries created successfully.', 201);
         } catch (\Exception $e) {
             Log::error('Insertion Error: ' . $e->getMessage());
             return $this->errorResponse('Failed to create GodownRollerStock entries.', 500, $e->getMessage());

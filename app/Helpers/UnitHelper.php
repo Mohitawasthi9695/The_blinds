@@ -21,4 +21,15 @@ function convertToMM($value, $unit, $decimals = 2) {
     $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
     return round($convertedValue, $decimals);
 }
+function convertToFeet($value, $unit, $decimals = 2) {
+    $conversionRates = [
+        'mm' => 0.00328084,  // 1 mm = 0.00328084 ft
+        'cm' => 0.0328084,   // 1 cm = 0.0328084 ft
+        'm' => 3.28084,      // 1 meter = 3.28084 ft
+        'ft' => 1,           // 1 foot = 1 ft
+        'inch' => 0.0833333  // 1 inch = 0.0833333 ft
+    ];
+    $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
+    return round($convertedValue, $decimals);
+}
 ?>
