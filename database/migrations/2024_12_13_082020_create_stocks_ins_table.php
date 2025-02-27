@@ -29,6 +29,7 @@ return new class extends Migration {
             $table->integer('out_quantity')->nullable(); 
             $table->integer('pcs')->nullable();
             $table->string('rack')->nullable();
+            $table->string('remark')->nullable();
             $table->boolean('status')->default(1);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
             $table->timestamps();

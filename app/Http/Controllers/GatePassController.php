@@ -72,9 +72,9 @@ class GatePassController extends ApiController
                         'stock_code' => $stockItem->stock_code ?? null,
                         'date' => $stockItem->date,
                         'lot_no' => $stockItem->lot_no,
-                        'width' => round($stockItem->width,2),
+                        'width' => round($stockItem->width, 2),
                         'width_unit' => $stockItem->width_unit,
-                        'length' => round($stockItem->length,2),
+                        'length' => round($stockItem->length, 2),
                         'length_unit' => $stockItem->length_unit,
                         'pcs' => $stockItem->pcs ?? 1,
                         'quantity' => $stockItem->quantity,
@@ -87,6 +87,10 @@ class GatePassController extends ApiController
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
                 'gate_pass_date' => $stock->gate_pass_date,
+                'vehicle_no' => $stock->vehicle_no,
+                'place_of_supply' => $stock->place_of_supply,
+                'driver_name' => $stock->driver_name,
+                'driver_phone' => $stock->driver_phone,
                 'warehouse_supervisor' => $stock->warehouse_supervisors,
                 'godown_supervisor' => $stock->godown_supervisors,
                 'status' => $stock->status,
@@ -193,6 +197,30 @@ class GatePassController extends ApiController
     }
     public function StoreStockGatePass(GodownStore $request)
     {
+        function convertToMeters($value, $unit, $decimals = 2) {
+            $conversionRates = [
+                'mm' => 0.001,  // 1 mm = 0.001 m
+                'cm' => 0.01,   // 1 cm = 0.01 m
+                'm' => 1,       // 1 meter = 1 m
+                'ft' => 0.3048, // 1 foot = 0.3048 m
+                'inch' => 0.0254 // 1 inch = 0.0254 m
+            ];
+            $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
+            return round($convertedValue, $decimals);
+        }
+        function convertToMM($value, $unit, $decimals = 2) {
+            $conversionRates = [
+                'mm' => 1,        // 1 mm = 1 mm
+                'cm' => 10,       // 1 cm = 10 mm
+                'm' => 1000,      // 1 meter = 1000 mm
+                'ft' => 304.8,    // 1 foot = 304.8 mm
+                'inch' => 25.4    // 1 inch = 25.4 mm
+            ];
+            $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
+            return round($convertedValue, $decimals);
+        }
+        
+        
         DB::beginTransaction();
         try {
 
@@ -202,10 +230,10 @@ class GatePassController extends ApiController
                 'type' => $validatedData['type'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
-                'vehicle_no' => $validatedData['vehicle_no']??'',
-                'place_of_supply' => $validatedData['place_of_supply']??'',
-                'driver_name' => $validatedData['driver_name']??'',
-                'driver_phone' => $validatedData['driver_phone']??'',
+                'vehicle_no' => $validatedData['vehicle_no'] ?? '',
+                'place_of_supply' => $validatedData['place_of_supply'] ?? '',
+                'driver_name' => $validatedData['driver_name'] ?? '',
+                'driver_phone' => $validatedData['driver_phone'] ?? '',
                 'gate_pass_time' => now(),
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
             ]);
@@ -234,11 +262,11 @@ class GatePassController extends ApiController
                             'lot_no' => $availableStock->lot_no,
                             'date' => $validatedData['date'],
                             'quantity' => 1,
-                            'pcs'=> 1,
-                            'width' => round($product['width'], 2),
-                            'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? 'meter',
-                            'length_unit' => $product['length_unit'] ?? 'meter',
+                            'pcs' => 1,
+                            'width' =>convertToMeters($product['width'], $product['width_unit'], 2),
+                            'length' =>convertToMeters($product['length'], $product['length_unit'], 2),
+                            'width_unit' => 'm', 
+                            'length_unit' => 'm',
                             'user_id' => Auth::id(),
                         ]);
                     }
@@ -254,10 +282,10 @@ class GatePassController extends ApiController
                             'date' => $validatedData['date'],
                             'quantity' => 1,
                             'pcs' => $product['pcs'] ?? 1,
-                            'out_pcs' =>0,
-                            'width' => round($product['width'], 2),
+                            'out_pcs' => 0,
+                            'width' =>convertToMM($product['width'], $product['width_unit'], 2),
                             'length' => round($product['length'], 2),
-                            'width_unit' => $product['width_unit'] ?? 'mm',
+                            'width_unit' =>  'mm',
                             'length_unit' => $product['length_unit'] ?? 'feet',
                             'user_id' => Auth::id(),
                         ]);
@@ -274,9 +302,11 @@ class GatePassController extends ApiController
                             'lot_no' => $availableStock->lot_no,
                             'date' => $validatedData['date'],
                             'quantity' => 1,
-                            'pcs'=> 1,
-                            'length' => round($product['length'], 2),
-                            'length_unit' => $product['length_unit'] ?? 'meter',
+                            'pcs' => $product['pcs'] ?? 1,
+                            'width' => round($product['width'], 2),
+                            'width_unit' => $product['width_unit'] ?? 'in',
+                            'length' =>convertToMeters($product['length'], $product['length_unit'], 2),
+                            'length_unit' =>'m',
                             'user_id' => Auth::id(),
                         ]);
                     }
@@ -292,7 +322,7 @@ class GatePassController extends ApiController
                             'date' => $validatedData['date'],
                             'quantity' => 1,
                             'pcs' => $product['pcs'] ?? 1,
-                            'out_pcs' =>0,
+                            'out_pcs' => 0,
                             'width' => round($product['width'], 2),
                             'length' => round($product['length'], 2),
                             'width_unit' => $product['width_unit'] ?? '',
@@ -386,10 +416,10 @@ class GatePassController extends ApiController
                 'gate_pass_no' => $validatedData['invoice_no'],
                 'warehouse_supervisor_id' => Auth::id(),
                 'gate_pass_date' => $validatedData['date'],
-                'vehicle_no' => $validatedData['vehicle_no']??'',
-                'place_of_supply' => $validatedData['place_of_supply']??'',
-                'driver_name' => $validatedData['driver_name']??'',
-                'driver_phone' => $validatedData['driver_phone']??'',
+                'vehicle_no' => $validatedData['vehicle_no'] ?? '',
+                'place_of_supply' => $validatedData['place_of_supply'] ?? '',
+                'driver_name' => $validatedData['driver_name'] ?? '',
+                'driver_phone' => $validatedData['driver_phone'] ?? '',
                 'gate_pass_time' => now(),
                 'godown_supervisor_id' => $validatedData['godown_supervisor_id'],
             ]);

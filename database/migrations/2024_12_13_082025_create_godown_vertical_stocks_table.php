@@ -21,8 +21,10 @@ return new class extends Migration
             $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
             $table->string('type')->nullable();
+            $table->decimal('width', 12, 3)->nullable();
+            $table->string('width_unit')->default('meter')->nullable();
             $table->decimal('length', 12, 3)->nullable();
-            $table->string('length_unit')->default('meter');
+            $table->string('length_unit')->default('meter')->nullable();
             $table->decimal('out_length', 12, 3)->nullable();
             $table->integer('pcs')->nullable();
             $table->integer('out_pcs')->nullable();

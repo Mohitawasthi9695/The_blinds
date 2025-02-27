@@ -34,14 +34,15 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
                 'invoice_no' => $stock->invoice_no,
-                'length' => $stock->length ?? '',
-                'width' => $stock->width ?? '',
+                'length' => round($stock->length,2) ?? '',
+                'width' => round($stock->width,2) ?? '',
                 'unit' => $stock->unit,
                 'type' => $stock->type,
                 'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
+                'remark' => $stock->remark,
                 'warehouse' => $stock->warehouse,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
@@ -70,14 +71,15 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
                 'invoice_no' => $stock->invoice_no,
-                'length' => $stock->length,
-                'width' => $stock->width,
+                'length' => round($stock->length,2) ?? '',
+                'width' => round($stock->width,2) ?? '',
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
+                'remark' => $stock->remark,
                 'pcs' => $stock->pcs,
                 'warehouse' => $stock->warehouse,
                 'status' => $stock->status,
@@ -97,7 +99,9 @@ class StocksInController extends ApiController
             $createdItems = [];
 
             foreach ($validatedData as $data) {
+                $invoice= StockInvoice::where('id', $data['invoice_id'])->first();
                 $data['user_id'] =  Auth::id();
+                $data['invoice_no'] = $invoice->invoice_no;
                 $createdItems = StocksIn::create($data);
             }
 
@@ -132,14 +136,14 @@ class StocksInController extends ApiController
                     return response()->json(['error' => 'Required fields shadeNo or invoice_no are missing'], 422);
                 }
 
-                $shadeNo = $row[3];
+                $purchase_shade_no = $row[3];
                 $invoiceNo = $row[1];
-                $product = Product::where('shadeNo', $shadeNo)->first();
+                $product = Product::where('purchase_shade_no', $purchase_shade_no)->first();
                 $invoice = StockInvoice::where('invoice_no', $invoiceNo)->first();
 
                 if (!$product) {
                     DB::rollBack();
-                    return response()->json(['error' => "Product with shadeNo {$shadeNo} not found"], 422);
+                    return response()->json(['error' => "Product with shadeNo {$purchase_shade_no} not found"], 422);
                 }
                 if (!$invoice) {
                     DB::rollBack();
@@ -159,7 +163,8 @@ class StocksInController extends ApiController
                     'rack'        => $row[8] ?? null,
                     'pcs'         => $row[9] ?? 1,
                     'quantity'    => $row[10] ?? 1,
-                    'date' => $row[11] ?? Carbon::today(),
+                    'remark'    => $row[11] ?? '',
+                    'date' => $row[12] ?? Carbon::today(),
                 ];
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;
@@ -186,13 +191,14 @@ class StocksInController extends ApiController
                 'stock_available_id' => $stock->id,
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
-                'length' => $stock->length,
-                'width' => $stock->width,
+                'length' => round($stock->length,2) ?? '',
+                'width' => round($stock->width,2) ?? '',
                 'length_unit' => $stock->length_unit ?? 'N/A',
                 'width_unit' => $stock->width_unit ?? 'N/A',
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
+                'remark' => $stock->remark,
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
                 'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
@@ -227,6 +233,7 @@ class StocksInController extends ApiController
                 'quantity' => $stock->quantity,
                 'out_quantity' => $stock->out_quantity,
                 'rack' => $stock->rack,
+                'remark' => $stock->remark,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
@@ -248,6 +255,9 @@ class StocksInController extends ApiController
     public function destroy($id)
     {
         $stock = StocksIn::findOrFail($id);
+        if($stock->status != 1){
+            return $this->errorResponse('Stock entry cannot be deleted as it is active.', 400);
+        }
         $stock->delete();
         return $this->successResponse([], 'Stock entry deleted successfully.', 200);
     }

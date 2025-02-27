@@ -195,11 +195,33 @@ class StockoutInoviceController extends ApiController
     }
     public function store(StockOutRequest $request)
     {
+        function convertToMeters($value, $unit, $decimals = 2) {
+            $conversionRates = [
+                'mm' => 0.001,  // 1 mm = 0.001 m
+                'cm' => 0.01,   // 1 cm = 0.01 m
+                'm' => 1,       // 1 meter = 1 m
+                'ft' => 0.3048, // 1 foot = 0.3048 m
+                'inch' => 0.0254 // 1 inch = 0.0254 m
+            ];
+            $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
+            return round($convertedValue, $decimals);
+        }
+        function convertToMM($value, $unit, $decimals = 2) {
+            $conversionRates = [
+                'mm' => 1,        // 1 mm = 1 mm
+                'cm' => 10,       // 1 cm = 10 mm
+                'm' => 1000,      // 1 meter = 1000 mm
+                'ft' => 304.8,    // 1 foot = 304.8 mm
+                'inch' => 25.4    // 1 inch = 25.4 mm
+            ];
+            $convertedValue = $value * ($conversionRates[strtolower($unit)] ?? 1);
+            return round($convertedValue, $decimals);
+        }
         DB::beginTransaction();
         try {
 
             $validatedData = $request->validated();
-            log:
+            
             info($validatedData);
             $stockoutInvoice = StockoutInovice::create([
                 'invoice_no' => $validatedData['invoice_no'],
@@ -233,14 +255,21 @@ class StockoutInoviceController extends ApiController
             foreach ($validatedData['out_products'] as $product) {
                 if ($product['product_category_id'] === 1) {
                     $availableStock = GodownRollerStock::findorFail($product['godown_id']);
-                    if ($product['length'] > $availableStock->length - $availableStock->out_length) {
+                    if(!$availableStock)
+                    {
+                        return $this->errorResponse("SomeThing Worng Occurs godown not found", 400);
+                    }
+                    $sellLength=convertToMeters($product['length'],$product['length_unit'],2);
+                    $sellWidth=convertToMeters($product['width'],$product['width_unit'],2);
+                    log::info($sellLength);
+                    log::info($sellWidth);
+                    if ($sellLength > $availableStock->length - $availableStock->out_length) {
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['godown_id']}.", 400);
                     }
                     $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
-                    $cutwidth =$availableStock->width-$product['width'];
-                    $cutlength = $product['length'];
-                    if ($cutwidth > 0 && $cutlength > 0) {
+                    $cutwidth =$availableStock->width- $sellWidth;
+                    if ($cutwidth > 0 && $sellLength > 0) {
 
                         GodownRollerStock::create([
                             'stock_in_id'=> $availableStock->stock_in_id,
@@ -252,7 +281,7 @@ class StockoutInoviceController extends ApiController
                             'date' => $availableStock->date,
                             'stock_code' => $availableStock->stock_code,
                             'lot_no' => $availableStock->lot_no,
-                            'length' => $cutlength,
+                            'length' => $sellLength,
                             'out_length' => 0,
                             'length_unit' => $availableStock->length_unit,
                             'width' => $cutwidth,
@@ -263,10 +292,10 @@ class StockoutInoviceController extends ApiController
                         ]);
                         $wastage=0;
                     } else {
-                        $wastage = $product['length'] * ($availableStock->width - $product['width']);
+                        $wastage = $sellLength * $cutwidth;
                     }
                     $availableStock->update([
-                        'out_length' => $availableStock->out_length + $product['length'],
+                        'out_length' => $availableStock->out_length + $sellLength,
                         'wastage' => max(($availableStock->wastage + $wastage), 0),
                         'status' => ($NewLength <= 0) ? 2 : 1,
                         'quantity' => ($NewLength <= 0) ? 2 : 1,

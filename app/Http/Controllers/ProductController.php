@@ -25,6 +25,7 @@ class ProductController extends ApiController
         if($products->isEmpty()){
             return $this->errorResponse('No active shadeNo found.', 404);
         }
+        log::info($products);
         return $this->successResponse($products, 'Active shadeNo retrieved successfully.', 200);
     }
 

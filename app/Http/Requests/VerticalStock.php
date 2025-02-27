@@ -30,7 +30,7 @@ class VerticalStock extends FormRequest
             '*.product_id' => 'required|integer|exists:products,id',
             '*.lot_no' => 'required|string|max:50',
             '*.length' => 'required|numeric|min:0',
-            '*.length_unit' => 'required|string|in:meter,feet',
+            '*.length_unit' => 'required|string|in:m,ft',
             '*.type' => 'required|string|max:50|in:stock,data',
             '*.rack' => 'required|string|max:50',
         ];

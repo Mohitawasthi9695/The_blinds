@@ -24,15 +24,15 @@ class StockInRequest extends FormRequest
         $rules = [
             '*.lot_no' => 'required|string|max:255',
             '*.invoice_id' => 'required|exists:stock_invoices,id',
-            '*.invoice_no' => 'required|exists:stock_invoices,invoice_no',
             '*.product_category_id' => 'required|exists:product_categories,id',
             '*.product_id' => 'required|exists:products,id',
             '*.width' => 'required|numeric|min:0',
             '*.date' => 'required|date',
             '*.length' => 'required|numeric|min:0',
-            '*.length_unit' => 'required|string|max:255',
-            '*.width_unit' => 'required|string|max:255',
+            '*.length_unit' => 'required|string|max:255|in:cm,m,ft,in',
+            '*.width_unit' => 'required|string|max:255|in:cm,m,ft,in',
             '*.rack' => 'nullable|string|max:255',
+            '*.remark' => 'nullable|string|max:255',
             '*.pcs' => 'required|numeric|min:1',
             '*.quantity' => 'required|numeric|min:1',
         ];

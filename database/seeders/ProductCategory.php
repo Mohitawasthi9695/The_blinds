@@ -33,6 +33,10 @@ class ProductCategory extends Seeder
                 'product_category'=>'Honey Comb',
                 'created_at' => now(),
                 'updated_at' => now(),
+            ], [
+                'product_category'=>'Zebra',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]
         ]);
     }

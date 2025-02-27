@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
             $table->string('name')->nullable();
             $table->date('date')->nullable();
-            $table->string('shadeNo')->unique()->nullable();
+            $table->string('shadeNo')->nullable();
             $table->string('purchase_shade_no')->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps();
