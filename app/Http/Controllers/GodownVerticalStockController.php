@@ -94,6 +94,7 @@ class GodownVerticalStockController extends ApiController
             foreach ($validatedData as $data) {
                 $data['user_id'] =  Auth::id();
                 $data['status'] = 1;
+                $data['status'] = 1;
                 $createdItems[] = GodownVerticalStock::create($data);
             }
             return $this->successResponse($createdItems, 'GodownRollerStock entries created successfully.', 201);

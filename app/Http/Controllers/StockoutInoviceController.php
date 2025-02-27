@@ -267,9 +267,9 @@ class StockoutInoviceController extends ApiController
                         DB::rollBack();
                         return $this->errorResponse("Insufficient stock available for Stock-in ID {$product['godown_id']}.", 400);
                     }
-                    $NewLength = $availableStock->length - ($availableStock->out_length + $product['length']);
+                    $NewLength = $availableStock->length - ($availableStock->out_length + $sellLength);
                     $cutwidth =$availableStock->width- $sellWidth;
-                    if ($cutwidth > 0 && $sellLength > 0) {
+                    if ($cutwidth > 0.5 || $sellLength > 5) {
 
                         GodownRollerStock::create([
                             'stock_in_id'=> $availableStock->stock_in_id,
@@ -283,10 +283,12 @@ class StockoutInoviceController extends ApiController
                             'lot_no' => $availableStock->lot_no,
                             'length' => $sellLength,
                             'out_length' => 0,
+                            'pcs' => 1,
                             'length_unit' => $availableStock->length_unit,
                             'width' => $cutwidth,
                             'width_unit' => $availableStock->width_unit,
                             'wastage' =>0,
+                            'status' =>1,
                             'rack' => $availableStock->rack,
                             'user_id'=>Auth::id(),
                         ]);
