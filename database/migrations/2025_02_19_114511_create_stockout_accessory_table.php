@@ -29,6 +29,7 @@ return new class extends Migration
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();
             $table->string('rack')->nullable();
+            $table->string('remark')->nullable();
             $table->boolean('status')->default(0);
             $table->timestamps();
         });

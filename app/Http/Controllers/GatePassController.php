@@ -49,7 +49,7 @@ class GatePassController extends ApiController
             'godown_vertical_stock.products',
             'godown_honeycomb_stock.stocks:id,stock_code',
             'godown_honeycomb_stock.products'
-        ])->where('type', 'stock')->orderBy('id', 'desc')->get();
+        ])->where('type', 'stock')->where('godown_supervisors',Auth::id())->orderBy('id', 'desc')->get();
 
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No GatePass Found', 404);
