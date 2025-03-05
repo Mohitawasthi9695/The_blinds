@@ -164,7 +164,8 @@ class StocksInController extends ApiController
                     'pcs'         => $row[9] ?? 1,
                     'quantity'    => $row[10] ?? 1,
                     'remark'    => $row[11] ?? '',
-                    'date' => $row[12] ?? Carbon::today(),
+                    'date' => isset($row[12]) && is_numeric($row[12]) 
+                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[12]} days")) : Carbon::today(),
                 ];
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;
