@@ -189,11 +189,18 @@ class StockOutController extends ApiController
 
         return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
     }
-
     public function update(Request $request, $id)
     {
         $product = StockOutDetail::findOrFail($id);
         $product->update($request->all());
+        $StockoutInovice = StockoutInovice::findOrFail($product->stockout_inovice_id);
+        $hasPendingDetails = StockOutDetail::where('stockout_inovice_id', $StockoutInovice->id)
+            ->where('status', 0)
+            ->exists();
+        if (!$hasPendingDetails) {
+            $StockoutInovice->update(['status' => 1]);
+        }
+
         return $this->successResponse($product, 'Product updated successfully.', 200);
     }
 }

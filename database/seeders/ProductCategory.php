@@ -19,25 +19,25 @@ class ProductCategory extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            // [
-            //     'product_category'=>'Wooden',
-            //     'created_at' => now(),
-            //     'updated_at' => now(),
-            // ],
-            // [
-            //     'product_category'=>'Vertical',
-            //     'created_at' => now(),
-            //     'updated_at' => now(),
-            // ],
-            // [
-            //     'product_category'=>'Honey Comb',
-            //     'created_at' => now(),
-            //     'updated_at' => now(),
-            // ], [
-            //     'product_category'=>'Zebra',
-            //     'created_at' => now(),
-            //     'updated_at' => now(),
-            // ]
+            [
+                'product_category'=>'Wooden',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'product_category'=>'Vertical',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'product_category'=>'Honey Comb',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], [
+                'product_category'=>'Zebra',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         ]);
     }
 }

@@ -235,7 +235,7 @@ class StockoutInoviceController extends ApiController
                                 'gate_pass_id' => $availableStock->gate_pass_id,
                                 'gate_pass_no' => $availableStock->gatepass->gate_pass_no,
                                 'gate_pass_date' => $availableStock->gatepass->gate_pass_date,
-                                'date' =>$validatedData['date'],
+                                'date' => $validatedData['date'],
                                 'lot_no' => $availableStock->lot_no,
                                 'length' => $sellLength,
                                 'out_length' => 0,
@@ -254,7 +254,7 @@ class StockoutInoviceController extends ApiController
                         }
                         $availableStock->update([
                             'out_length' => $availableStock->out_length + $sellLength,
-                            'out_pcs' => $availableStock->out_pcs + $product['out_pcs'],
+                            'out_pcs' => ( ($availableStock->out_length + $sellLength)<=0)? $product['out_pcs']:0,
                             'wastage' => max(($availableStock->wastage + $wastage), 0),
                             'status' => ($AvlLength <= 0) ? 2 : 1,
                             'quantity' => ($AvlLength <= 0) ? 2 : 1,
@@ -291,6 +291,8 @@ class StockoutInoviceController extends ApiController
                         'length_unit' => $product['length_unit'] ?? null,
                         'out_pcs' => $product['out_pcs'] ?? 1,
                         'rate' => $product['rate'] ?? 1,
+                        'gst' => $product['gst'] ?? 0,
+                        'rack' => $availableStock->rack ?? 'N/A',
                         'amount' => $product['amount'] ?? 1,
                     ]);
                 }
