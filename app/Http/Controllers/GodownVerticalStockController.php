@@ -48,39 +48,7 @@ class GodownVerticalStockController extends ApiController
         return response()->json($stocks);
     }
 
-    public function GodownStock($id)
-    {
-        $stocks = GodownVerticalStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('stock_in_id', $id)->where('type', 'stock')->get();
-        log::info($stocks);
-        if ($stocks->isEmpty()) {
-            return $this->errorResponse('No stocks found.', 404);
-        }
-
-        $stocks = $stocks->map(function ($stock) {
-            return [
-                'id' => $stock->id,
-                'gate_pass_id' => $stock->gate_pass_id,
-                'gate_pass_no' => $stock->gatepass->gate_pass_no,
-                'gate_pass_date' => $stock->gatepass->gate_pass_date,
-                'date' => $stock->date,
-                'stock_in_id' => $stock->stock_in_id,
-                'product_id' => $stock->product_id,
-                'stock_code' => $stock->stock_code,
-                'lot_no' => $stock->lot_no,
-                'length' => $stock->length,
-                'out_length' => $stock->out_length,
-                'length_unit' => $stock->length_unit,
-                'rack' => $stock->rack,
-                'pcs' => $stock->pcs,
-                'status' => $stock->status,
-                'product_name' => $stock->products->name ?? null,
-                'shadeNo' => $stock->products->shadeNo ?? null,
-                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
-                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
-            ];
-        });
-        return response()->json($stocks);
-    }
+   
     /**
      * Store a newly created resource in storage.
      */

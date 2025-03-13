@@ -24,18 +24,6 @@ class GatePass extends Model
     {
         return $this->hasMany(GodownRollerStock::class);
     }
-    public function godown_wooden_stock()
-    {
-        return $this->hasMany(GodownWoodenStock::class);
-    }
-    public function godown_vertical_stock()
-    {
-        return $this->hasMany(GodownVerticalStock::class);
-    }
-    public function godown_honeycomb_stock()
-    {
-        return $this->hasMany(GodownHoneyCombStock::class);
-    }
     public function godown_accessories()
     {
         return $this->hasMany(GodownAccessory::class);

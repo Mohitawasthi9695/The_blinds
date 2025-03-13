@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('reverse_charge')->default(false);
             $table->string('gr_rr')->nullable();
             $table->string('transport')->nullable();
+            $table->decimal('transport_gst', 5, 2)->nullable();
             $table->string('agent')->nullable();
             $table->string('warehouse')->nullable();
             $table->string('irn')->nullable();

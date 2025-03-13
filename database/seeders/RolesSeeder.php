@@ -27,6 +27,8 @@ class RolesSeeder extends Seeder
         $supervisor->assignRole('supervisor');
         $sub_supervisor = User::find(4);
         $sub_supervisor->assignRole('sub_supervisor');
+        $sub_supervisor = User::find(6);
+        $sub_supervisor->assignRole('sub_supervisor');
         $operator = User::find(5);
         $operator->assignRole('operator');
         

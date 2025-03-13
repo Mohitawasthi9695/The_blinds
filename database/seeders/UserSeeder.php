@@ -75,6 +75,18 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'name' => 'Gunjan Godown',
+                'username' => 'Gunjan123',
+                'email' => 'gunjan@gmail.com',
+                'phone' => '9876543210',
+                'status' => 1,
+                'email_verified_at' => now(),
+                'password' => Hash::make('Password#678'),
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }

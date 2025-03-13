@@ -21,16 +21,20 @@ return new class extends Migration
             $table->string('stock_code')->nullable();
             $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
+            $table->string('type')->default('stock')->nullable();
             $table->decimal('width', 12, 3)->nullable();
-            $table->string('width_unit')->default('meter');
+            $table->string('width_unit')->nullable();
             $table->decimal('length', 12, 3)->nullable();
+            $table->string('length_unit')->nullable();
             $table->decimal('out_length', 12, 3)->nullable();
             $table->decimal('wastage', 12, 3)->nullable();
-            $table->string('length_unit')->default('meter');
             $table->integer('pcs')->nullable();
             $table->integer('out_pcs')->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
+            $table->string('warehouse')->nullable();
+            $table->string('transfer')->nullable();
+            $table->string('remark')->nullable();
             $table->integer('status')->default(0);
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
@@ -45,7 +49,7 @@ return new class extends Migration
             SELECT COALESCE(MAX(CAST(SUBSTRING(stock_code, 3, 2) AS UNSIGNED)), 0) + 1 
             INTO next_number
             FROM godown_roller_stocks;
-            SET next_code = CONCAT("RL", LPAD(next_number, 2, "0"));
+            SET next_code = CONCAT("GD", LPAD(next_number, 2, "0"));
             IF NEW.stock_code IS NULL THEN
                 SET NEW.stock_code = next_code;
             END IF;

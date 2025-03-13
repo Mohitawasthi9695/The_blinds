@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('stock_out_details', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
-            $table->unsignedBigInteger('godown_id');
+            $table->foreignId('godown_id')->constrained('godown_roller_stocks')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('stock_code')->nullable();
             $table->string('hsn_sac_code')->nullable();
