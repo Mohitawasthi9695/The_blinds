@@ -45,7 +45,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/category/getstock/{id}', [StocksInController::class, 'GetStocks']);
 
     Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
-    Route::get( '/getaccessorycode', [GodownAccessoryController::class, 'Stock_code']);     
+    Route::get( '/getaccessorycode/{id}', [GodownAccessoryController::class, 'Stock_code']);     
     Route::post('/godownaccessoryout', [GodownAccessoryController::class, 'StockOut']);
 
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
@@ -95,7 +95,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godownout', [StockOutController::class, 'index']);
     Route::put('/godownout/{id}', [StockOutController::class, 'update']);
     Route::get('/accessoryout', [GodownAccessoryController::class, 'AllStockOut']);
+    Route::get('/accessoryout/{id}', [GodownAccessoryController::class, 'GetStockOut']);
     
+    // api for tansfer the stock
+    Route::get('/gettranferstocks/{id}', [GodownRollerStockController::class, 'GetTransferStocks']);
+    Route::post('/godowns/transfergatepass', [GatePassController::class, 'StoreTransferGatePass']);
+    Route::get('/godowns/gettransfergatepass', [GatePassController::class, 'GetTransferGatePass']);
+    Route::get('/godowns/gettransferstock', [GodownRollerStockController::class, 'GetTransferedStock']);
+
     Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
     // Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);

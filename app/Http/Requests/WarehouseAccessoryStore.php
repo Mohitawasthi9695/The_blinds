@@ -24,10 +24,12 @@ class WarehouseAccessoryStore extends FormRequest
         return [
             '*.product_accessory_id' => 'required|exists:product_accessories,id',
             '*.lot_no' => 'nullable|string|max:255',
+            '*.date' => 'nullable|date',
             '*.length' => 'nullable|numeric|min:0',
             '*.length_unit' => 'nullable|string|max:255',
             '*.items' => 'nullable|numeric|min:0',
             '*.box_bundle' => 'nullable|numeric|min:0',
+            '*.box_bundle_unit' => 'nullable|string|max:255',
             '*.quantity' => 'nullable|numeric|min:0',
              ];
         

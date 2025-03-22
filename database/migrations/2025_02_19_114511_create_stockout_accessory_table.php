@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('stockout_accessory', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
+            $table->foreignId('stockout_details_id')->constrained('stock_out_details')->onDelete('cascade');
             $table->foreignId('godown_accessory_id')->constrained('godown_accessories')->onDelete('cascade');
             $table->foreignId('product_accessory_id')->constrained('product_accessories')->onDelete('cascade');
             $table->string('stock_code')->nullable();
@@ -22,9 +23,7 @@ return new class extends Migration
             $table->string('lot_no')->nullable();
             $table->decimal('length',13,2)->nullable();
             $table->string('length_unit')->nullable();
-            $table->integer('items')->nullable();
-            $table->integer('out_quantity')->nullable();
-            $table->string('box_bundle')->nullable();
+            $table->integer('quantity')->nullable();
             $table->decimal('gst', 10, 5)->nullable();
             $table->decimal('rate', 10, 5)->nullable();
             $table->decimal('amount', 15, 5)->nullable();

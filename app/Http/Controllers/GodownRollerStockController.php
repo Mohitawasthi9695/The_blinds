@@ -46,6 +46,7 @@ class GodownRollerStockController extends ApiController
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
+                'sub_stock_code' => $stock->sub_stock_code?? '',
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
@@ -91,6 +92,7 @@ class GodownRollerStockController extends ApiController
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
+                'sub_stock_code' => $stock->sub_stock_code?? '',
                 'stock_in_id' => $stock->stock_in_id,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
@@ -127,6 +129,7 @@ class GodownRollerStockController extends ApiController
                 'stock_in_id' => $stock->stock_in_id,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
+                'sub_stock_code' => $stock->sub_stock_code?? '',
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'out_length' => $stock->out_length,
@@ -182,6 +185,7 @@ class GodownRollerStockController extends ApiController
             'stock_in_id' => $stock->stock_in_id,
             'product_id' => $stock->product_id,
             'stock_code' => $stock->stock_code,
+            'sub_stock_code' => $stock->sub_stock_code?? '',
             'lot_no' => $stock->lot_no,
             'length' => $stock->length,
             'width' => $stock->width,
@@ -239,4 +243,89 @@ class GodownRollerStockController extends ApiController
             return response()->json(['error' => 'Failed to delete Roller Stock.', 'message' => $e->getMessage()], 500);
         }
     }
+    public function GetTransferStocks($id)
+    {
+        $user = Auth::user();
+        $stocks = GodownRollerStock::where('product_id', $id)
+            ->where('status', 1)->whereHas('gatepass',function ($q) use ($user) {
+                $q->where('godown_supervisor_id', $user->id);
+            })
+            ->with(['products', 'products.ProductCategory'])->get();
+
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No active stocks found for this product.', 404);
+        }
+
+        $responseData = $stocks->map(function ($stock) {
+            return [
+                'stock_available_id' => $stock->id,
+                'stock_in_id' => $stock->stock_in_id,
+                'lot_no' => $stock->lot_no,
+                'stock_code' => $stock->stock_code,
+                'length' => round($stock->length, 2) ?? '',
+                'width' => round($stock->width, 2) ?? '',
+                'length_unit' => $stock->length_unit ?? 'N/A',
+                'width_unit' => $stock->width_unit ?? 'N/A',
+                'pcs' => $stock->pcs,
+                'out_pcs' => ($stock->pcs - $stock->out_pcs)??0,
+                'rack' => $stock->rack,
+                'remark' => $stock->remark,
+                'product_name' => $stock->products->name ?? 'N/A',
+                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
+                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
+                'product_category' => $stock->products->ProductCategory->product_category ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
+    }
+    public function GetTransferedStock(Request $request)
+    {
+        
+        $user = Auth::user();
+        $role = $user->getRoleNames()->first();
+        Log::info($role);
+        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory']);
+        
+        if ($role === 'sub_supervisor') {
+            $stocks->whereHas('gatepass', function ($query) use ($user) {
+                $query->where('godown_supervisor_id', $user->id);
+            });
+        }
+
+        $stocks = $stocks->orderBy('id', 'desc')->get();
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+
+        $stocks = $stocks->map(function ($stock) {
+            return [
+                'id' => $stock->id,
+                'gate_pass_id' => $stock->gate_pass_id,
+                'gate_pass_no' => $stock->gatepass->gate_pass_no,
+                'gate_pass_date' => $stock->gatepass->gate_pass_date,
+                'date' => $stock->date,
+                'product_id' => $stock->product_id,
+                'sub_stock_code' => $stock->sub_stock_code?? '',
+                'stock_code' => $stock->stock_code,
+                'lot_no' => $stock->lot_no,
+                'length' => $stock->length,
+                'out_length' => $stock->out_length ?? 0,
+                'length_unit' => $stock->length_unit,
+                'width' => $stock->width,
+                'width_unit' => $stock->width_unit,
+                'rack' => $stock->rack,
+                'pcs' => $stock->pcs,
+                'out_pcs' => $stock->out_pcs,
+                'wastage' => $stock->wastage ?? 0,
+                'status' => $stock->status,
+                'product_name' => $stock->products->name ?? null,
+                'shadeNo' => $stock->products->shadeNo ?? null,
+                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
+                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
+            ];
+        });
+        return response()->json($stocks);
+    }
+
 }

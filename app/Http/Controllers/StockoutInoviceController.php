@@ -105,6 +105,7 @@ class StockoutInoviceController extends ApiController
             'stockOutDetails',
             'stockOutDetails.product',
             'stockOutDetails.product.productCategory',
+            'stockOutDetails.godown.gatepass.godown_supervisors',
             'customer',
             'company'
         ])->find($id);
@@ -161,6 +162,7 @@ class StockoutInoviceController extends ApiController
                     'rack' => $detail->rack,
                     'status' => $detail->status,
                     'product_name' => $detail->product->name ?? null,
+                    'godown_supervisor' => $detail->godown->gatepass->godown_supervisors->name ?? null,
                     'product_shadeNo' => $detail->product->shadeNo ?? null,
                     'product_purchase_shade_no' => $detail->product->purchase_shade_no ?? null,
                     'product_category' => $detail->product->productCategory->product_category ?? null,
@@ -219,6 +221,7 @@ class StockoutInoviceController extends ApiController
 
                     log::info($sellLength);
                     log::info($sellWidth);
+                   
 
                     if ($product['type'] == 1) { // Calculate based on length
                         if ($sellLength > $availableStock->length - $availableStock->out_length) {
@@ -236,6 +239,7 @@ class StockoutInoviceController extends ApiController
                                 'gate_pass_no' => $availableStock->gatepass->gate_pass_no,
                                 'gate_pass_date' => $availableStock->gatepass->gate_pass_date,
                                 'date' => $validatedData['date'],
+                                'sub_stock_code' => $availableStock->stock_code,
                                 'lot_no' => $availableStock->lot_no,
                                 'length' => $sellLength,
                                 'out_length' => 0,
@@ -284,7 +288,7 @@ class StockoutInoviceController extends ApiController
                         'godown_id' =>  $availableStock->id,
                         'stock_code' =>  $availableStock->stock_code,
                         'product_id' => $availableStock->product_id,
-                        'date' => $product['date'] ?? null,
+                        'date' => $validatedData['date'] ?? null,
                         'out_width' => $product['width'],
                         'out_length' => $product['length'],
                         'width_unit' => $product['width_unit'] ?? null,

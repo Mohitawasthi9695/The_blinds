@@ -7,10 +7,12 @@ use App\Http\Requests\GodownAccessoryStore;
 use App\Models\GodownAccessory;
 use App\Models\GatePass;
 use App\Models\StockoutAccessory;
+use App\Models\StockOutDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\UnitHelper;
 
 class GodownAccessoryController extends ApiController
 {
@@ -44,9 +46,9 @@ class GodownAccessoryController extends ApiController
         return $this->successResponse($godownAccessory, 'GodownAccessory retrieved successfully.', 200);
     }
 
-    public function Stock_code()
+    public function Stock_code($id)
     {
-        $GatePass = GodownAccessory::select('id', 'stock_code')->where('status', 1)->orderBy('id', 'desc')->get();
+        $GatePass = GodownAccessory::select('id', 'stock_code')->where('status', 1)->where('product_accessory_id',$id)->orderBy('id', 'desc')->get();
         if ($GatePass) {
             return $this->successResponse($GatePass, 'Gdown Accessory Stock code retrieved successfully.');
         } else {
@@ -61,27 +63,33 @@ class GodownAccessoryController extends ApiController
             $createdItems = [];
             foreach ($StockoutAccessory as $data) {
                 $exist = GodownAccessory::find($data['godown_accessory_id']);
+                $stockout = StockOutDetail::find($data['stockout_details_id']);
 
                 if (!$exist) {
                     return $this->errorResponse('Accessory not found in stock.', 404);
                 }
-                if ($exist->quantity < ($exist->out_quantity + ($data['out_quantity'] ?? 0))) {
+                if (!$stockout) {
+                    return $this->errorResponse('stockout not found in stock.', 404);
+                }
+                if ($exist->quantity < ($exist->out_quantity + ($data['quantity'] ?? 0))) {
                     return $this->errorResponse('Not enough stock available.', 400);
                 }
-                $out_length = $data['length'] ?? 0;
-                $out_quantity = $data['out_quantity'] ?? 0;
-                if ($out_length < $exist->length) {
-                    $cut_length = $exist->length - $out_length;
-                    Log::info("Cut Length: " . $cut_length);
-                    if ($cut_length > 0) {
 
+                $out_length = $data['length'] ?? 0;
+                $out_length = convertUnit($data['length'], $data['length_unit'], $exist->length_unit, 2);
+                $out_quantity = $data['quantity'] ?? 0;
+
+                if ($out_length*$out_quantity < $exist->length * $out_quantity) {
+                    $cut_length = $exist->length*$out_quantity - $out_length*$out_quantity;
+                    Log::info("Cut Length: " . $cut_length);
+                    if ($cut_length > 0){
                         GodownAccessory::create([
                             'gate_pass_id' => $exist->gate_pass_id,
                             'product_accessory_id' => $exist->product_accessory_id,
                             'warehouse_accessory_id' => $exist->warehouse_accessory_id,
                             'lot_no' => $exist->lot_no ?? null,
                             'items' => 1,
-                            'quantity' => 1,
+                            'quantity' => $data['quantity'],
                             'length' => $cut_length,
                             'length_unit' => $exist->length_unit ?? 'N/A',
                             'out_length' => 0,
@@ -95,8 +103,8 @@ class GodownAccessoryController extends ApiController
                 }
 
                 $data['stock_code']=$exist->stock_code;
-                $data['gate_pass_id']=$exist->gate_pass_id;
                 $data['product_accessory_id']=$exist->product_accessory_id;
+                $data['stockout_inovice_id']=$stockout->stockout_inovice_id;
                 
                 $createdItem = StockoutAccessory::create($data);
                 $createdItems[] = $createdItem;
@@ -137,13 +145,43 @@ class GodownAccessoryController extends ApiController
             return [
                 'stock_code' => $item->stock_code,
                 'lot_no' => $item->lot_no,
-                'accessory_name' => $item->accessory->name ?? null,
+                'accessory_name' => $item->accessory->accessory_name ?? null,
                 'invoice_no' => $item->stockOutInvoice->invoice_no ?? null,
                 'length' => round($item->length, 2) ?? 0,
                 'width' => round($item->width, 2) ?? 0,
                 'date' => $item->date ?? 0,
                 'hsn_sac_code ' => $item->hsn_sac_code ?? 0,
                 'pcs' => round($item->out_pcs) ?? 0,
+                'gst' => $item->gst ?? 0,
+                'rate' => round($item->rate, 2) ?? 0,
+                'amount' => round($item->amount, 2) ?? 0,
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'width_unit' => $item->width_unit ?? 'N/A',
+                'rack' => $item->rack ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
+    }
+    public function GetStockOut($id)
+    {
+        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice', 'accessory'])->where('stockout_details_id',$id)->get();
+
+        if ($stockOutInvoices->isEmpty()) {
+            return $this->errorResponse('No stock-out invoices found.', 404);
+        }
+
+        $formattedData = $stockOutInvoices->map(function ($item) {
+            return [
+                'stock_code' => $item->stock_code,
+                'lot_no' => $item->lot_no,
+                'accessory_name' => $item->accessory->accessory_name ?? null,
+                'invoice_no' => $item->stockOutInvoice->invoice_no ?? null,
+                'length' => round($item->length, 2) ?? 0,
+                'width' => round($item->width, 2) ?? 0,
+                'date' => $item->date ?? 0,
+                'hsn_sac_code ' => $item->hsn_sac_code ?? 0,
+                'pcs' => round($item->quantity) ?? 0,
                 'gst' => $item->gst ?? 0,
                 'rate' => round($item->rate, 2) ?? 0,
                 'amount' => round($item->amount, 2) ?? 0,
@@ -171,20 +209,18 @@ class GodownAccessoryController extends ApiController
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
         $response = [
-            'id' => $GodownAccessory->id,
+            'godown_accessory_id' => $GodownAccessory->id,
             'warehouse_accessory_id' => $GodownAccessory->id,
             'product_accessory_id' => $GodownAccessory->product_accessory_id,
-            'product_category' => $GodownAccessory->accessory->productCategory->product_category ?? 'N/A',
-            'product_accessory_name' => $GodownAccessory->accessory->accessory_name ?? 'N/A',
-            'lot_no' => $GodownAccessory->lot_no ?? 'N/A',
+            'product_category' => $GodownAccessory->accessory->productCategory->product_category ?? '',
+            'product_accessory_name' => $GodownAccessory->accessory->accessory_name ?? '',
+            'lot_no' => $GodownAccessory->lot_no ?? '',
             'stock_code' => $GodownAccessory->stock_code ?? '',
-            'items' => $GodownAccessory->items ?? 'N/A',
-            'out_length' => $GodownAccessory->length ?? 'N/A',
-            'unit' => $GodownAccessory->unit ?? 'N/A',
-            'box_bundle' => $GodownAccessory->box_bundle ?? 'N/A',
-            'out_quantity' => $GodownAccessory->out_quantity ?? 0,
-            'quantity' => $GodownAccessory->quantity ?? 0,
-            'available_qty' => ($GodownAccessory->quantity - $GodownAccessory->out_quantity) ?? 0,
+            'items' => $GodownAccessory->items ?? '',
+            'length' => $GodownAccessory->length ?? '',
+            'length_unit' => $GodownAccessory->length_unit ?? '',
+            'box_bundle' => $GodownAccessory->box_bundle ?? '',
+            'quantity' => ($GodownAccessory->quantity - $GodownAccessory->out_quantity) ?? 0,
             'date' => $GodownAccessory->created_at->format('Y-m-d'),
         ];
 

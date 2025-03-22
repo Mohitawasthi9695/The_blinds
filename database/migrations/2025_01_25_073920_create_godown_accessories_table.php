@@ -23,10 +23,10 @@ return new class extends Migration
             $table->string('length_unit')->nullable();
             $table->string('items')->nullable();
             $table->string('box_bundle')->nullable();
-            $table->string('out_box_bundle')->nullable();
+            $table->string('box_bundle_unit')->nullable();
             $table->string('quantity')->nullable();
-            $table->string('remark')->nullable();
             $table->string('out_quantity')->nullable();
+            $table->string('remark')->nullable();
             $table->string('rack')->nullable();
             $table->boolean('status')->default(0);
             $table->timestamps();

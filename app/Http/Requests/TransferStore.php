@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GodownAccessoryStore extends FormRequest
+class TransferStore extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -28,18 +28,17 @@ class GodownAccessoryStore extends FormRequest
             'place_of_supply' => 'required|string|max:255',
             'driver_name' => 'required|string|max:255',
             'driver_phone' => 'nullable|string|max:255',
-            'type' => 'required|string|in:accessory',
+            'type' => 'required|string|in:transfer',
             'date' => 'required|date',
             'out_products' => 'required|array',
-            'out_products.*.warehouse_accessory_id' => 'required|integer|exists:warehouse_accessories,id',
-            'out_products.*.lot_no' => 'nullable|string|max:255',
-            'out_products.*.items' => 'nullable|numeric|min:0',
-            'out_products.*.length' => 'nullable|numeric|min:0',
-            'out_products.*.length_unit' => 'nullable|string|max:50',
-            'out_products.*.box_bundle' => 'nullable|numeric|min:0',
-            'out_products.*.box_bundle_unit' => 'nullable|string|max:255',
-            'out_products.*.quantity' => 'nullable|numeric|min:1',
+            'out_products.*.stock_available_id' => 'required|integer|exists:godown_roller_stocks,id',
+            'out_products.*.stock_in_id' => 'required|integer|exists:stocks_ins,id',
+            'out_products.*.width' => 'required|numeric|min:1',
+            'out_products.*.length' => 'required|numeric|min:1',
+            'out_products.*.pcs' => 'required|numeric|min:1',
+            'out_products.*.length_unit' => 'required|string|max:50',
+            'out_products.*.width_unit' => 'required|string|max:50',
         ];
-           return $rules;      
+        return $rules;
     }
 }

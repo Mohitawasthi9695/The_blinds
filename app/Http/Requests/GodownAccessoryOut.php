@@ -22,15 +22,13 @@ class GodownAccessoryOut extends FormRequest
     public function rules(): array
     {
         $rules = [
-            '*.stockout_inovice_id' => 'required|integer|exists:stockout_inovices,id',
+            '*.stockout_details_id' => 'required|integer|exists:stock_out_details,id',
             '*.godown_accessory_id' => 'required|integer|exists:godown_accessories,id',
             '*.product_accessory_id' => 'required|integer|exists:product_accessories,id',
             '*.lot_no' => 'nullable|string|max:255',
             '*.date' => 'nullable|date',
-            '*.items' => 'nullable|numeric|min:0',
             '*.length' => 'nullable|numeric|min:0',
-            '*.box_bundle' => 'nullable|numeric|min:0',
-            '*.out_quantity' => 'nullable|numeric|min:1',
+            '*.quantity' => 'nullable|numeric|min:1',
             '*.length_unit' => 'nullable|string|max:50',
         ];
         return $rules;

@@ -32,9 +32,11 @@ class WarehouseAccessoryController extends ApiController
                 'date' => $item->date ?? 'N/A',
                 'stock_code' => $item->stock_code ?? 'N/A',
                 'items' => $item->items ?? 'N/A',
-                'out_length' => $item->length ?? 'N/A',
+                'length' => $item->length ?? 'N/A',
                 'length_unit' => $item->length_unit ?? 'N/A',
-                'box_bundle' => $item->box_bundle ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 0,
+                'out_box_bundle' => $item->out_box_bundle ?? 0,
+                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
                 'out_quantity' => $item->out_quantity ?? 0,
                 'quantity' => $item->quantity ?? 0,
             ];
@@ -59,10 +61,12 @@ class WarehouseAccessoryController extends ApiController
                 'lot_no' => $item->lot_no ?? '',
                 'date' => $item->date ?? '',
                 'items' => $item->items ?? '',
-                'out_length' => $item->length ?? '',
+                'length' => $item->length ?? '',
                 'length_unit' => $item->length_unit ?? '',
                 'box_bundle' => $item->box_bundle - $item->out_box_bundle ?? 0,
-                'out_quantity' => $item->quantity - $item->out_quantity ?? 0,
+                'out_box_bundle' => $item->out_box_bundle ?? 0,
+                'box_bundle_unit' => $item->box_bundle_unit ?? '',
+                'quantity' => $item->items * ($item->box_bundle - $item->out_box_bundle) ?? 0,
 
             ];
         });
@@ -116,14 +120,17 @@ class WarehouseAccessoryController extends ApiController
                     return response()->json(['error' => "ProductAccessory with name {$accessory_name} not found"], 422);
                 }
                 $data = [
-                    'product_accessory_id'     => $ProductAccessory->id,
+                    'product_accessory_id'=> $ProductAccessory->id,
                     'lot_no'         => $lotNo,
                     'length'         => $row[3] ?? null,
                     'length_unit'    => $row[4] ?? null,
                     'items'          => $row[5] ?? null,
                     'box_bundle'     => $row[6] ?? null,
                     'quantity'       => $row[6]*$row[5] ?? null,
-                    'date'           =>  $row[7] ?? Carbon::today(),
+                    'box_bundle_unit'=> $row[7] ?? null,
+                    'remark'     => $row[8] ?? null,
+                    'date' => isset($row[9]) && is_numeric($row[8]) 
+                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[12]} days")) : Carbon::today(),
                 ];
                 $createdItem = WarehouseAccessory::create($data);
                 $createdItems[] = $createdItem;
@@ -152,11 +159,13 @@ class WarehouseAccessoryController extends ApiController
         $WarehouseAccessory = WarehouseAccessory::findOrFail($id);
         $validatedData = $request->validate([
             'product_accessory_id' => 'required|exists:product_accessories,id',
-            'length'               => 'nullable|string|max:255',
-            'unit'                 => 'nullable|string|max:255',
-            'items'                => 'nullable|string|max:255',
-            'box'                  => 'nullable|string|max:255',
-            'quantity'             => 'nullable|string|max:255',
+            'lot_no' => 'nullable|string|max:255',
+            'length' => 'nullable|numeric|min:0',
+            'length_unit' => 'nullable|string|max:255',
+            'items' => 'nullable|numeric|min:0',
+            'box_bundle' => 'nullable|numeric|min:0',
+            'box_bundle_unit' => 'nullable|string|max:255',
+            'quantity' => 'nullable|numeric|min:0',
         ]);
         $WarehouseAccessory->update($validatedData);
         return $this->successResponse($WarehouseAccessory, 'WarehouseAccessory updated successfully.', 200);

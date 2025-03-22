@@ -17,6 +17,10 @@ class StockoutAccessory extends Model
     {
         return $this->belongsTo(StockoutInovice::class,'stockout_inovice_id');
     }
+    public function stockOutDetails()
+    {
+        return $this->belongsTo(StockoutInovice::class,'stockout_details_id');
+    }
     public function accessory()
     {
         return $this->belongsTo(ProductAccessory::class,'product_accessory_id');
