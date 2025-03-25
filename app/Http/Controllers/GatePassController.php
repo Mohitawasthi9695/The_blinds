@@ -59,7 +59,7 @@ class GatePassController extends ApiController
         // Transforming the data to merge stocks
         $formattedStocks = $stocks->map(function ($stock) {
             $allStock = collect()
-                ->merge($stock->godown_roller_stock)
+            ->merge($stock->godown_roller_stock->where('type','!=' ,'entery'))
                 ->values()->map(function ($stockItem) {
                     return [
                         'id' => $stockItem->id,
@@ -69,6 +69,7 @@ class GatePassController extends ApiController
                         'stockin_code' => $stockItem->stocks->stock_code ?? null,
                         'stock_code' => $stockItem->stock_code ?? null,
                         'date' => $stockItem->date,
+                        'type' => $stockItem->type,
                         'lot_no' => $stockItem->lot_no,
                         'width' => round($stockItem->width, 2),
                         'width_unit' => $stockItem->width_unit,
@@ -113,7 +114,7 @@ class GatePassController extends ApiController
         // Transforming the data to merge stocks and extract stock_code
         $formattedStocks = $stocks->map(function ($stock) {
             $allStock = collect()
-                ->merge($stock->godown_roller_stock)
+                ->merge($stock->godown_roller_stock->where('type','!=' ,'entery'))
                 ->values()
                 ->map(function ($stockItem) {
                     return [
@@ -124,6 +125,7 @@ class GatePassController extends ApiController
                         'stockin_code' => $stockItem->stocks->stock_code ?? null,
                         'stock_code' => $stockItem->stock_code ?? null,
                         'date' => $stockItem->date,
+                        'type' => $stockItem->type,
                         'lot_no' => $stockItem->lot_no,
                         'width' => $stockItem->width,
                         'width_unit' => $stockItem->width_unit,
@@ -149,6 +151,7 @@ class GatePassController extends ApiController
                 'all_stocks' => $allStock,
             ];
         });
+        log::info($formattedStocks);
         return $this->successResponse($formattedStocks, 'GatePass With Stock Retrieved Successfully', 200);
     }
 
@@ -178,6 +181,7 @@ class GatePassController extends ApiController
         DB::beginTransaction();
         try {
             $validatedData = $request->validated();
+            log::info($validatedData);
             $GatePass = GatePass::create([
                 'gate_pass_no' => $validatedData['invoice_no'],
                 'type' => $validatedData['type'],
@@ -205,9 +209,6 @@ class GatePassController extends ApiController
 
                 $outQuantity = $product['out_quantity'] ?? 1;
                     for ($i = 0; $i < $outQuantity; $i++) {
-                        if($availableStock->product_category_id==3){
-                            $product['type'] = 'gatepass';
-                        }
                         GodownRollerStock::create([
                             'gate_pass_id' => $GatePass->id,
                             'stock_in_id' => $product['stock_available_id'],
@@ -215,6 +216,7 @@ class GatePassController extends ApiController
                             'product_id' => $availableStock->product_id,
                             'lot_no' => $availableStock->lot_no,
                             'date' => $validatedData['date'],
+                            'type' => $product['type'],
                             'quantity' => 1,
                             'pcs' => $product['pcs'],
                             'width' => round($product['width'],2),
@@ -426,6 +428,7 @@ class GatePassController extends ApiController
                         'date' => $validatedData['date'],
                         'quantity' => 1,
                         'pcs' => $product['pcs'],
+                        'type' => $product['type']?? 'transfer',
                         'width' => round($product['width'], 2),
                         'length' => round($product['length'],  2),
                         'width_unit' => $product['width_unit'],
@@ -435,7 +438,7 @@ class GatePassController extends ApiController
                 $newQty = $availableStock->pcs - ($availableStock->out_pcs + $availableStock->transfer + $product['pcs']);
                 $availableStock->update([
                     'transfer' => $availableStock->transfer + $product['pcs'],
-                    'status' => ($newQty <= 0) ? 0 : 1,
+                    'status' => ($newQty <= 0) ? 2 : 1,
                 ]);
             }
             DB::commit();

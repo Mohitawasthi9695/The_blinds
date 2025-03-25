@@ -105,6 +105,8 @@ class GodownAccessoryController extends ApiController
                 $data['stock_code']=$exist->stock_code;
                 $data['product_accessory_id']=$exist->product_accessory_id;
                 $data['stockout_inovice_id']=$stockout->stockout_inovice_id;
+                $data['rack']=$stockout->rack;
+                $data['remark']=$stockout->remark??'';
                 
                 $createdItem = StockoutAccessory::create($data);
                 $createdItems[] = $createdItem;
@@ -151,7 +153,7 @@ class GodownAccessoryController extends ApiController
                 'width' => round($item->width, 2) ?? 0,
                 'date' => $item->date ?? 0,
                 'hsn_sac_code ' => $item->hsn_sac_code ?? 0,
-                'pcs' => round($item->out_pcs) ?? 0,
+                'pcs' => round($item->quantity) ?? 0,
                 'gst' => $item->gst ?? 0,
                 'rate' => round($item->rate, 2) ?? 0,
                 'amount' => round($item->amount, 2) ?? 0,

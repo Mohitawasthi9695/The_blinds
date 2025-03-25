@@ -29,6 +29,9 @@ class GodownAccessoryOut extends FormRequest
             '*.date' => 'nullable|date',
             '*.length' => 'nullable|numeric|min:0',
             '*.quantity' => 'nullable|numeric|min:1',
+            '*.rate' => 'nullable|numeric|min:0',
+            '*.gst' => 'nullable|numeric|min:0',
+            '*.amount' => 'nullable|numeric|min:0',
             '*.length_unit' => 'nullable|string|max:50',
         ];
         return $rules;

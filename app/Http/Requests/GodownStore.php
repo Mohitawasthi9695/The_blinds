@@ -37,6 +37,7 @@ class GodownStore extends FormRequest
             'out_products.*.pcs' => 'required|numeric|min:1',
             'out_products.*.out_quantity' => 'required|numeric|min:1',
             'out_products.*.length_unit' => 'required|string|max:50',
+            'out_products.*.type' => 'required|string|in:stock,gatepass',
             'out_products.*.width_unit' => 'required|string|max:50',
         ];
         return $rules;

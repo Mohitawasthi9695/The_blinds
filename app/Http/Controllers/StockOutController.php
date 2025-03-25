@@ -45,6 +45,7 @@ class StockOutController extends ApiController
                 'width_unit' => $detail->width_unit,
                 'length_unit' => $detail->length_unit,
                 'type' => $detail->type,
+                'date' => $detail->date,
                 'gst' => $detail->gst,
                 'rate' => round($detail->rate, 3),
                 'amount' => round($detail->amount, 3),
@@ -89,10 +90,13 @@ class StockOutController extends ApiController
         if ($stockOutInvoices->isEmpty()) {
             return $this->errorResponse('No stock-out invoices found.', 404);
         }
-
-        // Formatting response
         $formattedData = $stockOutInvoices->map(function ($item) {
             return [
+                'id' => $item->id,
+                'company_name' => $item->stockOutInvoice->company->name ?? null,
+                'company_phone_no' => $item->stockOutInvoice->company->owner_mobile ?? null,
+                'buyer_name' => $item->stockOutInvoice->customer->name ?? null,
+                'buyer_phone_no' => $item->stockOutInvoice->customer->owner_mobile ?? null,
                 'stock_code' => $item->stock_code,
                 'lot_no' => $item->lot_no,
                 'product_name' => $item->product->name ?? null,

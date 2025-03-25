@@ -57,10 +57,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/godownstock', [GodownRollerStockController::class,'index']);
     Route::get('/godownstock/{id}', [GodownRollerStockController::class,'show']);
+    Route::get('/godownstock/cutstock/{id}', [GodownRollerStockController::class,'GetCutStock']);
     Route::put('/godownstock/{id}', [GodownRollerStockController::class,'update']);
     Route::delete('/godownstock/{id}', [GodownRollerStockController::class,'destroy']);
     Route::get('/godownverticalstock',[GodownRollerStockController::class,'VerticalStock']);
-    Route::post('/godownverticalstock',[GodownRollerStockController::class,'Verticalstore']);
+    Route::post('/godownverticalstock/{id}',[GodownRollerStockController::class,'Verticalstore']);
     Route::get('/godownverticalstock/stock/{id}',[GodownRollerStockController::class,'GodownStock']);
    
     Route::get('/accessory/getStockgatepass', [GatePassController::class, 'GetAllAccessoryGatePass']);
@@ -105,6 +106,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
-    // Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
+    Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
 });

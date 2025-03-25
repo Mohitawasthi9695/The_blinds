@@ -37,8 +37,8 @@ class WarehouseAccessoryController extends ApiController
                 'box_bundle' => $item->box_bundle ?? 0,
                 'out_box_bundle' => $item->out_box_bundle ?? 0,
                 'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
-                'out_quantity' => $item->out_quantity ?? 0,
-                'quantity' => $item->quantity ?? 0,
+                'quantity' => $item->items*$item->box_bundle ?? 0,
+                'out_quantity' => $item->items*$item->out_box_bundle ?? 0,
             ];
         });
 
@@ -126,11 +126,10 @@ class WarehouseAccessoryController extends ApiController
                     'length_unit'    => $row[4] ?? null,
                     'items'          => $row[5] ?? null,
                     'box_bundle'     => $row[6] ?? null,
-                    'quantity'       => $row[6]*$row[5] ?? null,
                     'box_bundle_unit'=> $row[7] ?? null,
                     'remark'     => $row[8] ?? null,
-                    'date' => isset($row[9]) && is_numeric($row[8]) 
-                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[12]} days")) : Carbon::today(),
+                    'date' => isset($row[9]) && is_numeric($row[9]) 
+                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[9]} days")) : Carbon::today(),
                 ];
                 $createdItem = WarehouseAccessory::create($data);
                 $createdItems[] = $createdItem;

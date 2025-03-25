@@ -22,6 +22,7 @@ class ProductAccessoryController extends ApiController
                 'id' => $product->id,
                 'product_category' => $product->productCategory->product_category,
                 'accessory_name' => $product->accessory_name,
+                'remark' => $product->remark,
                 'date' => $product->date,
                 'status' => $product->status,
             ];
@@ -45,6 +46,7 @@ class ProductAccessoryController extends ApiController
             [
                 'product_category_id' => 'required|numeric|exists:product_categories,id',
                 'accessory_name' => 'required|string|max:255',
+                'remark' => 'required|string|max:255',
                 'date'=>'required|date',
             ]
         );
@@ -107,7 +109,9 @@ class ProductAccessoryController extends ApiController
                 $newRecords[] = [
                     'product_category_id'=> $existProductCategory->id,
                     'accessory_name'           => $row[2],
-                    'date'           => $row[3]?? Carbon::now(),
+                    'remark'           => $row[3],
+                   'date' => isset($row[4]) && is_numeric($row[4]) 
+                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[4]} days")) : Carbon::today(),
                     'created_at'        => now(),
                     'updated_at'        => now(),
                 ];
@@ -140,6 +144,7 @@ class ProductAccessoryController extends ApiController
                 'id' => $product->id,
                 'product_category' => $product->productCategory->product_category,
                 'accessory_name' => $product->accessory_name,
+                'remark' => $product->remark,
                 'date' => $product->date,
                 'status' => $product->status,
             ];

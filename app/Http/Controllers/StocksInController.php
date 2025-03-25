@@ -198,6 +198,7 @@ class StocksInController extends ApiController
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
+                'type' => $stock->type?? 'stock',
                 'remark' => $stock->remark,
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',

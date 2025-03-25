@@ -25,4 +25,8 @@ class GodownRollerStock extends Model
     {
         return $this->belongsTo(GatePass::class, 'gate_pass_id');
     }
+    public function cutstock()
+    {
+        return $this->HasMany(CutStock::class, 'godown_roller_stock_id');
+    }
 }

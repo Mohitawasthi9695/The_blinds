@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\RollerStock;
 use App\Http\Requests\UpdateRollerStock;
+use App\Models\CutStock;
 use App\Models\GodownRollerStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,7 +19,6 @@ class GodownRollerStockController extends ApiController
     public function index(Request $request)
     {
         $categoryId = $request->query('category_id');
-
         $user = Auth::user();
         $role = $user->getRoleNames()->first();
         Log::info($role);
@@ -33,7 +33,7 @@ class GodownRollerStockController extends ApiController
                 $q->where('product_category_id', $categoryId);
             });
         }
-        $stocks = $stocks->orderBy('id', 'desc')->get();
+        $stocks = $stocks->orderBy('id', 'desc')->where('type', '!=', 'gatepass')->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -46,7 +46,7 @@ class GodownRollerStockController extends ApiController
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
-                'sub_stock_code' => $stock->sub_stock_code?? '',
+                'sub_stock_code' => $stock->sub_stock_code ?? '',
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
@@ -92,7 +92,7 @@ class GodownRollerStockController extends ApiController
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
-                'sub_stock_code' => $stock->sub_stock_code?? '',
+                'sub_stock_code' => $stock->sub_stock_code ?? '',
                 'stock_in_id' => $stock->stock_in_id,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
@@ -129,7 +129,7 @@ class GodownRollerStockController extends ApiController
                 'stock_in_id' => $stock->stock_in_id,
                 'product_id' => $stock->product_id,
                 'stock_code' => $stock->stock_code,
-                'sub_stock_code' => $stock->sub_stock_code?? '',
+                'sub_stock_code' => $stock->sub_stock_code ?? '',
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'out_length' => $stock->out_length,
@@ -146,23 +146,32 @@ class GodownRollerStockController extends ApiController
         return response()->json($stocks);
     }
 
-    public function Verticalstore(RollerStock $request)
+    public function Verticalstore(RollerStock $request, $id)
     {
         $validatedData = $request->validated();
         Log::info('Validated Data:', $validatedData);
 
         try {
             $createdItems = [];
+            $available = GodownRollerStock::find($id);
+            if (!$available) {
+                return $this->errorResponse('Stock Not FOund.', 404);
+            }
             foreach ($validatedData as $data) {
-                $data['user_id'] =  Auth::id();
+
+                $data['user_id'] = Auth::id();
                 $data['status'] = 1;
                 $data['length'] = convertToMeters($data['length'], $data['length_unit'], 2);
                 $data['width'] = convertToFeet($data['width'], $data['width_unit'], 2) ?? 0;
                 $data['width_unit'] = 'ft';
                 $data['length_unit'] = 'm';
+                $data['quantity'] = 1;
                 $data['pcs'] = 1;
+                $data['type'] = 'entery';
                 $createdItems[] = GodownRollerStock::create($data);
+                $available->update(['out_pcs' => $available->out_pcs + 1]);
             }
+            $available->update(['status' => 4]);
             return $this->successResponse($createdItems, 'GodownVertical entries created successfully.', 201);
         } catch (\Exception $e) {
             Log::error('Insertion Error: ' . $e->getMessage());
@@ -185,7 +194,7 @@ class GodownRollerStockController extends ApiController
             'stock_in_id' => $stock->stock_in_id,
             'product_id' => $stock->product_id,
             'stock_code' => $stock->stock_code,
-            'sub_stock_code' => $stock->sub_stock_code?? '',
+            'sub_stock_code' => $stock->sub_stock_code ?? '',
             'lot_no' => $stock->lot_no,
             'length' => $stock->length,
             'width' => $stock->width,
@@ -195,6 +204,7 @@ class GodownRollerStockController extends ApiController
             'width_unit' => $stock->width_unit,
             'rack' => $stock->rack,
             'pcs' => $stock->pcs,
+            'out_pcs' => $stock->out_pcs,
             'status' => $stock->status,
             'product_name' => optional($stock->products)->name,
             'shadeNo' => optional($stock->products)->shadeNo,
@@ -247,7 +257,7 @@ class GodownRollerStockController extends ApiController
     {
         $user = Auth::user();
         $stocks = GodownRollerStock::where('product_id', $id)
-            ->where('status', 1)->whereHas('gatepass',function ($q) use ($user) {
+            ->where('status', 1)->whereHas('gatepass', function ($q) use ($user) {
                 $q->where('godown_supervisor_id', $user->id);
             })
             ->with(['products', 'products.ProductCategory'])->get();
@@ -266,8 +276,7 @@ class GodownRollerStockController extends ApiController
                 'width' => round($stock->width, 2) ?? '',
                 'length_unit' => $stock->length_unit ?? 'N/A',
                 'width_unit' => $stock->width_unit ?? 'N/A',
-                'pcs' => $stock->pcs,
-                'out_pcs' => ($stock->pcs - $stock->out_pcs)??0,
+                'pcs' => ($stock->pcs - $stock->out_pcs) ?? 0,
                 'rack' => $stock->rack,
                 'remark' => $stock->remark,
                 'product_name' => $stock->products->name ?? 'N/A',
@@ -281,19 +290,19 @@ class GodownRollerStockController extends ApiController
     }
     public function GetTransferedStock(Request $request)
     {
-        
+
         $user = Auth::user();
         $role = $user->getRoleNames()->first();
         Log::info($role);
         $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory']);
-        
+
         if ($role === 'sub_supervisor') {
             $stocks->whereHas('gatepass', function ($query) use ($user) {
                 $query->where('godown_supervisor_id', $user->id);
             });
         }
 
-        $stocks = $stocks->orderBy('id', 'desc')->get();
+        $stocks = $stocks->orderBy('id', 'desc')->where('type', 'transfer')->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -306,7 +315,7 @@ class GodownRollerStockController extends ApiController
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
-                'sub_stock_code' => $stock->sub_stock_code?? '',
+                'sub_stock_code' => $stock->sub_stock_code ?? '',
                 'stock_code' => $stock->stock_code,
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
@@ -327,5 +336,52 @@ class GodownRollerStockController extends ApiController
         });
         return response()->json($stocks);
     }
+
+    public function GetCutStock($id)
+    {
+        Log::info($id);
+
+        $cutStocks = CutStock::whereHas('stock')
+            ->with(['stock.products', 'stock', 'stock.products.ProductCategory'])
+            ->where('godown_roller_stock_id', $id)
+            ->get();
+
+        if ($cutStocks->isEmpty()) {
+            return response()->json(['message' => 'Stock not found.'], 404);
+        }
+
+        // Map only relevant fields
+        $data = $cutStocks->map(function ($cutStock) {
+            return [
+                'id' => $cutStock->id,
+                'godown_roller_stock_id' => $cutStock->godown_roller_stock_id,
+                'sub_stock_code' => $cutStock->sub_stock_code,
+                'gate_pass_no' => $cutStock->stock->gatepass->gate_pass_no,
+                'width' => $cutStock->width,
+                'width_unit' => optional($cutStock->stock)->width_unit,
+                'length' => $cutStock->length,
+                'out_length' => $cutStock->out_length,
+                'length_unit' => optional($cutStock->stock)->length_unit,
+                'available_length'=>$cutStock->length-$cutStock->out_length,
+                'remark' => $cutStock->remark,
+                'wastage' => $cutStock->wastage??0,
+                'status' => $cutStock->status,
+                'stock_code' => optional($cutStock->stock)->stock_code,
+                'lot_no' => optional($cutStock->stock)->lot_no,
+                'date' => optional($cutStock->stock)->date,
+                'rack' => optional($cutStock->stock)->rack,
+                'pcs' => optional($cutStock->stock)->pcs,
+                'out_pcs' => optional($cutStock->stock)->out_pcs,
+                'product_name' => optional($cutStock->stock->products)->name,
+                'shade_no' => optional($cutStock->stock->products)->shadeNo,
+                'purchase_shade_no' => optional($cutStock->stock->products)->purchase_shade_no,
+                'product_category_name' => optional(optional($cutStock->stock->products)->ProductCategory)->product_category,
+                'product_category_id' => optional(optional($cutStock->stock->products)->ProductCategory)->id,
+            ];
+        });
+
+        return $this->successResponse($data, 'Godown Vertical Retrieved', 200);
+    }
+
 
 }
