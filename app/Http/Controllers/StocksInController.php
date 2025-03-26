@@ -34,9 +34,10 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
                 'invoice_no' => $stock->invoice_no,
-                'length' => round($stock->length,2) ?? '',
-                'width' => round($stock->width,2) ?? '',
-                'unit' => $stock->unit,
+                'length' => round($stock->length, 2) ?? '',
+                'width' => round($stock->width, 2) ?? '',
+                'length_unit' => $stock->length_unit,
+                'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
                 'pcs' => $stock->pcs,
                 'quantity' => $stock->quantity,
@@ -48,7 +49,7 @@ class StocksInController extends ApiController
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
                 'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
-                'product_category_name' => $stock->products->ProductCategory->name ?? null,
+                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
             ];
         });
         return response()->json($stocks);
@@ -71,8 +72,8 @@ class StocksInController extends ApiController
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
                 'invoice_no' => $stock->invoice_no,
-                'length' => round($stock->length,2) ?? '',
-                'width' => round($stock->width,2) ?? '',
+                'length' => round($stock->length, 2) ?? '',
+                'width' => round($stock->width, 2) ?? '',
                 'length_unit' => $stock->length_unit,
                 'width_unit' => $stock->width_unit,
                 'type' => $stock->type,
@@ -99,8 +100,8 @@ class StocksInController extends ApiController
             $createdItems = [];
 
             foreach ($validatedData as $data) {
-                $invoice= StockInvoice::where('id', $data['invoice_id'])->first();
-                $data['user_id'] =  Auth::id();
+                $invoice = StockInvoice::where('id', $data['invoice_id'])->first();
+                $data['user_id'] = Auth::id();
                 $data['invoice_no'] = $invoice->invoice_no;
                 $createdItems = StocksIn::create($data);
             }
@@ -150,21 +151,21 @@ class StocksInController extends ApiController
                 }
                 $data = [
                     'product_category_id' => $product->ProductCategory->id,
-                    'product_id'  => $product->id,
-                    'invoice_id'  => $invoice->id,
-                    'user_id'     => Auth::id(),
-                    'invoice_no'  => $invoiceNo,
-                    'lot_no'      => $row[2] ?? null,
-                    'width'       => $row[4] ?? null,
-                    'width_unit'  => $row[5] ?? null,
-                    'length'      => $row[6] ?? null,
+                    'product_id' => $product->id,
+                    'invoice_id' => $invoice->id,
+                    'user_id' => Auth::id(),
+                    'invoice_no' => $invoiceNo,
+                    'lot_no' => $row[2] ?? null,
+                    'width' => $row[4] ?? null,
+                    'width_unit' => $row[5] ?? null,
+                    'length' => $row[6] ?? null,
                     'length_unit' => $row[7] ?? null,
-                    'rack'        => $row[8] ?? null,
-                    'pcs'         => $row[9] ?? 1,
-                    'quantity'    => $row[10] ?? 1,
-                    'remark'    => $row[11] ?? '',
-                    'date' => isset($row[12]) && is_numeric($row[12]) 
-                    ? date('Y-m-d', strtotime("1899-12-30 +{$row[12]} days")) : Carbon::today(),
+                    'rack' => $row[8] ?? null,
+                    'pcs' => $row[9] ?? 1,
+                    'quantity' => $row[10] ?? 1,
+                    'remark' => $row[11] ?? '',
+                    'date' => isset($row[12]) && is_numeric($row[12])
+                        ? date('Y-m-d', strtotime("1899-12-30 +{$row[12]} days")) : Carbon::today(),
                 ];
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;
@@ -191,14 +192,14 @@ class StocksInController extends ApiController
                 'stock_available_id' => $stock->id,
                 'lot_no' => $stock->lot_no,
                 'stock_code' => $stock->stock_code,
-                'length' => round($stock->length,2) ?? '',
-                'width' => round($stock->width,2) ?? '',
+                'length' => round($stock->length, 2) ?? '',
+                'width' => round($stock->width, 2) ?? '',
                 'length_unit' => $stock->length_unit ?? 'N/A',
                 'width_unit' => $stock->width_unit ?? 'N/A',
                 'pcs' => $stock->pcs,
                 'out_quantity' => $stock->quantity - $stock->out_quantity,
                 'rack' => $stock->rack,
-                'type' => $stock->type?? 'stock',
+                'type' => $stock->type ?? 'stock',
                 'remark' => $stock->remark,
                 'product_name' => $stock->products->name ?? 'N/A',
                 'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
@@ -256,7 +257,8 @@ class StocksInController extends ApiController
     public function destroy($id)
     {
         $stock = StocksIn::findOrFail($id);
-        if($stock->status != 1){
+
+        if ($stock->status != 1 || $stock->out_quantity > 0) {
             return $this->errorResponse('Stock entry cannot be deleted as it is active.', 400);
         }
         $stock->delete();

@@ -11,14 +11,19 @@ use Illuminate\Support\Facades\Log;
 
 class StockInvoiceController extends ApiController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $StockInvoices = StockInvoice::with(['supplier','user:id,name,phone','stock_in','stock_in.products','stock_in.products.ProductCategory'])->get();
-        Log::info($StockInvoices);
-        return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
-    }
+        log::info($request->all());
+        $StockInvoices = StockInvoice::with([
+            'supplier',
+            'user:id,name,phone',
+            'stock_in',
+            'stock_in.products',
+            'stock_in.products.ProductCategory'
+        ])->paginate($request->per_page ?? 10);
 
-    // POST /StockInvoices - Create a new StockInvoice
+        return $this->paginationsuccessResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
+    }
     public function store(StockInvoiceRequest $request)
     {
         $validatedData = $request->validated();
@@ -34,8 +39,8 @@ class StockInvoiceController extends ApiController
             'reverse_charge' => $validatedData['reverse_charge'] ?? false,
             'gr_rr' => $validatedData['gr_rr'] ?? '',
             'transport' => $validatedData['transport'] ?? '-',
-            'agent' => $validatedData['agent']?? '-',
-            'warehouse' => $validatedData['warehouse']?? '-',
+            'agent' => $validatedData['agent'] ?? '-',
+            'warehouse' => $validatedData['warehouse'] ?? '-',
             'irn' => $validatedData['irn'] ?? '-',
             'ack_no' => $validatedData['ack_no'] ?? 0,
             'ack_date' => $validatedData['ack_date'],
@@ -52,7 +57,7 @@ class StockInvoiceController extends ApiController
     // GET /StockInvoices/{id} - Show a single StockInvoice
     public function show($id)
     {
-        $StockInvoice = StockInvoice::with(['supplier','user:id,name,phone','stock_in','stock_in.products','stock_in.products.ProductCategory'])->get()->find($id);
+        $StockInvoice = StockInvoice::with(['supplier', 'user:id,name,phone', 'stock_in', 'stock_in.products', 'stock_in.products.ProductCategory'])->get()->find($id);
         Log::info($StockInvoice);
         if (!$StockInvoice) {
             return $this->errorResponse('StockInvoice not found.', 404);
@@ -79,11 +84,11 @@ class StockInvoiceController extends ApiController
             'reverse_charge' => $validatedData['reverse_charge'] ?? 0,
             'gr_rr' => $validatedData['gr_rr'] ?? '',
             'transport' => $validatedData['transport'] ?? '-',
-            'agent' => $validatedData['agent']?? '-',
-            'warehouse' => $validatedData['warehouse']?? '-',
+            'agent' => $validatedData['agent'] ?? '-',
+            'warehouse' => $validatedData['warehouse'] ?? '-',
             'irn' => $validatedData['irn'] ?? '-',
             'ack_no' => $validatedData['ack_no'] ?? 0,
-            'ack_date' => $validatedData['ack_date']?? 0,
+            'ack_date' => $validatedData['ack_date'] ?? 0,
             'total_amount' => $validatedData['total_amount'],
             'cgst_percentage' => $validatedData['cgst_percentage'] ?? 0,
             'igst_percentage' => $validatedData['igst_percentage'] ?? 0,
@@ -98,9 +103,11 @@ class StockInvoiceController extends ApiController
     public function destroy($id)
     {
         $StockInvoice = StockInvoice::find($id);
-        if (!$StockInvoice) {
-            return $this->errorResponse('StockInvoice not found.', 404);
+        if (!$StockInvoice || $StockInvoice->godown_roller_stock()->count() > 0) {
+            return $this->errorResponse('StockInvoice not found. Or Gatepass Exit for Stock', 404);
         }
+
+
         $StockInvoice->delete();
         return $this->successResponse([], 'StockInvoice deleted successfully.', 200);
     }

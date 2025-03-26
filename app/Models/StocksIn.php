@@ -29,6 +29,9 @@ class StocksIn extends Model
     {
         return $this->belongsTo(People::class, 'supplier_id');
     }
-
+    public function godown_roller_stock()
+    {
+        return $this->hasMany(GodownRollerStock::class, 'stock_in_id');
+    }
 
 }

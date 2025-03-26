@@ -57,6 +57,7 @@ class GodownRollerStockController extends ApiController
                 'rack' => $stock->rack,
                 'pcs' => $stock->pcs,
                 'out_pcs' => $stock->out_pcs,
+                'transfer'=>$stock->transfer,
                 'wastage' => $stock->wastage ?? 0,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
@@ -101,6 +102,7 @@ class GodownRollerStockController extends ApiController
                 'width' => $stock->width,
                 'width_unit' => $stock->width_unit,
                 'rack' => $stock->rack,
+                'transfer'=>$stock->transfer,
                 'wastage' => $stock->wastage ?? 0,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
@@ -136,6 +138,7 @@ class GodownRollerStockController extends ApiController
                 'length_unit' => $stock->length_unit,
                 'rack' => $stock->rack,
                 'pcs' => $stock->pcs,
+                'transfer'=>$stock->transfer,
                 'status' => $stock->status,
                 'product_name' => $stock->products->name ?? null,
                 'shadeNo' => $stock->products->shadeNo ?? null,
@@ -156,6 +159,9 @@ class GodownRollerStockController extends ApiController
             $available = GodownRollerStock::find($id);
             if (!$available) {
                 return $this->errorResponse('Stock Not FOund.', 404);
+            }
+            if($available->gatepass->status != 1){
+                return $this->errorResponse('Gatepass Not Approved Or Sold .', 404);
             }
             foreach ($validatedData as $data) {
 
@@ -260,7 +266,7 @@ class GodownRollerStockController extends ApiController
             ->where('status', 1)->whereHas('gatepass', function ($q) use ($user) {
                 $q->where('godown_supervisor_id', $user->id);
             })
-            ->with(['products', 'products.ProductCategory'])->get();
+            ->with(['products', 'products.ProductCategory'])->where('type','!=','gatepass')->get();
 
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
@@ -276,7 +282,7 @@ class GodownRollerStockController extends ApiController
                 'width' => round($stock->width, 2) ?? '',
                 'length_unit' => $stock->length_unit ?? 'N/A',
                 'width_unit' => $stock->width_unit ?? 'N/A',
-                'pcs' => ($stock->pcs - $stock->out_pcs) ?? 0,
+                'pcs' => ($stock->pcs - ($stock->out_pcs+$stock->transfer)) ?? 0,
                 'rack' => $stock->rack,
                 'remark' => $stock->remark,
                 'product_name' => $stock->products->name ?? 'N/A',

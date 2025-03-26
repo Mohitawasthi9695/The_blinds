@@ -212,7 +212,7 @@ class GodownAccessoryController extends ApiController
         }
         $response = [
             'godown_accessory_id' => $GodownAccessory->id,
-            'warehouse_accessory_id' => $GodownAccessory->id,
+            'warehouse_accessory_id' => $GodownAccessory->warehouse_accessory_id,
             'product_accessory_id' => $GodownAccessory->product_accessory_id,
             'product_category' => $GodownAccessory->accessory->productCategory->product_category ?? '',
             'product_accessory_name' => $GodownAccessory->accessory->accessory_name ?? '',
@@ -265,5 +265,88 @@ class GodownAccessoryController extends ApiController
         }
         $GodownAccessory->delete();
         return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
+    }
+
+    public function GetTransferStocks($id)
+    {
+        $user = Auth::user();
+        $stocks = GodownAccessory::where('product_accessory_id', $id)
+            ->where('status', 1)->whereHas('gatepass', function ($q) use ($user) {
+                $q->where('godown_supervisor_id', $user->id);
+            })
+            ->with(['accessory', 'accessory.productCategory'])->get();
+
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No active stocks found for this product.', 404);
+        }
+
+        $responseData = $stocks->map(function ($item) {
+            return [
+                'stock_available_id'=>$item->id,
+                'warehouse_accessory_id' => $item->warehouse_accessory_id,
+                'product_accessory_id' => $item->product_accessory_id,
+                'stock_code' => $item->stock_code,
+                'lot_no' => $item->lot_no,
+                'accessory_category_name' => $item->accessory->productCategory->product_category ?? null,
+                'accessory_name' => $item->accessory->accessory_name ?? null,
+                'length' => round($item->length, 2) ?? 0,
+                'width' => round($item->width, 2) ?? 0,
+                'date' => $item->date ?? 0,
+                'out_quantity' => round($item->quantity-($item->out_quantity+$item->transfer)) ?? 0,
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'width_unit' => $item->width_unit ?? 'N/A',
+                'items' => $item->items ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 'N/A',
+                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
+                'remark' => $item->remark ?? 'N/A',
+                'rack' => $item->rack ?? 'N/A',
+            ];
+        });
+
+        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
+    }
+    public function GetTransferedAccessory(Request $request)
+    {
+
+        $user = Auth::user();
+        $role = $user->getRoleNames()->first();
+        Log::info($role);
+        $stocks = GodownAccessory::with(['gatepass', 'accessory', 'accessory.productCategory']);
+        if ($role === 'sub_supervisor') {
+            $stocks->whereHas('gatepass', function ($query) use ($user) {
+                $query->where('godown_supervisor_id', $user->id);
+            });
+        }
+
+        $stocks = $stocks->orderBy('id', 'desc')->where('type', 'transfer')->get();
+        if ($stocks->isEmpty()) {
+            return $this->errorResponse('No stocks found.', 404);
+        }
+
+        $stocks = $stocks->map(function ($item) {
+            return [
+               'stock_available_id'=>$item->id,
+                'warehouse_accessory_id' => $item->warehouse_accessory_id,
+                'product_accessory_id' => $item->product_accessory_id,
+                'stock_code' => $item->stock_code,
+                'lot_no' => $item->lot_no,
+                'accessory_category_name' => $item->accessory->productCategory->product_category ?? null,
+                'accessory_name' => $item->accessory->accessory_name ?? null,
+                'length' => round($item->length, 2) ?? 0,
+                'width' => round($item->width, 2) ?? 0,
+                'date' => $item->date ?? 0,
+                'quantity' => round($item->quantity) ?? 0,
+                'out_quantity' => round($item->out_quantity) ?? 0,
+                'transfer' => round($item->transfer) ?? 0,
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'width_unit' => $item->width_unit ?? 'N/A',
+                'items' => $item->items ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 'N/A',
+                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
+                'remark' => $item->remark ?? 'N/A',
+                'rack' => $item->rack ?? 'N/A',
+            ];
+        });
+        return response()->json($stocks);
     }
 }

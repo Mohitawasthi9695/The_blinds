@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -26,16 +25,17 @@ return new class extends Migration
             $table->string('width_unit')->nullable();
             $table->decimal('length', 12, 3)->nullable();
             $table->string('length_unit')->nullable();
-            $table->decimal('out_length', 12, 3)->nullable();
+            $table->decimal('out_length', 12, 3)->default(0)->nullable();
             $table->decimal('wastage', 12, 3)->nullable();
             $table->integer('pcs')->nullable();
-            $table->integer('out_pcs')->nullable();
+            $table->integer('out_pcs')->default(0)->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
             $table->string('warehouse')->nullable();
             $table->string('transfer')->nullable();
             $table->string('remark')->nullable();
             $table->integer('status')->default(0);
+            $table->unsignedBigInteger('row_id')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });

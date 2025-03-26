@@ -157,7 +157,17 @@ class ProductController extends ApiController
     public function update(Request $request, $id)
     {
         $product = Product::findOrFail($id);
-        $product->update($request->all());
+        if (!$product) {
+            return $this->errorResponse('Product not found.', 404);
+        }
+        $data=$request->validate([
+            'name' => 'required|string|max:255',
+            'product_category_id' => 'required|exists:product_categories,id',
+            'shadeNo' => 'required|string|max:255',
+            'purchase_shade_no' => 'nullable|string|max:255',
+            'date' => 'required|date',
+        ]);
+        $product->update($data);
         return $this->successResponse($product, 'Product updated successfully.', 200);
     }
 

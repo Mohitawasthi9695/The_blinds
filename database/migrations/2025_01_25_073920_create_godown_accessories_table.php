@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('warehouse_accessory_id')->constrained('warehouse_accessories')->onDelete('cascade')->nullable();
             $table->string('stock_code')->nullable();
             $table->string('lot_no')->nullable();
+            $table->string('type')->nullable();
             $table->string('length')->nullable();
             $table->string('length_unit')->nullable();
             $table->string('items')->nullable();
@@ -26,8 +27,10 @@ return new class extends Migration
             $table->string('box_bundle_unit')->nullable();
             $table->string('quantity')->nullable();
             $table->string('out_quantity')->nullable();
+            $table->string('transfer')->nullable();
             $table->string('remark')->nullable();
             $table->string('rack')->nullable();
+            $table->unsignedBigInteger('row_id')->nullable();
             $table->boolean('status')->default(0);
             $table->timestamps();
         });

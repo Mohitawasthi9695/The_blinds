@@ -31,8 +31,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
 
     Route::get('/products/category', [ProductCategoryController::class,'index']);
+    Route::put('/products/category/{id}', [ProductCategoryController::class,'update']);
+    Route::delete('/products/category/{id}', [ProductCategoryController::class,'destroy']);
     Route::post('/products/category', [ProductCategoryController::class,'store']);
-    Route::resource('/products', ProductController::class);
+    Route::resource('/products', ProductController::class)->except(['destroy']);
+    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('can:product.delete');
+    
     Route::post('/product/import-csv', [ProductController::class, 'ProductCsv']);
     Route::get('/productshadeno/{category_id}', [ProductController::class, 'ProductShadeNo']);
 
@@ -103,6 +107,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/godowns/transfergatepass', [GatePassController::class, 'StoreTransferGatePass']);
     Route::get('/godowns/gettransfergatepass', [GatePassController::class, 'GetTransferGatePass']);
     Route::get('/godowns/gettransferstock', [GodownRollerStockController::class, 'GetTransferedStock']);
+
+    // api for accessory trsfer
+    Route::get('/gettranferaccessory/{id}', [GodownAccessoryController::class, 'GetTransferedAccessory']);
+    Route::post('/godowns/transfer/accessory/gatepass', [GatePassController::class, 'StoreTransferAccessory']);
+    Route::get('/godowns/gettransfer/accessorygatepass', [GatePassController::class, 'GetTransferGatePass']);
+    Route::get('/godowns/gettransferaccessory', [GodownAccessoryController::class, 'GetTransferedStock']);
 
     Route::get('/sales', [StockOutController::class, 'Sales']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);

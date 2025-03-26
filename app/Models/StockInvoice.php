@@ -14,7 +14,7 @@ class StockInvoice extends Model
     protected $hidden = ['created_at', 'updated_at'];
     public function supplier()
     {
-        return $this->belongsTo(People::class,'supplier_id');
+        return $this->belongsTo(People::class, 'supplier_id');
     }
     public function user()
     {
@@ -25,5 +25,16 @@ class StockInvoice extends Model
         return $this->hasMany(StocksIn::class, 'invoice_id');
     }
 
+    public function godown_roller_stock()
+    {
+        return $this->hasManyThrough(
+            GodownRollerStock::class,
+            StocksIn::class,
+            'invoice_id',
+            'stock_in_id',             
+            'id',                      
+            'id'                       
+        );
+    }
 
 }
