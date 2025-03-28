@@ -11,8 +11,8 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             PermissionSeeder::class,
             ProductCategory::class,
-            PeopleSeeder::class,
-            StockInvoice::class,   
+            // PeopleSeeder::class,
+            // StockInvoice::class,   
         ]);
     }
 }

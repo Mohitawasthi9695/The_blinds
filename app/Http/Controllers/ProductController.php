@@ -21,8 +21,8 @@ class ProductController extends ApiController
     }
     public function ProductShadeNo($category_id)
     {
-        $products = Product::where('status', 1)->where('product_category_id',$category_id)->get();
-        if($products->isEmpty()){
+        $products = Product::where('status', 1)->where('product_category_id', $category_id)->get();
+        if ($products->isEmpty()) {
             return $this->errorResponse('No active shadeNo found.', 404);
         }
         log::info($products);
@@ -40,18 +40,18 @@ class ProductController extends ApiController
                 'shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
                 'stock_in' => $product->stockAvailable->sum(function ($stock) {
-                    return round($stock->length * $stock->width * 10.7639, 2);
+                    return round($stock->quantity, 2);
                 }),
                 'stock_out' => $product->stockOutDetails->sum(function ($stock) {
-                    return round($stock->out_length * $stock->out_width * 10.7639, 2);
+                    return round($stock->out_quantity, 2);
                 }),
             ];
         });
-
+        log::info($responseData);
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
 
-    
+
 
     public function ProductCsv(Request $request)
     {
@@ -81,7 +81,7 @@ class ProductController extends ApiController
 
                 if (empty($row[2]) || empty($row[3])) {
                     $invalidRows[] = [
-                        'row'   => $index + 1,
+                        'row' => $index + 1,
                         'error' => 'Missing required fields: code or shadeNo'
                     ];
                     continue;
@@ -94,7 +94,7 @@ class ProductController extends ApiController
                     ->first();
                 if (!$existProductCategory) {
                     $invalidRows[] = [
-                        'row'   => $index + 1,
+                        'row' => $index + 1,
                         'error' => 'Product Category not found'
                     ];
                     continue;
@@ -104,39 +104,39 @@ class ProductController extends ApiController
 
                 if ($existingProduct) {
                     $existingRecords[] = [
-                        'row'   => $index + 1,
+                        'row' => $index + 1,
                         'shadeNo' => $shadeNo,
                         'error' => 'Duplicate record exists in the database'
                     ];
                     continue;
                 }
                 $newRecords[] = [
-                    'product_category_id'=> $existProductCategory->id,
-                    'name'           => $row[2],
-                    'shadeNo'           => $shadeNo,
+                    'product_category_id' => $existProductCategory->id,
+                    'name' => $row[2],
+                    'shadeNo' => $shadeNo,
                     'purchase_shade_no' => $purchaseShadeNo,
-                    'date' =>   $row[5]?? Carbon::today(),
-                    'created_at'        => now(),
-                    'updated_at'        => now(),
+                    'date' => $row[5] ?? Carbon::today(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ];
             }
             if (!empty($newRecords)) {
                 Product::insert($newRecords);
             }
             return response()->json([
-                'message'       => 'File processed successfully.',
-                'createdCount'  => count($newRecords),
-                'duplicates'    => $existingRecords,
-                'invalidRows'   => $invalidRows,
+                'message' => 'File processed successfully.',
+                'createdCount' => count($newRecords),
+                'duplicates' => $existingRecords,
+                'invalidRows' => $invalidRows,
             ], 201);
         } catch (Exception $e) {
             log::error('CSV Processing Error: ', [
-                'error'    => $e->getMessage(),
-                'file'     => $request->file('csv_file')->getClientOriginalName(),
+                'error' => $e->getMessage(),
+                'file' => $request->file('csv_file')->getClientOriginalName(),
             ]);
 
             return response()->json([
-                'error'   => 'Failed to process file',
+                'error' => 'Failed to process file',
                 'message' => $e->getMessage(),
             ], 500);
         }
@@ -160,7 +160,7 @@ class ProductController extends ApiController
         if (!$product) {
             return $this->errorResponse('Product not found.', 404);
         }
-        $data=$request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'product_category_id' => 'required|exists:product_categories,id',
             'shadeNo' => 'required|string|max:255',

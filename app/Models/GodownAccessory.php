@@ -22,4 +22,8 @@ class GodownAccessory extends Model
     {
         return $this->belongsTo(ProductAccessory::class, 'product_accessory_id', 'id');
     }
+    public function warehouse_accessory()
+    {
+        return $this->belongsTo(WarehouseAccessory::class, 'warehouse_accessory_id', 'id');
+    }
 }

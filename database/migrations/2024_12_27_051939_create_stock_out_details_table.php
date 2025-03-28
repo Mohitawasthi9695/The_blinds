@@ -19,9 +19,9 @@ return new class extends Migration
             $table->string('stock_code')->nullable();
             $table->string('hsn_sac_code')->nullable();
             $table->date('date')->nullable();
-            $table->decimal('out_width', 10, 5)->nullable();
-            $table->decimal('out_length', 10, 5)->nullable();
-            $table->integer('out_pcs')->nullable();
+            $table->decimal('out_width', 10, 5)->default(0)->nullable();
+            $table->decimal('out_length', 10, 5)->default(0)->nullable();
+            $table->integer('out_pcs')->default(0)->nullable();
             $table->string('width_unit')->nullable();
             $table->string('length_unit')->nullable();
             $table->string('type')->nullable();

@@ -19,13 +19,10 @@ class GodownRollerStockController extends ApiController
     public function index(Request $request)
     {
         $categoryId = $request->query('category_id');
-        $user = Auth::user();
-        $role = $user->getRoleNames()->first();
-        Log::info($role);
-        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory']);
-        if ($role === 'sub_supervisor') {
-            $stocks->whereHas('gatepass', function ($query) use ($user) {
-                $query->where('godown_supervisor_id', $user->id);
+        $stocks = GodownRollerStock::with(['gatepass','stocks.supplier', 'products', 'products.ProductCategory']);
+        if ($this->role === 'sub_supervisor') {
+            $stocks->whereHas('gatepass', function ($query){
+                $query->where('godown_supervisor_id', $this->user->id);
             });
         }
         if ($categoryId) {
@@ -44,6 +41,7 @@ class GodownRollerStockController extends ApiController
                 'gate_pass_id' => $stock->gate_pass_id,
                 'gate_pass_no' => $stock->gatepass->gate_pass_no,
                 'gate_pass_date' => $stock->gatepass->gate_pass_date,
+                'supplier'=>$stock->stocks->supplier->name,
                 'date' => $stock->date,
                 'product_id' => $stock->product_id,
                 'sub_stock_code' => $stock->sub_stock_code ?? '',
@@ -115,7 +113,7 @@ class GodownRollerStockController extends ApiController
     }
     public function GodownStock($id)
     {
-        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('stock_in_id', $id)->where('type', 'stock')->get();
+        $stocks = GodownRollerStock::with(['gatepass', 'products','products.ProductCategory'])->where('stock_in_id', $id)->where('type', 'stock')->get();
         log::info($stocks);
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
@@ -301,13 +299,6 @@ class GodownRollerStockController extends ApiController
         $role = $user->getRoleNames()->first();
         Log::info($role);
         $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory']);
-
-        if ($role === 'sub_supervisor') {
-            $stocks->whereHas('gatepass', function ($query) use ($user) {
-                $query->where('godown_supervisor_id', $user->id);
-            });
-        }
-
         $stocks = $stocks->orderBy('id', 'desc')->where('type', 'transfer')->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);

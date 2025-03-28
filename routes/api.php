@@ -28,7 +28,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::resource('/peoples', PeopleController::class);
     Route::get('/sub_supervisor', [UserController::class, 'Sub_supervisor']);
     Route::get('/data', [PeopleController::class, 'supplierStocks']);
-    Route::get('/recent-peoples', [PeopleController::class, 'RecentPeoples']);
+    Route::get('/recent-suppliers', [PeopleController::class, 'RecentSupplier']);
 
     Route::get('/products/category', [ProductCategoryController::class,'index']);
     Route::put('/products/category/{id}', [ProductCategoryController::class,'update']);
@@ -105,16 +105,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // api for tansfer the stock
     Route::get('/gettranferstocks/{id}', [GodownRollerStockController::class, 'GetTransferStocks']);
     Route::post('/godowns/transfergatepass', [GatePassController::class, 'StoreTransferGatePass']);
-    Route::get('/godowns/gettransfergatepass', [GatePassController::class, 'GetTransferGatePass']);
-    Route::get('/godowns/gettransferstock', [GodownRollerStockController::class, 'GetTransferedStock']);
+    Route::get('/godowns/transferstocks', [GodownRollerStockController::class, 'GetTransferedStock']);
 
     // api for accessory trsfer
-    Route::get('/gettranferaccessory/{id}', [GodownAccessoryController::class, 'GetTransferedAccessory']);
-    Route::post('/godowns/transfer/accessory/gatepass', [GatePassController::class, 'StoreTransferAccessory']);
-    Route::get('/godowns/gettransfer/accessorygatepass', [GatePassController::class, 'GetTransferGatePass']);
-    Route::get('/godowns/gettransferaccessory', [GodownAccessoryController::class, 'GetTransferedStock']);
-
+    Route::get('/gettranferaccessory/{id}', [GodownAccessoryController::class, 'GetTransferAccessory']);
+    Route::post('/godowns/transfer/accessorygatepass', [GatePassController::class, 'StoreTransferAccessory']);
+    
     Route::get('/sales', [StockOutController::class, 'Sales']);
+    Route::get('/stockin', [StocksInController::class, 'CountStockIn']);
     // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);

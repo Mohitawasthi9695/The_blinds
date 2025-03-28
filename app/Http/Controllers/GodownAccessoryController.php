@@ -16,10 +16,20 @@ use App\Services\UnitHelper;
 
 class GodownAccessoryController extends ApiController
 {
-    public function index()
+    public function index(Request $request)
     {
-        $godownAccessory = GodownAccessory::with('gatepass:id,gate_pass_no', 'accessory')->get();
-        log::info($godownAccessory);
+        $type = $request->query('type');
+        $godownAccessory = GodownAccessory::with('gatepass:id,gate_pass_no', 'accessory');
+        if ($type) {
+            $godownAccessory->where('type', $type);
+        }
+        if ($this->role === 'sub_supervisor') {
+            $godownAccessory->whereHas('gatepass', function ($query){
+                $query->where('godown_supervisor_id', $this->user->id);
+            });
+        }
+        log::info($godownAccessory->toRawSql());
+        $godownAccessory = $godownAccessory->get();
         if (!$godownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
@@ -38,6 +48,7 @@ class GodownAccessoryController extends ApiController
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'box_bundle' => $item->box_bundle ?? 0,
                 'out_quantity' => $item->out_quantity ?? 0,
+                'transfer' => $item->transfer ?? 0,
                 'quantity' => $item->quantity ?? 0,
                 'status' => $item->status ?? 0,
                 'date' => $item->created_at->format('Y-m-d'),
@@ -223,6 +234,7 @@ class GodownAccessoryController extends ApiController
             'length_unit' => $GodownAccessory->length_unit ?? '',
             'box_bundle' => $GodownAccessory->box_bundle ?? '',
             'quantity' => ($GodownAccessory->quantity - $GodownAccessory->out_quantity) ?? 0,
+            'transfer' => $item->transfer ?? 0,
             'date' => $GodownAccessory->created_at->format('Y-m-d'),
         ];
 
@@ -267,7 +279,7 @@ class GodownAccessoryController extends ApiController
         return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
     }
 
-    public function GetTransferStocks($id)
+    public function GetTransferAccessory($id)
     {
         $user = Auth::user();
         $stocks = GodownAccessory::where('product_accessory_id', $id)
@@ -290,11 +302,9 @@ class GodownAccessoryController extends ApiController
                 'accessory_category_name' => $item->accessory->productCategory->product_category ?? null,
                 'accessory_name' => $item->accessory->accessory_name ?? null,
                 'length' => round($item->length, 2) ?? 0,
-                'width' => round($item->width, 2) ?? 0,
                 'date' => $item->date ?? 0,
                 'out_quantity' => round($item->quantity-($item->out_quantity+$item->transfer)) ?? 0,
                 'length_unit' => $item->length_unit ?? 'N/A',
-                'width_unit' => $item->width_unit ?? 'N/A',
                 'items' => $item->items ?? 'N/A',
                 'box_bundle' => $item->box_bundle ?? 'N/A',
                 'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
@@ -304,49 +314,5 @@ class GodownAccessoryController extends ApiController
         });
 
         return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
-    }
-    public function GetTransferedAccessory(Request $request)
-    {
-
-        $user = Auth::user();
-        $role = $user->getRoleNames()->first();
-        Log::info($role);
-        $stocks = GodownAccessory::with(['gatepass', 'accessory', 'accessory.productCategory']);
-        if ($role === 'sub_supervisor') {
-            $stocks->whereHas('gatepass', function ($query) use ($user) {
-                $query->where('godown_supervisor_id', $user->id);
-            });
-        }
-
-        $stocks = $stocks->orderBy('id', 'desc')->where('type', 'transfer')->get();
-        if ($stocks->isEmpty()) {
-            return $this->errorResponse('No stocks found.', 404);
-        }
-
-        $stocks = $stocks->map(function ($item) {
-            return [
-               'stock_available_id'=>$item->id,
-                'warehouse_accessory_id' => $item->warehouse_accessory_id,
-                'product_accessory_id' => $item->product_accessory_id,
-                'stock_code' => $item->stock_code,
-                'lot_no' => $item->lot_no,
-                'accessory_category_name' => $item->accessory->productCategory->product_category ?? null,
-                'accessory_name' => $item->accessory->accessory_name ?? null,
-                'length' => round($item->length, 2) ?? 0,
-                'width' => round($item->width, 2) ?? 0,
-                'date' => $item->date ?? 0,
-                'quantity' => round($item->quantity) ?? 0,
-                'out_quantity' => round($item->out_quantity) ?? 0,
-                'transfer' => round($item->transfer) ?? 0,
-                'length_unit' => $item->length_unit ?? 'N/A',
-                'width_unit' => $item->width_unit ?? 'N/A',
-                'items' => $item->items ?? 'N/A',
-                'box_bundle' => $item->box_bundle ?? 'N/A',
-                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
-                'remark' => $item->remark ?? 'N/A',
-                'rack' => $item->rack ?? 'N/A',
-            ];
-        });
-        return response()->json($stocks);
     }
 }

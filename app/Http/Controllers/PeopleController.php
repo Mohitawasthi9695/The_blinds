@@ -23,7 +23,7 @@ class PeopleController extends ApiController
 
         return $this->successResponse($supplier, 'Peoples retrieved successfully.', 200);
     }
-    public function RecentPeoples()
+    public function RecentSupplier()
     {
         $peoples = People::whereHas('RecentInvoice')
             ->with('RecentInvoice')->select('id', 'name', 'gst_no', 'owner_mobile', 'reg_address')

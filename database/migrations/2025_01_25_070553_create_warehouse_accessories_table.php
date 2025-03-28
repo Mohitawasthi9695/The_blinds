@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('items')->nullable();
             $table->string('box_bundle');
             $table->string('box_bundle_unit')->nullable();
-            $table->string('out_box_bundle')->nullable();
+            $table->string('out_box_bundle')->default(0)->nullable();
             $table->string('remark')->nullable();
             $table->string('rack')->nullable();
             $table->boolean('status')->default(1);

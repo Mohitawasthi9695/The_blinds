@@ -29,4 +29,15 @@ class GodownRollerStock extends Model
     {
         return $this->HasMany(CutStock::class, 'godown_roller_stock_id');
     }
+    public function supplier()
+    {
+        return $this->hasManyThrough(
+            People::class,
+            StocksIn::class,
+            'supplier_id',
+            'stock_in_id',
+            'id',
+            'id'
+        );
+    }
 }

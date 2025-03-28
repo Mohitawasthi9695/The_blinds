@@ -28,6 +28,8 @@ class StocksInController extends ApiController
         $stocks = $stocks->map(function ($stock) {
             return [
                 'id' => $stock->id,
+                'supplier' => $stock->stockInvoice->supplier->name,
+                'supplier_id' => $stock->stockInvoice->supplier->id,
                 'invoice_id' => $stock->invoice_id,
                 'product_id' => $stock->product_id,
                 'date' => $stock->stockInvoice->date,
@@ -264,4 +266,45 @@ class StocksInController extends ApiController
         $stock->delete();
         return $this->successResponse([], 'Stock entry deleted successfully.', 200);
     }
+    public function CountStockIn(Request $request)
+    {
+        $range = $request->get('range');
+        if ($range) {
+            return response()->json($this->getStockDataByRange($range));
+        }
+        return response()->json([
+            'today' => $this->getStockDataByRange('today'),
+            'week' => $this->getStockDataByRange('week'),
+            'month' => $this->getStockDataByRange('month'),
+            'year' => $this->getStockDataByRange('year'),
+        ]);
+    }
+
+    private function getStockDataByRange($range)
+    {
+        switch ($range) {
+            case 'week':
+                $startDate = Carbon::now()->startOfWeek();
+                $endDate = Carbon::now()->endOfWeek();
+                break;
+            case 'month':
+                $startDate = Carbon::now()->startOfMonth();
+                $endDate = Carbon::now()->endOfMonth();
+                break;
+            case 'year':
+                $startDate = Carbon::now()->startOfYear();
+                $endDate = Carbon::now()->endOfYear();
+                break;
+            default: // 'today'
+                $startDate = Carbon::now()->startOfDay();
+                $endDate = Carbon::now()->endOfDay();
+                break;
+        }
+
+        return [
+            'total_quantity' => StocksIn::whereBetween('date', [$startDate, $endDate])->sum('quantity'),
+            'total_out_quantity' => StocksIn::whereBetween('date', [$startDate, $endDate])->sum('out_quantity'),
+        ];
+    }
+
 }
