@@ -20,6 +20,7 @@ class GodownRollerStockController extends ApiController
     {
         $categoryId = $request->query('category_id');
         $stocks = GodownRollerStock::with(['gatepass','stocks.supplier', 'products', 'products.ProductCategory']);
+        
         if ($this->role === 'sub_supervisor') {
             $stocks->whereHas('gatepass', function ($query){
                 $query->where('godown_supervisor_id', $this->user->id);
@@ -31,6 +32,7 @@ class GodownRollerStockController extends ApiController
             });
         }
         $stocks = $stocks->orderBy('id', 'desc')->where('type', '!=', 'gatepass')->get();
+        log::info($stocks);
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -305,6 +307,7 @@ class GodownRollerStockController extends ApiController
         }
 
         $stocks = $stocks->map(function ($stock) {
+            $type = ($stock->gatepass->warehouse_supervisor_id === Auth::id()) ? 1 : 2;
             return [
                 'id' => $stock->id,
                 'gate_pass_id' => $stock->gate_pass_id,

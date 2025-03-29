@@ -8,8 +8,8 @@ use Laravel\Sanctum\HasApiTokens;
 
 class StocksIn extends Model
 {
-    use HasFactory,HasApiTokens;
-    protected $guarded=[''];
+    use HasFactory, HasApiTokens;
+    protected $guarded = [''];
 
     protected $hidden = ['created_at', 'updated_at'];
     public function stockInvoiceDetails()
@@ -27,7 +27,15 @@ class StocksIn extends Model
     }
     public function supplier()
     {
-        return $this->belongsTo(People::class, 'supplier_id');
+        return $this->hasOneThrough(
+            People::class,        // Final Model (Target)
+            StockInvoice::class,  // Intermediate Model
+            'id',                 // Foreign key on StockInvoice (Linking to StockIn)
+            'id',                 // Foreign key on People (Linking to StockInvoice)
+            'invoice_id',         // Local key on StockIn
+            'supplier_id'         // Local key on StockInvoice
+        );
+        
     }
     public function godown_roller_stock()
     {

@@ -54,7 +54,7 @@ class ForgotPasswordController extends ApiController
         $request->validate([
             'email' => 'required|email|exists:users,email',
             'reset_code' => 'required|digits:6',
-            'password' => 'required|min:8|confirmed',
+            'newPassword' => 'required|min:8|confirmed',
         ]);
 
         $email = $request->email;
@@ -74,8 +74,8 @@ class ForgotPasswordController extends ApiController
             return $this->errorResponse('Reset code has expired.', 400);
         }
 
-        $user = \App\Models\User::where('email', $email)->first();
-        $user->password = Hash::make($request->password);
+        $user = User::where('email', $email)->first();
+        $user->password = Hash::make($request->newPassword);
         $user->save();
 
         DB::table('password_reset_tokens')->where('email', $email)->delete();

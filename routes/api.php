@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->name('forgot-password');
-Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password');
+Route::put('/forgot-password', [ForgotPasswordController::class, 'resetPassword'])->name('reset-password');
 
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout'])->name('logout');
 

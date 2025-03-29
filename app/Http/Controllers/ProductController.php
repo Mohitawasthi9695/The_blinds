@@ -31,7 +31,26 @@ class ProductController extends ApiController
 
     public function BarGraphData()
     {
-        $products = Product::whereHas('stockAvailable')->with('stockOutDetails')->get();
+        if ($this->role == 'supervisor') {
+            $products = Product::whereHas('stockAvailable')->get();
+
+            $responseData = $products->map(function ($product) {
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'shadeNo' => $product->shadeNo,
+                    'product_purchase_shade_no' => $product->purchase_shade_no,
+                    'stock_in' => $product->stockAvailable->sum(function ($stock) {
+                        return round($stock->quantity, 2);
+                    }),
+                    'stock_out' => $product->stockAvailable->sum(function ($stock) {
+                        return round($stock->out_quantity, 2);
+                    }),
+                ];
+            });
+        }elseif($this->role=='sub_supervisor')
+        {
+            $products = Product::whereHas('godownStock')->get();
 
         $responseData = $products->map(function ($product) {
             return [
@@ -39,14 +58,16 @@ class ProductController extends ApiController
                 'product_name' => $product->name,
                 'shadeNo' => $product->shadeNo,
                 'product_purchase_shade_no' => $product->purchase_shade_no,
-                'stock_in' => $product->stockAvailable->sum(function ($stock) {
-                    return round($stock->quantity, 2);
+                'stock_in' => $product->godownStock->sum(function ($stock) {
+                    return round($stock->pcs, 2);
                 }),
-                'stock_out' => $product->stockOutDetails->sum(function ($stock) {
-                    return round($stock->out_quantity, 2);
+                'stock_out' => $product->godownStock->sum(function ($stock) {
+                    return round($stock->out_pcs, 2);
                 }),
             ];
         });
+        }
+
         log::info($responseData);
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
