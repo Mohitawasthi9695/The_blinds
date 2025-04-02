@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StockInRequest;
 use App\Http\Requests\StockInUpdate;
+use App\Models\GodownRollerStock;
 use App\Models\Product;
 use App\Models\StockInvoice;
 use App\Models\StocksIn;
@@ -303,8 +304,18 @@ class StocksInController extends ApiController
 
         return [
             'total_quantity' => StocksIn::whereBetween('date', [$startDate, $endDate])->sum('quantity'),
-            'total_out_quantity' => StocksIn::whereBetween('date', [$startDate, $endDate])->sum('out_quantity'),
+            'total_out_quantity' => GodownRollerStock::whereBetween('date', [$startDate, $endDate])->sum('quantity') ?? 0,
         ];
     }
-
+    public function CategoryStockData()
+    {
+        if ($this->role == 'supervisor'){
+            $stocks=StocksIn::where(['products.ProductCategory'=>function($query){
+                $query->groupBY('product_category_id');
+            }])->with('products.ProductCategory')->sum('quantity')->get();
+            log::info($stocks);
+        }  
+        log::info($stocks);
+        return $this->successResponse($stocks, 'Bar graph data retrieved successfully.', 200);
+    }
 }

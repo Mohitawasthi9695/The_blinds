@@ -113,7 +113,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     Route::get('/sales', [StockOutController::class, 'Sales']);
     Route::get('/stockin', [StocksInController::class, 'CountStockIn']);
-    // Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
+    Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
     Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
+    Route::get('/categorystock', [StocksInController::class, 'CategoryStockData']);
 });

@@ -165,7 +165,7 @@ class StockOutController extends ApiController
         if ($Product) {
             $stocks = GodownRollerStock::where('product_id', $id)
                 ->where('status', 1)
-                ->with(['products', 'products.ProductCategory'])->OrderBy('length','desc')->get();
+                ->with(['products', 'products.ProductCategory'])->where('type','!=','gatepass')->OrderBy('length','desc')->get();
         }
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);

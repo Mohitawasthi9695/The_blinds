@@ -20,9 +20,8 @@ class StockInvoiceController extends ApiController
             'stock_in',
             'stock_in.products',
             'stock_in.products.ProductCategory'
-        ])->paginate($request->per_page ?? 10);
-
-        return $this->paginationsuccessResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
+        ])->orderBy('id', 'desc')->limit(5000)->get();
+        return $this->successResponse($StockInvoices, 'StockInvoices retrieved successfully.', 200);
     }
     public function store(StockInvoiceRequest $request)
     {

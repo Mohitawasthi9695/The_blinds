@@ -12,7 +12,8 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             ProductCategory::class,
             // PeopleSeeder::class,
-            // StockInvoice::class,   
+            // StockInvoice::class,  
+            // ProductSeeder::class, 
         ]);
     }
 }

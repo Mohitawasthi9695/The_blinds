@@ -82,7 +82,6 @@ class PermissionSeeder extends Seeder
             'godownAccessory.view',
             'godownAccessory.edit',
             'godownAccessory.delete',
-            'godownstockout.approve',
             'getgodownstocks.view',
             'godownstockout.create',
             'godownstockout.approve',

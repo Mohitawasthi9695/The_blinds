@@ -357,10 +357,13 @@ class GatePassController extends ApiController
                     'warehouse_accessory_id' => $product['warehouse_accessory_id'],
                     'product_accessory_id' => $availableStock->product_accessory_id,
                     'lot_no' => $availableStock->lot_no,
+                    'date' => $validatedData['date'],
+                    'type' => $product['type'] ?? 'stock',
                     'length' => round($product['length'], 2),
                     'length_unit' => $product['length_unit'] ?? null,
                     'items' => $product['items'] ?? null,
                     'quantity' => $product['quantity'] ?? null,
+                    'remark' => $product['remark'] ?? null,
                     'box_bundle' => $product['box_bundle'] ?? null,
                     'box_bundle_unit' => $product['box_bundle_unit'] ?? '',
                 ]);
@@ -380,17 +383,18 @@ class GatePassController extends ApiController
     {
         DB::beginTransaction();
         try {
-            $gatePass = GatePass::find($id);
+            $gatePass = GatePass::find($id);    
             if (!$gatePass) {
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
             if ($gatePass->status == 1 && $this->role != 'admin') {
                 return response()->json(['error' => 'Approved Gate Pass cannot be deleted.'], 403);
             }
-            $godownStocks = [
-                GodownRollerStock::where('gate_pass_id', $id)->get(),
-            ];
+            
             if ($gatePass->type == 'stock' || $gatePass->type == 'entery') {
+                $godownStocks = [
+                    GodownRollerStock::where('gate_pass_id', $id)->get(),
+                ];
                 foreach ($godownStocks as $stockGroup) {
                     foreach ($stockGroup as $stock) {
                         $availableStock = StocksIn::where('id', $stock->stock_in_id)->first();
@@ -405,15 +409,51 @@ class GatePassController extends ApiController
                 }
 
             } elseif ($gatePass->type == 'transfer') {
+                $godownStocks = [
+                    GodownRollerStock::where('gate_pass_id', $id)->get(),
+                ];
                 foreach ($godownStocks as $stockGroup) {
                     foreach ($stockGroup as $stock) {
                         $availableStock = GodownRollerStock::where('id', $stock->row_id)->first();
                         log::info($availableStock);
                         log::info($stock);
-
                         if ($availableStock) {
                             $availableStock->update([
                                 'transfer' => max(0, $availableStock->transfer - $stock->pcs),
+                                'status' => 1,
+                            ]);
+                        }
+                        $stock->delete();
+                    }
+                }
+            }elseif ($gatePass->type == 'accessory') {
+                $godownStocks = [
+                    GodownAccessory::where('gate_pass_id', $id)->get(),
+                ];
+                foreach ($godownStocks as $stockGroup) {
+                    foreach ($stockGroup as $stock) {
+                        $availableStock = WarehouseAccessory::where('id', $stock->warehouse_accessory_id)->first();
+                        if ($availableStock) {
+                            $availableStock->update([
+                                'out_box_bundle' => max(0, $availableStock->out_box_bundle - $stock->quantity),
+                                'status' => 1,
+                            ]);
+                        }
+                        $stock->delete();
+                    }
+                }
+            }elseif ($gatePass->type == 'accessoryTransfer') {
+                $godownStocks = [
+                    GodownAccessory::where('gate_pass_id', $id)->get(),
+                ];
+                foreach ($godownStocks as $stockGroup) {
+                    foreach ($stockGroup as $stock) {
+                        $availableStock = GodownAccessory::where('id', $stock->row_id)->first();
+                        log::info($availableStock);
+                        log::info($stock);
+                        if ($availableStock) {
+                            $availableStock->update([
+                                'transfer' => max(0, $availableStock->transfer - $stock->quantity),
                                 'status' => 1,
                             ]);
                         }
@@ -578,13 +618,14 @@ class GatePassController extends ApiController
                     'warehouse_accessory_id' => $availableStock->warehouse_accessory_id,
                     'product_accessory_id' => $availableStock->product_accessory_id,
                     'lot_no' => $availableStock->lot_no,
-                    // 'date' => $validatedData['date'],
+                    'date' => $validatedData['date'],
                     'items' => $product['items'],
                     'box_bundle' => $product['box_bundle'],
                     'box_bundle_unit' => $product['box_bundle_unit'],
                     'quantity' => $product['out_quantity'],
                     'out_quantity' => 0,
                     'type' => $product['type'] ?? 'transfer',
+                    'remark' => $product['remark'] ?? '',
                     'length' => round($product['length'], 2),
                     'length_unit' => $product['length_unit'],
                     'row_id' => $availableStock->id,

@@ -71,7 +71,7 @@ class ProductController extends ApiController
         log::info($responseData);
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
-
+    
 
 
     public function ProductCsv(Request $request)
@@ -135,7 +135,7 @@ class ProductController extends ApiController
                     'product_category_id' => $existProductCategory->id,
                     'name' => $row[2],
                     'shadeNo' => $shadeNo,
-                    'purchase_shade_no' => $purchaseShadeNo,
+                    'purchase_shade_no' => $purchaseShadeNo ?? $shadeNo,
                     'date' => $row[5] ?? Carbon::today(),
                     'created_at' => now(),
                     'updated_at' => now(),

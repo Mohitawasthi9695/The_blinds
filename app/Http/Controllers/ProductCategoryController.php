@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use function Illuminate\Log\log;
 
 class ProductCategoryController extends ApiController
 {
@@ -54,4 +56,5 @@ class ProductCategoryController extends ApiController
         $ProductCategory->delete();
         return $this->successResponse([], 'ProductCategory deleted successfully.', 200);
     }
+    
 }

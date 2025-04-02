@@ -19,7 +19,7 @@ class StockInvoice extends Seeder
         // If no previous invoice exists, start from INV001
         $invoiceNumber = $lastInvoice ? (int)substr($lastInvoice, 3) : 1;
         
-        $totalEntries = 100000; // Total records to insert
+        $totalEntries = 10000; // Total records to insert
         $batchSize = 1000; // Number of records per batch
         
         for ($batch = 0; $batch < ($totalEntries / $batchSize); $batch++) {
