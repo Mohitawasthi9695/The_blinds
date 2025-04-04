@@ -29,12 +29,12 @@ return new class extends Migration
         BEFORE INSERT ON cut_stocks
         FOR EACH ROW
         BEGIN
-            DECLARE next_number INT;
-            DECLARE next_code VARCHAR(10);
-            SELECT COALESCE(MAX(CAST(SUBSTRING(sub_stock_code, 3, 2) AS UNSIGNED)), 0) + 1 
+            DECLARE next_number BIGINT;
+            DECLARE next_code VARCHAR(15);
+            SELECT COALESCE(MAX(CAST(SUBSTRING(sub_stock_code, 3) AS UNSIGNED)), 0) + 1 
             INTO next_number
             FROM cut_stocks;
-            SET next_code = CONCAT("CS", LPAD(next_number, 2, "0"));
+            SET next_code = CONCAT("CS", LPAD(next_number, 8, "0"));
             IF NEW.sub_stock_code IS NULL THEN
                 SET NEW.sub_stock_code = next_code;
             END IF;

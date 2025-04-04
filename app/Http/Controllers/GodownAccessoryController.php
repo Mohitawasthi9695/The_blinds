@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\GodownAccessoryOut;
 use App\Http\Requests\GodownAccessoryStore;
+use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\GodownAccessory;
 use App\Models\GatePass;
 use App\Models\StockoutAccessory;
@@ -30,6 +31,7 @@ class GodownAccessoryController extends ApiController
         }
         log::info($godownAccessory->toRawSql());
         $godownAccessory = $godownAccessory->get();
+        log::info($godownAccessory);
         if (!$godownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
@@ -206,11 +208,11 @@ class GodownAccessoryController extends ApiController
 
         return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
-    public function store(GodownAccessoryStore $request)
+    public function store(WarehouseAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
         info($warehouseAccessories);
-        $GodownAccessories = GodownAccessory::create($warehouseAccessories);
+        $GodownAccessories = GodownAccessory::insert($warehouseAccessories);
         return $this->successResponse($GodownAccessories, 'GodownAccessory created successfully.', 201);
     }
 

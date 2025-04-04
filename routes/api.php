@@ -3,7 +3,6 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GatePassController;
-use App\Http\Controllers\GodownAccessoryController;
 use App\Http\Controllers\GodownRollerStockController;
 use App\Http\Controllers\PeopleController;
 use App\Http\Controllers\ProductAccessoryController;
@@ -15,6 +14,7 @@ use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseAccessoryController;
+use App\Http\Controllers\GodownAccessoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
@@ -56,6 +56,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/godowns/gatepass', [GatePassController::class, 'StoreStockGatePass']);
     
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
+    Route::get('/godowns/getallgatepassStock', [GodownRollerStockController::class, 'AllGatePassStock']);
     Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
     Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'DeleteGatePass']);
 

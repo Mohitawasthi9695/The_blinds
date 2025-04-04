@@ -22,7 +22,7 @@ class StocksInController extends ApiController
      */
     public function index()
     {
-        $stocks = StocksIn::with(relations: ['products', 'products.ProductCategory'])->get();
+        $stocks = StocksIn::with(relations: ['products', 'products.ProductCategory'])->orderBy('id','desc')->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -217,7 +217,7 @@ class StocksInController extends ApiController
     {
         $stocks = StocksIn::with(['products'])
             ->where('invoice_id', $id)
-            ->get();
+            ->orderBy('id','desc')->get();
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
