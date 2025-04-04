@@ -155,6 +155,14 @@ class ProductAccessoryController extends ApiController
     public function update(Request $request, $id)
     {
         $ProductAccessory = ProductAccessory::findOrFail($id);
+        $request->validate(
+            [
+                'product_category_id' => 'required|numeric|exists:product_categories,id',
+                'accessory_name' => 'required|string|max:255',
+                'remark' => 'required|string|max:255',
+                'date'=>'required|date',
+            ]
+        );
         $ProductAccessory->update($request->all());
         return $this->successResponse($ProductAccessory, 'ProductAccessory updated successfully.', 200);
     }

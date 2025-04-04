@@ -30,11 +30,11 @@ return new class extends Migration
         FOR EACH ROW
         BEGIN
             DECLARE next_number BIGINT;
-            DECLARE next_code VARCHAR(15);
+            DECLARE next_code VARCHAR(255);
             SELECT COALESCE(MAX(CAST(SUBSTRING(sub_stock_code, 3) AS UNSIGNED)), 0) + 1 
             INTO next_number
             FROM cut_stocks;
-            SET next_code = CONCAT("CS", LPAD(next_number, 8, "0"));
+            SET next_code = CONCAT("CS",next_number);
             IF NEW.sub_stock_code IS NULL THEN
                 SET NEW.sub_stock_code = next_code;
             END IF;
