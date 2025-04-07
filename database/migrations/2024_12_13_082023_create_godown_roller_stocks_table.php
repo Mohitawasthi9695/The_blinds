@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->foreignId('stock_in_id')->constrained('stocks_ins')->onDelete('cascade');
             $table->foreignId('product_category_id')->constrained('product_categories')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
+            $table->foreignId('godown_id')->nullable()->constrained(table: 'users')->onDelete('cascade');            
             $table->string('stock_code')->nullable();
             $table->date('date')->nullable();
             $table->string('lot_no')->nullable();

@@ -31,7 +31,7 @@ return new class extends Migration {
             $table->string('rack')->nullable();
             $table->string('remark')->nullable();
             $table->boolean('status')->default(1);
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');            
+            $table->foreignId('user_id')->constrained(table: 'users')->onDelete('cascade');            
             $table->timestamps();
         });
 

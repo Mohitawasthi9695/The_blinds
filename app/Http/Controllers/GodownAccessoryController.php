@@ -7,13 +7,16 @@ use App\Http\Requests\GodownAccessoryStore;
 use App\Http\Requests\WarehouseAccessoryStore;
 use App\Models\GodownAccessory;
 use App\Models\GatePass;
+use App\Models\ProductAccessory;
 use App\Models\StockoutAccessory;
 use App\Models\StockOutDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\UnitHelper;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GodownAccessoryController extends ApiController
 {
@@ -25,7 +28,7 @@ class GodownAccessoryController extends ApiController
             $godownAccessory->where('type', $type);
         }
         if ($this->role === 'sub_supervisor') {
-            $godownAccessory->whereHas('gatepass', function ($query){
+            $godownAccessory->whereHas('gatepass', function ($query) {
                 $query->where('godown_supervisor_id', $this->user->id);
             });
         }
@@ -49,8 +52,10 @@ class GodownAccessoryController extends ApiController
                 'length' => $item->length ?? 'N/A',
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'box_bundle' => $item->box_bundle ?? 0,
+                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
                 'out_quantity' => $item->out_quantity ?? 0,
                 'transfer' => $item->transfer ?? 0,
+                'remark' => $item->remark ?? 'N/A',
                 'quantity' => $item->quantity ?? 0,
                 'status' => $item->status ?? 0,
                 'date' => $item->created_at->format('Y-m-d'),
@@ -58,15 +63,70 @@ class GodownAccessoryController extends ApiController
         });
         return $this->successResponse($godownAccessory, 'GodownAccessory retrieved successfully.', 200);
     }
-
-    public function Stock_code($id)
+    public function godownStock(Request $request)
     {
-        $GatePass = GodownAccessory::select('id', 'stock_code')->where('status', 1)->where('product_accessory_id',$id)->orderBy('id', 'desc')->get();
-        if ($GatePass) {
-            return $this->successResponse($GatePass, 'Gdown Accessory Stock code retrieved successfully.');
-        } else {
-            return $this->errorResponse('Godown Has no any active accessory stock', 404);
+        $type = $request->query('type');
+        $godownAccessory = GodownAccessory::with('accessory');
+        if ($type) {
+            $godownAccessory->where('type', $type);
         }
+        log::info($godownAccessory->toRawSql());
+        $godownAccessory = $godownAccessory->get();
+        log::info($godownAccessory);
+        if (!$godownAccessory) {
+            return $this->errorResponse('GodownAccessory not found.', 404);
+        }
+        $godownAccessory = $godownAccessory->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'product_accessory_id' => $item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? 'N/A',
+                'product_accessory_name' => $item->accessory->accessory_name ?? 'N/A',
+                'lot_no' => $item->lot_no ?? 'N/A',
+                'stock_code' => $item->stock_code ?? '',
+                'items' => $item->items ?? 'N/A',
+                'length' => $item->length ?? 'N/A',
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 0,
+                'box_bundle_unit' => $item->box_bundle_unit ?? 0,
+                'out_quantity' => $item->out_quantity ?? 0,
+                'transfer' => $item->transfer ?? 0,
+                'remark' => $item->remark ?? 0,
+                'quantity' => $item->quantity ?? 0,
+                'status' => $item->status ?? 0,
+                'date' => $item->created_at->format('Y-m-d'),
+            ];
+        });
+        return $this->successResponse($godownAccessory, 'GodownAccessory retrieved successfully.', 200);
+    }
+    public function CheckStock($id)
+    {
+        $GodownAccessory = GodownAccessory::with('accessory')->where('product_accessory_id', $id)->get();
+
+
+        if (!$GodownAccessory) {
+            return $this->errorResponse('GodownAccessory not found.', 404);
+        }
+        $response = $GodownAccessory->map(function ($item) {
+            return [
+                'godown_id' => $item->id,
+                'product_accessory_id' => $item->product_accessory_id,
+                'product_category' => $item->accessory->productCategory->product_category ?? 'N/A',
+                'product_accessory_name' => $item->accessory->accessory_name ?? 'N/A',
+                'lot_no' => $item->lot_no ?? 'N/A',
+                'stock_code' => $item->stock_code ?? '',
+                'items' => $item->items ?? 'N/A',
+                'length' => $item->length ?? 'N/A',
+                'length_unit' => $item->length_unit ?? 'N/A',
+                'box_bundle' => $item->box_bundle ?? 0,
+                'box_bundle_unit' => $item->box_bundle_unit ?? 0,
+                'quantity' => ($item->quantity - ($item->out_quantity + $item->transfer)) ?? 0,
+                'rack' => $item->rack ?? 0,
+                'status' => $item->status ?? 0,
+                'date' => $item->created_at->format('Y-m-d'),
+            ];
+        });
+        return $this->successResponse($response, 'ProductAccessory retrieved successfully.', 200);
     }
     public function StockOut(GodownAccessoryOut $request)
     {
@@ -84,58 +144,58 @@ class GodownAccessoryController extends ApiController
                 if (!$stockout) {
                     return $this->errorResponse('stockout not found in stock.', 404);
                 }
-                if ($exist->quantity < ($exist->out_quantity + ($data['quantity'] ?? 0))) {
+
+                if ($exist->quantity < ($exist->out_quantity + $exist->transfer + ($data['quantity'] ?? 0))) {
                     return $this->errorResponse('Not enough stock available.', 400);
                 }
 
                 $out_length = $data['length'] ?? 0;
                 $out_length = convertUnit($data['length'], $data['length_unit'], $exist->length_unit, 2);
+
                 $out_quantity = $data['quantity'] ?? 0;
 
-                if ($out_length*$out_quantity < $exist->length * $out_quantity) {
-                    $cut_length = $exist->length*$out_quantity - $out_length*$out_quantity;
-                    Log::info("Cut Length: " . $cut_length);
-                    if ($cut_length > 0){
+                $cut_length = $exist->length - $out_length;
+                if ($cut_length > 0) {
+                    for ($i = 1; $i <= $out_quantity; $i++) {
                         GodownAccessory::create([
                             'gate_pass_id' => $exist->gate_pass_id,
                             'product_accessory_id' => $exist->product_accessory_id,
                             'warehouse_accessory_id' => $exist->warehouse_accessory_id,
                             'lot_no' => $exist->lot_no ?? null,
                             'items' => 1,
-                            'quantity' => $data['quantity'],
+                            'type' => 'cutpiece',
+                            'quantity' => 1,
                             'length' => $cut_length,
                             'length_unit' => $exist->length_unit ?? 'N/A',
-                            'out_length' => 0,
                             'box_bundle' => 1,
-                            'out_box_bundle' => 0,
                             'out_quantity' => 0,
+                            'transfer' => 0,
+                            'row_id' => $exist->row_id,
+                            'box_bundle_unit' => $exist->box_bundle_unit ?? 'N/A',
+                            'stock_code' => $exist->stock_code,
                             'rack' => $exist->rack ?? 'N/A',
                             'status' => 1,
                         ]);
                     }
                 }
 
-                $data['stock_code']=$exist->stock_code;
-                $data['product_accessory_id']=$exist->product_accessory_id;
-                $data['stockout_inovice_id']=$stockout->stockout_inovice_id;
-                $data['rack']=$stockout->rack;
-                $data['remark']=$stockout->remark??'';
-                
+                $data['stock_code'] = $exist->stock_code;
+                $data['product_accessory_id'] = $exist->product_accessory_id;
+                $data['stockout_inovice_id'] = $stockout->stockout_inovice_id;
+                $data['rack'] = $stockout->rack;
+                $data['remark'] = $stockout->remark ?? '';
+                $data['date'] = $data['date'] ?? Carbon::today();
+
                 $createdItem = StockoutAccessory::create($data);
                 $createdItems[] = $createdItem;
 
                 // Update existing record
                 $new_out_quantity = $exist->out_quantity + $out_quantity;
-                $new_out_length = $exist->out_length + $out_length;
 
                 Log::info("Total Out Quantity: " . $new_out_quantity);
-                Log::info("Total Out Length: " . $new_out_length);
-
                 $newStatus = ($new_out_quantity >= $exist->quantity) ? 2 : 1;
-
                 $exist->update([
                     'out_quantity' => $new_out_quantity,
-                    'out_length' => $new_out_length,
                     'status' => $newStatus,
                 ]);
             }
@@ -147,7 +207,6 @@ class GodownAccessoryController extends ApiController
             return $this->errorResponse('Failed to create stock entries.', 500, $e->getMessage());
         }
     }
-
     public function AllStockOut()
     {
         $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice', 'accessory'])->get();
@@ -180,7 +239,7 @@ class GodownAccessoryController extends ApiController
     }
     public function GetStockOut($id)
     {
-        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice', 'accessory'])->where('stockout_details_id',$id)->get();
+        $stockOutInvoices = StockoutAccessory::with(['stockOutInvoice', 'accessory'])->where('stockout_details_id', $id)->get();
 
         if ($stockOutInvoices->isEmpty()) {
             return $this->errorResponse('No stock-out invoices found.', 404);
@@ -212,10 +271,76 @@ class GodownAccessoryController extends ApiController
     {
         $warehouseAccessories = $request->validated();
         info($warehouseAccessories);
+        $now = Carbon::now();
+        foreach ($warehouseAccessories as &$accessory) {
+            $accessory['created_at'] = $now;
+            $accessory['updated_at'] = $now;
+        }
         $GodownAccessories = GodownAccessory::insert($warehouseAccessories);
         return $this->successResponse($GodownAccessories, 'GodownAccessory created successfully.', 201);
     }
+    public function storeFromCsv(Request $request)
+    {
+        Log::info($request->all());
 
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $data = Excel::toArray([], $request->file('csv_file'));
+
+            if (empty($data) || !isset($data[0])) {
+                return response()->json(['error' => 'File is empty or invalid'], 422);
+            }
+
+            $rows = $data[0];
+            $createdItems = [];
+
+            foreach ($rows as $index => $row) {
+                if ($index === 0) {
+                    continue;
+                }
+                if (empty($row[1]) || empty($row[2])) {
+                    DB::rollBack();
+                    return response()->json(['error' => 'Required fields product_accessory_name or lot_no are missing'], 422);
+                }
+                $accessory_name = $row[1];
+                $lotNo = $row[2];
+
+                $ProductAccessory = ProductAccessory::where('accessory_name', $accessory_name)->first();
+
+                if (!$ProductAccessory) {
+                    DB::rollBack();
+                    return response()->json(['error' => "ProductAccessory with name {$accessory_name} not found"], 422);
+                }
+                $data = [
+                    'product_accessory_id' => $ProductAccessory->id,
+                    'lot_no' => $lotNo,
+                    'length' => $row[3] ?? null,
+                    'length_unit' => $row[4] ?? null,
+                    'type'=>'stock',
+                    'items' => $row[5] ?? null,
+                    'box_bundle' => $row[6] ?? null,
+                    'quantity'=> $row[5]*$row[6] ?? null,
+                    'box_bundle_unit' => $row[7] ?? null,
+                    'remark' => $row[8] ?? null,
+                    'date' => isset($row[9]) && is_numeric($row[9])
+                        ? date('Y-m-d', strtotime("1899-12-30 +{$row[9]} days")) : Carbon::today(),
+                    'status' => 1,
+                ];
+                $createdItem = GodownAccessory::create($data);
+                $createdItems[] = $createdItem;
+            }
+
+            DB::commit();
+            return $this->successResponse($createdItems, 'WarehouseAccessory entries created successfully.', 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to process file', 'message' => $e->getMessage()], 500);
+        }
+    }
     public function show($id)
     {
         $GodownAccessory = GodownAccessory::with('accessory')->find($id);
@@ -250,24 +375,20 @@ class GodownAccessoryController extends ApiController
         $validatedData = $request->validate([
             'product_accessory_id' => 'required|exists:product_accessories,id',
             'gate_pass_id' => 'required|exists:gate_passes,id',
-            'length'               => 'nullable|string|max:255',
-            'unit'                 => 'nullable|string|max:255',
-            'items'                => 'nullable|string|max:255',
-            'box'                  => 'nullable|string|max:255',
-            'quantity'             => 'nullable|string|max:255',
+            'length' => 'nullable|string|max:255',
+            'unit' => 'nullable|string|max:255',
+            'items' => 'nullable|string|max:255',
+            'box' => 'nullable|string|max:255',
+            'quantity' => 'nullable|string|max:255',
         ]);
         $GodownAccessory->update($validatedData);
         return $this->successResponse($GodownAccessory, 'GodownAccessory updated successfully.', 200);
     }
-
-
-
     public function GetGatePass($id)
     {
         $stocks = GatePass::with('godowns')->where('id', $id)->first();
         return response()->json($stocks);
     }
-
     /**
      * Remove the specified resource from storage.
      */
@@ -280,7 +401,6 @@ class GodownAccessoryController extends ApiController
         $GodownAccessory->delete();
         return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
     }
-
     public function GetTransferAccessory($id)
     {
         $user = Auth::user();
@@ -296,7 +416,7 @@ class GodownAccessoryController extends ApiController
 
         $responseData = $stocks->map(function ($item) {
             return [
-                'stock_available_id'=>$item->id,
+                'stock_available_id' => $item->id,
                 'warehouse_accessory_id' => $item->warehouse_accessory_id,
                 'product_accessory_id' => $item->product_accessory_id,
                 'stock_code' => $item->stock_code,
@@ -305,7 +425,7 @@ class GodownAccessoryController extends ApiController
                 'accessory_name' => $item->accessory->accessory_name ?? null,
                 'length' => round($item->length, 2) ?? 0,
                 'date' => $item->date ?? 0,
-                'out_quantity' => round($item->quantity-($item->out_quantity+$item->transfer)) ?? 0,
+                'out_quantity' => round($item->quantity - ($item->out_quantity + $item->transfer)) ?? 0,
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'items' => $item->items ?? 'N/A',
                 'box_bundle' => $item->box_bundle ?? 'N/A',

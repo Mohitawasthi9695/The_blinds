@@ -31,7 +31,8 @@ class WarehouseAccessoryStore extends FormRequest
             '*.items' => 'nullable|numeric|min:0',
             '*.box_bundle' => 'nullable|numeric|min:0',
             '*.box_bundle_unit' => 'nullable|string|max:255',
-            '*.quantity' => 'nullable|string|max:255',
+            '*.quantity' => 'nullable|numeric|min:1',
+            '*.remark' => 'nullable|string|max:255',
              ];
         
     }

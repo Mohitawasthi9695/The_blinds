@@ -48,8 +48,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/stocks/import-csv', [StocksInController::class, 'storeFromCsv']);
     Route::get('/category/getstock/{id}', [StocksInController::class, 'GetStocks']);
 
-    Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);
-    Route::get( '/getaccessorycode/{id}', [GodownAccessoryController::class, 'Stock_code']);     
+    Route::get('/gatepassno', [GatePassController::class, 'GatePassNo']);    
     Route::post('/godownaccessoryout', [GodownAccessoryController::class, 'StockOut']);
 
     Route::get('/getstocks/{id}', [StocksInController::class, 'CheckStocks']);
@@ -82,12 +81,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/accessory/category/{id}', [ProductAccessoryController::class, 'GetCategoryAccessory']);
 
     Route::resource('/warehouseAccessory', WarehouseAccessoryController::class);
-    Route::post('/warehouseAccessory/import-file', [WarehouseAccessoryController::class,'storeFromCsv']);
-
+    
     Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class, 'GetWarehouseAccessory']);
     Route::post('/godowns/accessory/gatepass', [GatePassController::class, 'StoreAccessoryGatePass']);
     Route::put('/godowns/accessory/gatepass/{id}/approve', [GatePassController::class, 'ApproveGatePass']);
     Route::resource('/godownAccessory', GodownAccessoryController::class);
+    Route::post('/godownAccessory/import', [GodownAccessoryController::class,'storeFromCsv']);
+    Route::get('/godown/godownAccessory', [GodownAccessoryController::class,'godownStock']);
 
     Route::put('godownstockout/{id}', [StockOutController::class, 'GodownStockOutApprove']);
     
@@ -100,6 +100,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/stockout', [StockOutController::class, 'AllStockOut']);
     Route::get('/godownout', [StockOutController::class, 'index']);
     Route::put('/godownout/{id}', [StockOutController::class, 'update']);
+    Route::get('/godown/getaccessory/{id}', [GodownAccessoryController::class,'CheckStock']);
     Route::get('/accessoryout', [GodownAccessoryController::class, 'AllStockOut']);
     Route::get('/accessoryout/{id}', [GodownAccessoryController::class, 'GetStockOut']);
     

@@ -76,6 +76,11 @@ class WarehouseAccessoryController extends ApiController
     public function store(WarehouseAccessoryStore $request)
     {
         $warehouseAccessories = $request->validated();
+        $now = Carbon::now();
+        foreach ($warehouseAccessories as &$accessory) {
+            $accessory['created_at'] = $now;
+            $accessory['updated_at'] = $now;
+        }
         $insertedAccessories = WarehouseAccessory::insert($warehouseAccessories);
         return $this->successResponse($insertedAccessories, 'WarehouseAccessories created successfully.', 201);
     }
@@ -122,6 +127,7 @@ class WarehouseAccessoryController extends ApiController
                 $data = [
                     'product_accessory_id'=> $ProductAccessory->id,
                     'lot_no'         => $lotNo,
+                    'type'=>'stock',
                     'length'         => $row[3] ?? null,
                     'length_unit'    => $row[4] ?? null,
                     'items'          => $row[5] ?? null,

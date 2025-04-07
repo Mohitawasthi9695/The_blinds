@@ -25,14 +25,15 @@ class GodownAccessoryOut extends FormRequest
             '*.stockout_details_id' => 'required|integer|exists:stock_out_details,id',
             '*.godown_accessory_id' => 'required|integer|exists:godown_accessories,id',
             '*.product_accessory_id' => 'required|integer|exists:product_accessories,id',
+            '*.hsn_sac_code' => 'nullable|string|max:255',
             '*.lot_no' => 'nullable|string|max:255',
             '*.date' => 'nullable|date',
             '*.length' => 'nullable|numeric|min:0',
+            '*.length_unit' => 'nullable|string|in:cm,mm,m,in,ft',
             '*.quantity' => 'nullable|numeric|min:1',
             '*.rate' => 'nullable|numeric|min:0',
             '*.gst' => 'nullable|numeric|min:0',
             '*.amount' => 'nullable|numeric|min:0',
-            '*.length_unit' => 'nullable|string|max:50',
         ];
         return $rules;
     }
