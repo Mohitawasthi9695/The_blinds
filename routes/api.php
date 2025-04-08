@@ -81,6 +81,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/accessory/category/{id}', [ProductAccessoryController::class, 'GetCategoryAccessory']);
 
     Route::resource('/warehouseAccessory', WarehouseAccessoryController::class);
+    Route::post('/warehouseAccessory/import-file', [WarehouseAccessoryController::class,'storeFromCsv']);
     
     Route::get('/warehouse/accessory/category/{id}', [WarehouseAccessoryController::class, 'GetWarehouseAccessory']);
     Route::post('/godowns/accessory/gatepass', [GatePassController::class, 'StoreAccessoryGatePass']);

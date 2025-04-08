@@ -32,7 +32,6 @@ class AccessoryTransport extends FormRequest
             'date' => 'required|date',
             'out_products' => 'required|array',
             'out_products.*.stock_available_id' => 'required|integer|exists:godown_accessories,id',
-            'out_products.*.warehouse_accessory_id' => 'required|integer|exists:warehouse_accessories,id',
             'out_products.*.length' => 'required|numeric|min:0',
             'out_products.*.length_unit' => 'required|string|in:ft,in,m,cm,N/A',
             'out_products.*.items' => 'required|numeric|min:1',

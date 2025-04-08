@@ -127,7 +127,6 @@ class WarehouseAccessoryController extends ApiController
                 $data = [
                     'product_accessory_id'=> $ProductAccessory->id,
                     'lot_no'         => $lotNo,
-                    'type'=>'stock',
                     'length'         => $row[3] ?? null,
                     'length_unit'    => $row[4] ?? null,
                     'items'          => $row[5] ?? null,

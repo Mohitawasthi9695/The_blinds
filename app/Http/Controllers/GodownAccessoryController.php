@@ -28,12 +28,10 @@ class GodownAccessoryController extends ApiController
             $godownAccessory->where('type', $type);
         }
         if ($this->role === 'sub_supervisor') {
-            $godownAccessory->whereHas('gatepass', function ($query) {
-                $query->where('godown_supervisor_id', $this->user->id);
-            });
+            $godownAccessory->where('godown_id', $this->user->id);
         }
         log::info($godownAccessory->toRawSql());
-        $godownAccessory = $godownAccessory->get();
+        $godownAccessory = $godownAccessory->orderBy('id', 'desc')->get();
         log::info($godownAccessory);
         if (!$godownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
@@ -41,12 +39,13 @@ class GodownAccessoryController extends ApiController
         $godownAccessory = $godownAccessory->map(function ($item) {
             return [
                 'id' => $item->id,
-                'gate_pass_no' => $item->gatepass->gate_pass_no ?? 'N/A',
+                'gate_pass_no' => $item->gatepass->gate_pass_no ?? 'Added',
                 'warehouse_accessory_id' => $item->id,
                 'product_accessory_id' => $item->product_accessory_id,
                 'product_category' => $item->accessory->productCategory->product_category ?? 'N/A',
                 'product_accessory_name' => $item->accessory->accessory_name ?? 'N/A',
                 'lot_no' => $item->lot_no ?? 'N/A',
+                'type' => $item->type ?? 'N/A',
                 'stock_code' => $item->stock_code ?? '',
                 'items' => $item->items ?? 'N/A',
                 'length' => $item->length ?? 'N/A',
@@ -149,16 +148,21 @@ class GodownAccessoryController extends ApiController
                     return $this->errorResponse('Not enough stock available.', 400);
                 }
 
+                log::info($data['length']);
+                log::info($data['length_unit']);
                 $out_length = $data['length'] ?? 0;
                 $out_length = convertUnit($data['length'], $data['length_unit'], $exist->length_unit, 2);
 
                 $out_quantity = $data['quantity'] ?? 0;
 
                 $cut_length = $exist->length - $out_length;
+                log::info($cut_length);
+                // die;
                 if ($cut_length > 0) {
                     for ($i = 1; $i <= $out_quantity; $i++) {
                         GodownAccessory::create([
                             'gate_pass_id' => $exist->gate_pass_id,
+                            'godown_id'=> $this->user->id,
                             'product_accessory_id' => $exist->product_accessory_id,
                             'warehouse_accessory_id' => $exist->warehouse_accessory_id,
                             'lot_no' => $exist->lot_no ?? null,
@@ -172,7 +176,6 @@ class GodownAccessoryController extends ApiController
                             'transfer' => 0,
                             'row_id' => $exist->row_id,
                             'box_bundle_unit' => $exist->box_bundle_unit ?? 'N/A',
-                            'stock_code' => $exist->stock_code,
                             'rack' => $exist->rack ?? 'N/A',
                             'status' => 1,
                         ]);
@@ -275,6 +278,7 @@ class GodownAccessoryController extends ApiController
         foreach ($warehouseAccessories as &$accessory) {
             $accessory['created_at'] = $now;
             $accessory['updated_at'] = $now;
+            $accessory['godown_id'] = $this->user->id;
         }
         $GodownAccessories = GodownAccessory::insert($warehouseAccessories);
         return $this->successResponse($GodownAccessories, 'GodownAccessory created successfully.', 201);
@@ -294,7 +298,6 @@ class GodownAccessoryController extends ApiController
             if (empty($data) || !isset($data[0])) {
                 return response()->json(['error' => 'File is empty or invalid'], 422);
             }
-
             $rows = $data[0];
             $createdItems = [];
 
@@ -320,15 +323,16 @@ class GodownAccessoryController extends ApiController
                     'lot_no' => $lotNo,
                     'length' => $row[3] ?? null,
                     'length_unit' => $row[4] ?? null,
-                    'type'=>'stock',
+                    'type' => 'entry',
                     'items' => $row[5] ?? null,
                     'box_bundle' => $row[6] ?? null,
-                    'quantity'=> $row[5]*$row[6] ?? null,
+                    'quantity' => $row[5] * $row[6] ?? null,
                     'box_bundle_unit' => $row[7] ?? null,
                     'remark' => $row[8] ?? null,
                     'date' => isset($row[9]) && is_numeric($row[9])
                         ? date('Y-m-d', strtotime("1899-12-30 +{$row[9]} days")) : Carbon::today(),
                     'status' => 1,
+                    'godown_id' => $this->user->id,
                 ];
                 $createdItem = GodownAccessory::create($data);
                 $createdItems[] = $createdItem;
@@ -367,8 +371,6 @@ class GodownAccessoryController extends ApiController
 
         return $this->successResponse($response, 'ProductAccessory retrieved successfully.', 200);
     }
-
-
     public function update(Request $request, $id)
     {
         $GodownAccessory = GodownAccessory::findOrFail($id);
@@ -398,16 +400,20 @@ class GodownAccessoryController extends ApiController
         if (!$GodownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
+        if ($GodownAccessory->out_quantity > 0) {
+            return $this->errorResponse('GodownAccessory cannot be deleted as it has been used in stockout.', 400);
+        }
+        if ($GodownAccessory->transfer > 0) {
+            return $this->errorResponse('GodownAccessory cannot be deleted as it has been used in transfer.', 400);
+        }
         $GodownAccessory->delete();
         return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
     }
     public function GetTransferAccessory($id)
     {
-        $user = Auth::user();
         $stocks = GodownAccessory::where('product_accessory_id', $id)
-            ->where('status', 1)->whereHas('gatepass', function ($q) use ($user) {
-                $q->where('godown_supervisor_id', $user->id);
-            })
+            ->where('status', 1)
+            ->where('godown_id', $this->user->id)
             ->with(['accessory', 'accessory.productCategory'])->get();
 
         if ($stocks->isEmpty()) {

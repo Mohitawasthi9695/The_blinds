@@ -19,7 +19,7 @@ return new class extends Migration
             $table->foreign('godown_supervisor_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('gate_pass_no')->unique();
             $table->string('type')->nullable();
-            $table->date('gate_pass_date')->nullable();
+            $table->datetime('gate_pass_date')->nullable();
             $table->date('accept_pass_date')->nullable();
             $table->string('gate_pass_time')->now()->nullable();
             $table->string('vehicle_no')->nullable();

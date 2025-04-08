@@ -91,6 +91,7 @@ class GatePassController extends ApiController
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
                 'gate_pass_date' => $stock->gate_pass_date,
+                'accept_pass_date' => $stock->accept_pass_date,
                 'vehicle_no' => $stock->vehicle_no,
                 'place_of_supply' => $stock->place_of_supply,
                 'driver_name' => $stock->driver_name,
@@ -149,6 +150,7 @@ class GatePassController extends ApiController
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
                 'gate_pass_date' => $stock->gate_pass_date,
+                'accept_pass_date' => $stock->accept_pass_date,
                 'vehicle_no' => $stock->vehicle_no,
                 'place_of_supply' => $stock->place_of_supply,
                 'driver_name' => $stock->driver_name,
@@ -170,7 +172,7 @@ class GatePassController extends ApiController
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
             $gatePass->update(['status' => 1]);
-            $gatePass->godown_roller_stock()->update(['status' => 1]);
+            $gatePass->godown_roller_stock()->update(['status' => 1,'accept_pass_date' => now()]);
             DB::commit();
             return response()->json(['success' => 'Gate Pass approved successfully.'], 200);
         } catch (\Exception $e) {
@@ -288,7 +290,7 @@ class GatePassController extends ApiController
             if (!$gatePass) {
                 return response()->json(['error' => 'Gate Pass not found.'], 404);
             }
-            $gatePass->update(['status' => 1]);
+            $gatePass->update(['status' => 1,'accept_pass_date' => now()]);
             GodownAccessory::where('gate_pass_id', $gatePass->id)->update(['status' => 1]);
             DB::commit();
             return response()->json(['success' => 'Gate Pass approved successfully.'], 200);
@@ -354,6 +356,7 @@ class GatePassController extends ApiController
                 }
                 GodownAccessory::create([
                     'gate_pass_id' => $GatePass->id,
+                    'godown_id' => $validatedData['godown_supervisor_id'],
                     'warehouse_accessory_id' => $product['warehouse_accessory_id'],
                     'product_accessory_id' => $availableStock->product_accessory_id,
                     'lot_no' => $availableStock->lot_no,
@@ -366,6 +369,7 @@ class GatePassController extends ApiController
                     'remark' => $product['remark'] ?? null,
                     'box_bundle' => $product['box_bundle'] ?? null,
                     'box_bundle_unit' => $product['box_bundle_unit'] ?? '',
+                    'rack' => $product['rack'] ?? null,
                 ]);
 
                 $newQty = $availableStock->box_bundle - ($availableStock->out_box_bundle + $product['box_bundle']);
@@ -572,6 +576,7 @@ class GatePassController extends ApiController
                 'id' => $stock->id,
                 'gate_pass_no' => $stock->gate_pass_no,
                 'gate_pass_date' => $stock->gate_pass_date,
+                'accept_pass_date' => $stock->accept_pass_date,
                 'vehicle_no' => $stock->vehicle_no,
                 'place_of_supply' => $stock->place_of_supply,
                 'driver_name' => $stock->driver_name,
@@ -615,6 +620,7 @@ class GatePassController extends ApiController
                 }
                 GodownAccessory::create([
                     'gate_pass_id' => $GatePass->id,
+                    'godown_id'=> $validatedData['godown_supervisor_id'],
                     'warehouse_accessory_id' => $availableStock->warehouse_accessory_id,
                     'product_accessory_id' => $availableStock->product_accessory_id,
                     'lot_no' => $availableStock->lot_no,

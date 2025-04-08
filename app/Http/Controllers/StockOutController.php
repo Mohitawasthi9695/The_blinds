@@ -115,6 +115,7 @@ class StockOutController extends ApiController
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'width_unit' => $item->width_unit ?? 'N/A',
                 'rack' => $item->rack ?? 'N/A',
+                'status'=>$item->status,
             ];
         });
 
