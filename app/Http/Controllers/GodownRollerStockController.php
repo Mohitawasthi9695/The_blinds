@@ -22,9 +22,7 @@ class GodownRollerStockController extends ApiController
         $stocks = GodownRollerStock::with(['gatepass','stocks.supplier', 'products', 'products.ProductCategory']);
         
         if ($this->role === 'sub_supervisor') {
-            $stocks->whereHas('gatepass', function ($query){
-                $query->where('godown_supervisor_id', $this->user->id);
-            });
+            $stocks->whereHas('gatepass')->where('godown_id', $this->user->id);
         }
         if ($categoryId) {
             $stocks->whereHas('products', function ($q) use ($categoryId) {
@@ -32,7 +30,7 @@ class GodownRollerStockController extends ApiController
             });
         }
         $stocks = $stocks->orderBy('id', 'desc')->where('type', '!=', 'gatepass')->get();
-        log::info($stocks);
+       
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -209,6 +207,7 @@ class GodownRollerStockController extends ApiController
             foreach ($validatedData as $data) {
 
                 $data['user_id'] = Auth::id();
+                $data['godown_id'] = Auth::id();
                 $data['status'] = 1;
                 $data['length'] = convertToMeters($data['length'], $data['length_unit'], 2);
                 $data['width'] = convertToFeet($data['width'], $data['width_unit'], 2) ?? 0;
@@ -217,6 +216,7 @@ class GodownRollerStockController extends ApiController
                 $data['quantity'] = 1;
                 $data['pcs'] = 1;
                 $data['type'] = 'entery';
+                $data['row_id']=$available->id;
                 $createdItems[] = GodownRollerStock::create($data);
                 $available->update(['out_pcs' => $available->out_pcs + 1]);
             }
@@ -304,13 +304,9 @@ class GodownRollerStockController extends ApiController
     }
     public function GetTransferStocks($id)
     {
-        $user = Auth::user();
         $stocks = GodownRollerStock::where('product_id', $id)
-            ->where('status', 1)->whereHas('gatepass', function ($q) use ($user) {
-                $q->where('godown_supervisor_id', $user->id);
-            })
+            ->where('status', 1)->whereHas('gatepass')->where('godown_id', $this->user->id)
             ->with(['products', 'products.ProductCategory'])->where('type','!=','gatepass')->get();
-
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);
         }
@@ -339,18 +335,13 @@ class GodownRollerStockController extends ApiController
     }
     public function GetTransferedStock(Request $request)
     {
-
-        $user = Auth::user();
-        $role = $user->getRoleNames()->first();
-        Log::info($role);
-        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory']);
-        $stocks = $stocks->orderBy('id', 'desc')->where('type', 'transfer')->get();
-        if ($stocks->isEmpty()) {
+        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('type', 'transfer');
+        $stocks= $stocks->orderBy('id', 'desc')->get();
+        if($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
 
         $stocks = $stocks->map(function ($stock) {
-            $type = ($stock->gatepass->warehouse_supervisor_id === Auth::id()) ? 1 : 2;
             return [
                 'id' => $stock->id,
                 'gate_pass_id' => $stock->gate_pass_id,
@@ -360,6 +351,7 @@ class GodownRollerStockController extends ApiController
                 'product_id' => $stock->product_id,
                 'sub_stock_code' => $stock->sub_stock_code ?? '',
                 'stock_code' => $stock->stock_code,
+                'type' => ($stock->godown_id==$this->user->id) ? 'in' : 'out',
                 'lot_no' => $stock->lot_no,
                 'length' => $stock->length,
                 'out_length' => $stock->out_length ?? 0,
@@ -379,7 +371,6 @@ class GodownRollerStockController extends ApiController
         });
         return response()->json($stocks);
     }
-
     public function GetCutStock($id)
     {
         Log::info($id);
@@ -425,6 +416,4 @@ class GodownRollerStockController extends ApiController
 
         return $this->successResponse($data, 'Godown Vertical Retrieved', 200);
     }
-
-
 }

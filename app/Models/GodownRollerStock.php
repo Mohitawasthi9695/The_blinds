@@ -20,7 +20,6 @@ class GodownRollerStock extends Model
     {
         return $this->belongsTo(StocksIn::class, 'stock_in_id');
     }
-
     public function gatepass()
     {
         return $this->belongsTo(GatePass::class, 'gate_pass_id');
@@ -29,5 +28,8 @@ class GodownRollerStock extends Model
     {
         return $this->HasMany(CutStock::class, 'godown_roller_stock_id');
     }
-   
+    public function godown_transfer()
+    {
+        return $this->hasMany(GodownRollerStock::class, 'row_id', 'id');
+    }
 }

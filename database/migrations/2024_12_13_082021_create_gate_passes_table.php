@@ -20,8 +20,7 @@ return new class extends Migration
             $table->string('gate_pass_no')->unique();
             $table->string('type')->nullable();
             $table->datetime('gate_pass_date')->nullable();
-            $table->date('accept_pass_date')->nullable();
-            $table->string('gate_pass_time')->now()->nullable();
+            $table->datetime('accept_pass_date')->nullable();
             $table->string('vehicle_no')->nullable();
             $table->string('place_of_supply')->nullable();
             $table->string('driver_name')->nullable();

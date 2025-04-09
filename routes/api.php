@@ -32,7 +32,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/products/category', [ProductCategoryController::class,'index']);
     Route::put('/products/category/{id}', [ProductCategoryController::class,'update']);
-    Route::delete('/products/category/{id}', [ProductCategoryController::class,'destroy']);
+    Route::delete('/products/category/{id}', [ProductCategoryController::class,'destroy'])->middleware('can:products.category.delete');
     Route::post('/products/category', [ProductCategoryController::class,'store']);
     Route::resource('/products', ProductController::class)->except(['destroy']);
     Route::delete('/products/{product}', [ProductController::class, 'destroy'])->middleware('can:product.delete');
@@ -57,7 +57,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/godowns/getStockgatepass', [GatePassController::class, 'GetAllStockGatePass']);
     Route::get('/godowns/getallgatepassStock', [GodownRollerStockController::class, 'AllGatePassStock']);
     Route::get('/godowns/getStockgatepass/{id}', [GatePassController::class, 'GetStockGatePass']);
-    Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'DeleteGatePass']);
+    Route::delete('/godowns/gatepass/{id}', [GatePassController::class, 'destroy']);
 
     Route::get('/godownstock', [GodownRollerStockController::class,'index']);
     Route::get('/godownstock/{id}', [GodownRollerStockController::class,'show']);
@@ -72,9 +72,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/accessory/getStockgatepass/{id}', [GatePassController::class, 'GetAccessoryGatePass']);
     Route::put('/godowns/gatepass/{id}', [GatePassController::class, 'UpdateGatePass']);
     Route::put('/godowns/gatepass/{id}/approve', [GatePassController::class, 'ApproveStockGatePass']);
-    Route::put('/godowns/gatepass/{id}/reject', [GatePassController::class, 'RejectStockGatePass']);
-
-    // Assecorries Api
 
     Route::resource('/accessory', ProductAccessoryController::class);
     Route::post('/accessory/import-excel', [ProductAccessoryController::class, 'ProductAccessoryCsv']);

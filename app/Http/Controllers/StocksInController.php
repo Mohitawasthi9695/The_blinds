@@ -170,7 +170,7 @@ class StocksInController extends ApiController
                     'remark' => $row[11] ?? '',
                     'date' => isset($row[12]) && !empty($row[12])
                         ? DateTime::createFromFormat('d/m/Y', $row[12])->format('Y-m-d')
-                        : '',
+                        : Carbon::today(),
                 ];
                 $createdItem = StocksIn::create($data);
                 $createdItems[] = $createdItem;

@@ -48,30 +48,29 @@ class ProductController extends ApiController
                     }),
                 ];
             });
-        }elseif($this->role=='sub_supervisor')
-        {
+        } elseif ($this->role == 'sub_supervisor') {
             $products = Product::whereHas('godownStock')->get();
 
-        $responseData = $products->map(function ($product) {
-            return [
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'shadeNo' => $product->shadeNo,
-                'product_purchase_shade_no' => $product->purchase_shade_no,
-                'stock_in' => $product->godownStock->sum(function ($stock) {
-                    return round($stock->pcs, 2);
-                }),
-                'stock_out' => $product->godownStock->sum(function ($stock) {
-                    return round($stock->out_pcs, 2);
-                }),
-            ];
-        });
+            $responseData = $products->map(function ($product) {
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'shadeNo' => $product->shadeNo,
+                    'product_purchase_shade_no' => $product->purchase_shade_no,
+                    'stock_in' => $product->godownStock->sum(function ($stock) {
+                        return round($stock->pcs, 2);
+                    }),
+                    'stock_out' => $product->godownStock->sum(function ($stock) {
+                        return round($stock->out_pcs, 2);
+                    }),
+                ];
+            });
         }
 
         log::info($responseData);
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
-    
+
 
 
     public function ProductCsv(Request $request)
@@ -94,11 +93,11 @@ class ProductController extends ApiController
             $invalidRows = [];
             $existingRecords = [];
             $newRecords = [];
-
+            $seenShadeNos = [];
+            $seenPurchaseShadeNos = [];
             foreach ($rows as $index => $row) {
-                if ($index === 0) {
+                if ($index === 0)
                     continue;
-                }
 
                 if (empty($row[2]) || empty($row[3])) {
                     $invalidRows[] = [
@@ -107,12 +106,48 @@ class ProductController extends ApiController
                     ];
                     continue;
                 }
+
                 $productCategory = $row[1];
-                log::info($productCategory);
-                $shadeNo = $row[3];
-                $purchaseShadeNo = $row[4] ?? null;
-                $existProductCategory = ProductCategory::where('product_category', $productCategory)
-                    ->first();
+                $shadeNo = trim($row[3]);
+                $purchaseShadeNo = trim($row[4] ?? $shadeNo); // default fallback
+
+                // ✅ Check in current CSV for duplicate shadeNo or purchase_shade_no
+                if (
+                    in_array($shadeNo, $seenShadeNos) &&
+                    in_array($purchaseShadeNo, $seenPurchaseShadeNos)
+                ) {
+                    $existingRecords[] = [
+                        'row' => $index + 1,
+                        'shadeNo' => $shadeNo,
+                        'purchase_shade_no' => $purchaseShadeNo,
+                        'error' => 'Duplicate shadeNo or purchase_shade_no in CSV'
+                    ];
+                    continue;
+                }
+
+                // Add to seen arrays
+                $seenShadeNos[] = $shadeNo;
+                $seenPurchaseShadeNos[] = $purchaseShadeNo;
+
+                // ✅ Check in database for duplicates
+                $existingProduct = Product::where(function ($query) use ($shadeNo, $purchaseShadeNo) {
+                    $query->where('shadeNo', $shadeNo)
+                        ->orWhere('purchase_shade_no', $shadeNo)
+                        ->orWhere('shadeNo', $purchaseShadeNo)
+                        ->orWhere('purchase_shade_no', $purchaseShadeNo);
+                })->first();
+
+                if ($existingProduct) {
+                    $existingRecords[] = [
+                        'row' => $index + 1,
+                        'shadeNo' => $shadeNo,
+                        'purchase_shade_no' => $purchaseShadeNo,
+                        'error' => 'Duplicate record exists in database'
+                    ];
+                    continue;
+                }
+
+                $existProductCategory = ProductCategory::where('product_category', $productCategory)->first();
                 if (!$existProductCategory) {
                     $invalidRows[] = [
                         'row' => $index + 1,
@@ -120,22 +155,12 @@ class ProductController extends ApiController
                     ];
                     continue;
                 }
-                $existingProduct = Product::Where('shadeNo', $shadeNo)
-                    ->first();
 
-                if ($existingProduct) {
-                    $existingRecords[] = [
-                        'row' => $index + 1,
-                        'shadeNo' => $shadeNo,
-                        'error' => 'Duplicate record exists in the database'
-                    ];
-                    continue;
-                }
                 $newRecords[] = [
                     'product_category_id' => $existProductCategory->id,
                     'name' => $row[2],
                     'shadeNo' => $shadeNo,
-                    'purchase_shade_no' => $purchaseShadeNo ?? $shadeNo,
+                    'purchase_shade_no' => $purchaseShadeNo,
                     'date' => $row[5] ?? Carbon::today(),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -164,6 +189,13 @@ class ProductController extends ApiController
     }
     public function store(ProductRequest $request)
     {
+        $products= Product::where('product_category_id',$request->product_category_id)->where('shadeNo', $request->shadeNo)
+            ->where('purchase_shade_no', $request->purchase_shade_no)
+            ->first();
+            if($products)
+            {
+                return $this->errorResponse('Product already exists.', 409);
+            }
         $products = Product::create($request->validated());
         return $this->successResponse($products, 'Product created successfully.', 201);
     }

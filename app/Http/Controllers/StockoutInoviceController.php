@@ -244,6 +244,7 @@ class StockoutInoviceController extends ApiController
                         if ($cutWidth > 0.2 && $sellLength > 1) {
                             CutStock::create([
                                 'godown_roller_stock_id' => $availableStock->id,
+                                'stockout_inovice_id' => $stockoutInvoice->id,
                                 'length' => $sellLength,
                                 'out_length' => 0,
                                 'length_unit' => $availableStock->length_unit,

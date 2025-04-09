@@ -28,4 +28,5 @@ class GatePass extends Model
     {
         return $this->hasMany(GodownAccessory::class, 'gate_pass_id', 'id');
     }
+    
 }

@@ -32,7 +32,6 @@ return new class extends Migration {
             $table->integer('out_pcs')->default(0)->nullable();
             $table->integer('quantity')->nullable();
             $table->string('rack')->nullable();
-            $table->string('warehouse')->nullable();
             $table->string('transfer')->nullable();
             $table->string('remark')->nullable();
             $table->integer('status')->default(0);

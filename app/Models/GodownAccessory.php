@@ -25,4 +25,8 @@ class GodownAccessory extends Model
     {
         return $this->belongsTo(WarehouseAccessory::class, 'warehouse_accessory_id', 'id');
     }
+    public function accessory_transfer()
+    {
+        return $this->HasMany(GodownAccessory::class, 'row_id', 'id');
+    }
 }

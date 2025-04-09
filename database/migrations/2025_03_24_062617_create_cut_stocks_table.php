@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('cut_stocks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('godown_roller_stock_id')->constrained('godown_roller_stocks')->onDelete('cascade');
+            $table->foreignId('stockout_inovice_id')->constrained('stockout_inovices')->onDelete('cascade');
             $table->string('sub_stock_code')->nullable();
             $table->decimal('width', 12, 3)->nullable();
             $table->string('width_unit')->nullable();
