@@ -28,6 +28,12 @@ class GodownAccessoryController extends ApiController
         $godownAccessory = GodownAccessory::with('gatepass:id,gate_pass_no', 'accessory');
         if ($type) {
             $godownAccessory->where('type', $type);
+        }else{
+            $godownAccessory->where('type','!=', 'transfer');
+        }
+        if($this->role == 'sub_supervisor')
+        {
+            $godownAccessory->where('godown_id', $this->user->id);
         }
         log::info($godownAccessory->toRawSql());
         $godownAccessory = $godownAccessory->orderBy('id', 'desc')->get();
@@ -53,10 +59,11 @@ class GodownAccessoryController extends ApiController
                 'out_quantity' => $item->out_quantity ?? 0,
                 'transfer' => $item->transfer ?? 0,
                 'remark' => $item->remark ?? 'N/A',
-                'type' => ($item->godown_id==$this->user->id) ? 'in' : 'out',
+                'action' => ($item->godown_id==$this->user->id) ? 'in' : 'out',
                 'quantity' => $item->quantity ?? 0,
+                'type' => $item->type ?? 0,
                 'status' => $item->status ?? 0,
-                'date' => $item->created_at->format('Y-m-d'),
+                'date' => $item->date ?? '',
             ];
         });
         return $this->successResponse($godownAccessory, 'GodownAccessory retrieved successfully.', 200);
@@ -68,9 +75,12 @@ class GodownAccessoryController extends ApiController
         if ($type) {
             $godownAccessory->where('type', $type);
         }
+        if($this->role == 'sub_supervisor')
+        {
+            $godownAccessory->where('godown_id', $this->user->id);
+        }
         log::info($godownAccessory->toRawSql());
         $godownAccessory = $godownAccessory->get();
-        log::info($godownAccessory);
         if (!$godownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
@@ -99,7 +109,14 @@ class GodownAccessoryController extends ApiController
     }
     public function CheckStock($id)
     {
-        $GodownAccessory = GodownAccessory::with('accessory')->where('product_accessory_id', $id)->get();
+        $GodownAccessory = GodownAccessory::with('accessory')
+        ->where('product_accessory_id', $id)
+        ->where(function ($query) {
+            $query->where('status', 1)
+                  ->orWhereHas('cutstocks', function ($subQuery) {
+                      $subQuery->where('status', 1);
+                  });
+        })->where('godown_id',$this->user->id)->get();
         if (!$GodownAccessory) {
             return $this->errorResponse('GodownAccessory not found.', 404);
         }
@@ -132,20 +149,20 @@ class GodownAccessoryController extends ApiController
         try {
             $createdItems = [];
             foreach ($StockoutAccessory as $data) {
-                $exist = GodownAccessory::find($data['godown_accessory_id']);
-                $stockout = StockOutDetail::find($data['stockout_details_id']);
-
+                $exist=CutAccessory::where('godown_accessory_id',$data['godown_accessory_id'])->where('length','=>',$data['length'])->where('status',1)->first();
+                if (!$exist) {
+                    $exist = GodownAccessory::where('id', $data['godown_accessory_id'])->first();
+                }
                 if (!$exist) {
                     return $this->errorResponse('Accessory not found in stock.', 404);
                 }
+                $stockout = StockOutDetail::find($data['stockout_details_id']);
                 if (!$stockout) {
                     return $this->errorResponse('stockout not found in stock.', 404);
                 }
-
                 if ($exist->quantity < ($exist->out_quantity + $exist->transfer + ($data['quantity'] ?? 0))) {
                     return $this->errorResponse('Not enough stock available.', 400);
                 }
-
                 log::info($data['length']);
                 log::info($data['length_unit']);
                 $out_length = 0;
@@ -162,6 +179,8 @@ class GodownAccessoryController extends ApiController
                         CutAccessory::create([
                             'godown_accessory_id' => $exist->id,
                             'type' => 'cutpiece',
+                            'date'=> $data['date'] ?? Carbon::today(),
+                            'lot_no' => $exist->lot_no,
                             'quantity' => 1,
                             'length' => $cut_length,
                             'length_unit' => $exist->length_unit ?? 'N/A',
@@ -392,38 +411,5 @@ class GodownAccessoryController extends ApiController
         $GodownAccessory->delete();
         return $this->successResponse([], 'GodownAccessory deleted successfully.', 200);
     }
-    public function GetTransferAccessory($id)
-    {
-        $stocks = GodownAccessory::where('product_accessory_id', $id)
-            ->where('status', 1)
-            ->where('godown_id', $this->user->id)
-            ->with(['accessory', 'accessory.productCategory'])->get();
-
-        if ($stocks->isEmpty()) {
-            return $this->errorResponse('No active stocks found for this product.', 404);
-        }
-
-        $responseData = $stocks->map(function ($item) {
-            return [
-                'stock_available_id' => $item->id,
-                'warehouse_accessory_id' => $item->warehouse_accessory_id,
-                'product_accessory_id' => $item->product_accessory_id,
-                'stock_code' => $item->stock_code,
-                'lot_no' => $item->lot_no,
-                'accessory_category_name' => $item->accessory->productCategory->product_category ?? null,
-                'accessory_name' => $item->accessory->accessory_name ?? null,
-                'length' => round($item->length, 2) ?? 0,
-                'date' => $item->date ?? 0,
-                'out_quantity' => round($item->quantity - ($item->out_quantity + $item->transfer)) ?? 0,
-                'length_unit' => $item->length_unit ?? 'N/A',
-                'items' => $item->items ?? 'N/A',
-                'box_bundle' => $item->box_bundle ?? 'N/A',
-                'box_bundle_unit' => $item->box_bundle_unit ?? 'N/A',
-                'remark' => $item->remark ?? 'N/A',
-                'rack' => $item->rack ?? 'N/A',
-            ];
-        });
-
-        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
-    }
+   
 }

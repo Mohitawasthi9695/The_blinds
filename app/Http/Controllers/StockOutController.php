@@ -13,6 +13,7 @@ use App\Models\StockoutInovice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StockOutController extends ApiController
 {
@@ -59,30 +60,6 @@ class StockOutController extends ApiController
         });
         return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
-    public function Sales()
-    {
-        $today = now()->startOfDay();
-        $startOfMonth = now()->startOfMonth();
-        $startOfQuarter = now()->firstOfQuarter();
-        $startOfYear = now()->startOfYear();
-        $sumToday = StockOutDetail::where('created_at', '>=', $today)->sum('amount');
-        $sumMonth = StockOutDetail::where('created_at', '>=', $startOfMonth)->sum('amount');
-        $sumQuarter = StockOutDetail::where('created_at', '>=', $startOfQuarter)->sum('amount');
-        $sumYear = StockOutDetail::where('created_at', '>=', $startOfYear)->sum('amount');
-        $out_quantity = StockOutDetail::where('out_quantity', '>', 0)->sum('out_quantity');
-        $today_out_quantity = StockOutDetail::where('created_at', '>=', $today)->sum('out_quantity');
-        $data = [
-            'totals' => [
-                'sum_today' => round($sumToday, 2),
-                'sum_month' => round($sumMonth, 2),
-                'sum_quarter' => round($sumQuarter, 2),
-                'sum_year' => round($sumYear, 2),
-                'out_quantity' => round($out_quantity, 0),
-                'today_out_quantity' => round($today_out_quantity, 0),
-            ],
-        ];
-        return $this->successResponse($data, 'StockOutDetails and amounts retrieved successfully.');
-    }
     public function AllStockOut()
     {
         $stockOutInvoices = StockOutDetail::with(['stockOutInvoice', 'product', 'product.ProductCategory'])->get();
@@ -115,24 +92,25 @@ class StockOutController extends ApiController
                 'length_unit' => $item->length_unit ?? 'N/A',
                 'width_unit' => $item->width_unit ?? 'N/A',
                 'rack' => $item->rack ?? 'N/A',
-                'status'=>$item->status,
+                'status' => $item->status,
             ];
         });
 
         return $this->successResponse($formattedData, 'StockOutInvoices retrieved successfully.');
     }
-    public function StockOutDash(Request $request)
+    public function StockOutCustomer(Request $request)
     {
         $filter = $request->query('filter', 'all');
-        $stockOut = StockOutDetail::query();
+
+        $stockOut = StockOutDetail::with('stockOutInvoice.customer'); // Eager load
         switch ($filter) {
             case 'today':
                 $stockOut->whereDate('created_at', now()->toDateString());
                 break;
             case 'this_week':
                 $stockOut->whereBetween('created_at', [
-                    now()->startOfWeek()->toDateTimeString(),
-                    now()->endOfWeek()->toDateTimeString()
+                    now()->startOfWeek(),
+                    now()->endOfWeek()
                 ]);
                 break;
             case 'all':
@@ -140,9 +118,42 @@ class StockOutController extends ApiController
                 break;
         }
         $stockOutDetails = $stockOut->get();
-        return $this->successResponse($stockOutDetails, 'StockOutDetails retrieved successfully.');
+        $customers = $stockOutDetails
+            ->pluck('stockOutInvoice.customer')
+            ->filter()
+            ->unique('id')
+            ->filter(function ($customer) {
+                return $customer->status == 1; 
+            })
+            ->values();
+            Log::info($customers);
+        return $this->successResponse($customers, 'Active customers retrieved successfully.');
     }
-
+    public function StockOutProductRating()
+    {
+        $productStockData = StockOutDetail::with('product')
+            ->select('product_id', DB::raw('COUNT(*) as stock_count'))
+            ->groupBy('product_id')
+            ->orderByDesc('stock_count')
+            ->get();
+        $max = $productStockData->max('stock_count');
+        $min = $productStockData->min('stock_count');
+        $ratedProducts = $productStockData->map(function ($item) use ($max, $min) {
+            $normalized = $max === $min ? 5 : (($item->stock_count - $min) / ($max - $min)) * 4 + 1;
+            $rating = round($normalized, 1);
+            return [
+                'product_id' => $item->product->id,
+                'product_name' => $item->product->name,
+                'product_shade_no' => $item->product->shadeNo,
+                'product_purchase_shade_no' => $item->product->purchase_shade_no,
+                'stock_out_count' => $item->stock_count,
+                'rating' => $rating
+            ];
+        });
+        $topRated = $ratedProducts->sortByDesc('rating')->take(5)->values();
+        log::info($topRated);
+        return $this->successResponse($topRated, 'Top 5 stock-out-based product ratings calculated.');
+    }
     public function GodownStockOutApprove(Request $request, $id)
     {
         $StockOutInvoice = StockoutInovice::find($id);
@@ -159,14 +170,23 @@ class StockOutController extends ApiController
             'message' => 'Stockout invoice and related stock out details updated successfully.',
         ], 200);
     }
-
     public function CheckStocks($id)
     {
         $Product = Product::findorFail($id);
         if ($Product) {
-            $stocks = GodownRollerStock::where('product_id', $id)
-                ->where('status', 1)
-                ->with(['products', 'products.ProductCategory'])->where('type','!=','gatepass')->OrderBy('length','desc')->get();
+            $stocks = GodownRollerStock::where(function ($query) use ($id) {
+                $query->where('product_id', $id)
+                    ->where(function ($q) {
+                        $q->where('status', 1)
+                            ->orWhereHas('cutstock', function ($subQuery) {
+                                $subQuery->where('status', 1);
+                            });
+                    });
+            })
+                ->with(['products', 'products.ProductCategory'])
+                ->where('type', '!=', 'gatepass')
+                ->orderBy('length', 'desc')
+                ->get();
         }
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No active stocks found for this product.', 404);

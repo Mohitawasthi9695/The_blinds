@@ -29,4 +29,12 @@ class GodownAccessory extends Model
     {
         return $this->HasMany(GodownAccessory::class, 'row_id', 'id');
     }
+    public function accessory_transfer_from()
+    {
+        return $this->belongsTo(GodownAccessory::class, 'row_id', 'id');
+    }
+    public function cutstocks()
+    {
+        return $this->HasMany(CutAccessory::class, 'godown_accessory_id');
+    }
 }

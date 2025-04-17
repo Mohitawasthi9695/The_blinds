@@ -20,7 +20,6 @@ class GodownRollerStockController extends ApiController
     {
         $categoryId = $request->query('category_id');
         $stocks = GodownRollerStock::with(['gatepass','stocks.supplier', 'products', 'products.ProductCategory']);
-        
         if ($this->role === 'sub_supervisor') {
             $stocks->whereHas('gatepass')->where('godown_id', $this->user->id);
         }
@@ -31,6 +30,7 @@ class GodownRollerStockController extends ApiController
         }
         $stocks = $stocks->orderBy('id', 'desc')->where('type', '!=', 'gatepass')->get();
        
+        log::info($stocks);
         if ($stocks->isEmpty()) {
             return $this->errorResponse('No stocks found.', 404);
         }
@@ -189,7 +189,6 @@ class GodownRollerStockController extends ApiController
         });
         return response()->json($stocks);
     }
-
     public function Verticalstore(RollerStock $request, $id)
     {
         $validatedData = $request->validated();
@@ -302,118 +301,7 @@ class GodownRollerStockController extends ApiController
             return response()->json(['error' => 'Failed to delete Roller Stock.', 'message' => $e->getMessage()], 500);
         }
     }
-    public function GetTransferStocks($id)
-    {
-        $stocks = GodownRollerStock::where('product_id', $id)
-            ->where('status', 1)->whereHas('gatepass')->where('godown_id', $this->user->id)
-            ->with(['products', 'products.ProductCategory'])->where('type','!=','gatepass')->get();
-        if ($stocks->isEmpty()) {
-            return $this->errorResponse('No active stocks found for this product.', 404);
-        }
-
-        $responseData = $stocks->map(function ($stock) {
-            return [
-                'stock_available_id' => $stock->id,
-                'stock_in_id' => $stock->stock_in_id,
-                'lot_no' => $stock->lot_no,
-                'stock_code' => $stock->stock_code,
-                'length' => round($stock->length, 2) ?? '',
-                'width' => round($stock->width, 2) ?? '',
-                'length_unit' => $stock->length_unit ?? 'N/A',
-                'width_unit' => $stock->width_unit ?? 'N/A',
-                'pcs' => ($stock->pcs - ($stock->out_pcs+$stock->transfer)) ?? 0,
-                'rack' => $stock->rack,
-                'remark' => $stock->remark,
-                'product_name' => $stock->products->name ?? 'N/A',
-                'product_shadeNo' => $stock->products->shadeNo ?? 'N/A',
-                'product_purchase_shade_no' => $stock->products->purchase_shade_no ?? 'N/A',
-                'product_category' => $stock->products->ProductCategory->product_category ?? 'N/A',
-            ];
-        });
-
-        return $this->successResponse($responseData, 'Active stocks retrieved successfully.', 200);
-    }
-    public function GetTransferedStock(Request $request)
-    {
-        $stocks = GodownRollerStock::with(['gatepass', 'products', 'products.ProductCategory'])->where('type', 'transfer');
-        $stocks= $stocks->orderBy('id', 'desc')->get();
-        if($stocks->isEmpty()) {
-            return $this->errorResponse('No stocks found.', 404);
-        }
-
-        $stocks = $stocks->map(function ($stock) {
-            return [
-                'id' => $stock->id,
-                'gate_pass_id' => $stock->gate_pass_id,
-                'gate_pass_no' => $stock->gatepass->gate_pass_no,
-                'gate_pass_date' => $stock->gatepass->gate_pass_date,
-                'date' => $stock->date,
-                'product_id' => $stock->product_id,
-                'sub_stock_code' => $stock->sub_stock_code ?? '',
-                'stock_code' => $stock->stock_code,
-                'type' => ($stock->godown_id==$this->user->id) ? 'in' : 'out',
-                'lot_no' => $stock->lot_no,
-                'length' => $stock->length,
-                'out_length' => $stock->out_length ?? 0,
-                'length_unit' => $stock->length_unit,
-                'width' => $stock->width,
-                'width_unit' => $stock->width_unit,
-                'rack' => $stock->rack,
-                'pcs' => $stock->pcs,
-                'out_pcs' => $stock->out_pcs,
-                'wastage' => $stock->wastage ?? 0,
-                'status' => $stock->status,
-                'product_name' => $stock->products->name ?? null,
-                'shadeNo' => $stock->products->shadeNo ?? null,
-                'purchase_shade_no' => $stock->products->purchase_shade_no ?? null,
-                'product_category_name' => $stock->products->ProductCategory->product_category ?? null,
-            ];
-        });
-        return response()->json($stocks);
-    }
-    public function GetCutStock($id)
-    {
-        Log::info($id);
-
-        $cutStocks = CutStock::whereHas('stock')
-            ->with(['stock.products', 'stock', 'stock.products.ProductCategory'])
-            ->where('godown_roller_stock_id', $id)
-            ->get();
-
-        if ($cutStocks->isEmpty()) {
-            return response()->json(['message' => 'Stock not found.'], 404);
-        }
-
-        // Map only relevant fields
-        $data = $cutStocks->map(function ($cutStock) {
-            return [
-                'id' => $cutStock->id,
-                'godown_roller_stock_id' => $cutStock->godown_roller_stock_id,
-                'sub_stock_code' => $cutStock->sub_stock_code,
-                'gate_pass_no' => $cutStock->stock->gatepass->gate_pass_no,
-                'width' => $cutStock->width,
-                'width_unit' => optional($cutStock->stock)->width_unit,
-                'length' => $cutStock->length,
-                'out_length' => $cutStock->out_length,
-                'length_unit' => optional($cutStock->stock)->length_unit,
-                'available_length'=>$cutStock->length-$cutStock->out_length,
-                'remark' => $cutStock->remark,
-                'wastage' => $cutStock->wastage??0,
-                'status' => $cutStock->status,
-                'stock_code' => optional($cutStock->stock)->stock_code,
-                'lot_no' => optional($cutStock->stock)->lot_no,
-                'date' => optional($cutStock->stock)->date,
-                'rack' => optional($cutStock->stock)->rack,
-                'pcs' => optional($cutStock->stock)->pcs,
-                'out_pcs' => optional($cutStock->stock)->out_pcs,
-                'product_name' => optional($cutStock->stock->products)->name,
-                'shade_no' => optional($cutStock->stock->products)->shadeNo,
-                'purchase_shade_no' => optional($cutStock->stock->products)->purchase_shade_no,
-                'product_category_name' => optional(optional($cutStock->stock->products)->ProductCategory)->product_category,
-                'product_category_id' => optional(optional($cutStock->stock->products)->ProductCategory)->id,
-            ];
-        });
-
-        return $this->successResponse($data, 'Godown Vertical Retrieved', 200);
-    }
+    
+   
+   
 }

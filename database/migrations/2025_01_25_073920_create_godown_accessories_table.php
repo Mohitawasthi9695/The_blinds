@@ -32,6 +32,7 @@ return new class extends Migration
             $table->string('transfer')->nullable();
             $table->string('remark')->nullable();
             $table->string('rack')->nullable();
+            $table->unsignedBigInteger('row_id')->nullable();
             $table->boolean('status')->default(0);
             $table->timestamps();
         });

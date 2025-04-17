@@ -105,8 +105,6 @@ class StockInvoiceController extends ApiController
         if (!$StockInvoice || $StockInvoice->godown_roller_stock()->count() > 0) {
             return $this->errorResponse('StockInvoice not found. Or Gatepass Exit for Stock', 404);
         }
-
-
         $StockInvoice->delete();
         return $this->successResponse([], 'StockInvoice deleted successfully.', 200);
     }

@@ -25,4 +25,9 @@ class StockOutDetail extends Model
     {
         return $this->belongsTo(Product::class);
     }
+    public function accessoryoutstock()
+    {
+        return $this->HasMany(StockoutAccessory::class,'stockout_details_id');
+    }
+    
 }

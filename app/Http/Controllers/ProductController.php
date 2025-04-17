@@ -29,47 +29,57 @@ class ProductController extends ApiController
         return $this->successResponse($products, 'Active shadeNo retrieved successfully.', 200);
     }
 
+    public function PieGraphData()
+    {
+        $products = Product::with(['ProductCategory', 'stockAvailable'])
+            ->whereHas('stockAvailable')
+            ->get();
+        $grouped = $products->groupBy(function ($product) {
+            return $product->ProductCategory->product_category ?? 'Unknown';
+        });
+        $stockByCategory = $grouped->map(function ($products, $categoryName) {
+            $totalStock = $products->sum(function ($product) {
+                return $product->stockAvailable->count('id');
+            });
+            return [
+                'category' => $categoryName,
+                'total_stock' => $totalStock
+            ];
+        })->values();
+        $totalStock = $stockByCategory->sum('total_stock');
+        $stockByCategory = $stockByCategory->map(function ($item) use ($totalStock) {
+            $item['percentage'] = $totalStock > 0 ? round(($item['total_stock'] / $totalStock) * 100, 2) : 0;
+            return $item;
+        });
+        log::info($stockByCategory);
+        return $this->successResponse($stockByCategory, 'Bar graph data retrieved successfully.', 200);
+    }
+
+
     public function BarGraphData()
     {
-        if ($this->role == 'supervisor') {
-            $products = Product::whereHas('stockAvailable')->get();
-
-            $responseData = $products->map(function ($product) {
-                return [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'shadeNo' => $product->shadeNo,
-                    'product_purchase_shade_no' => $product->purchase_shade_no,
-                    'stock_in' => $product->stockAvailable->sum(function ($stock) {
-                        return round($stock->quantity, 2);
-                    }),
-                    'stock_out' => $product->stockAvailable->sum(function ($stock) {
-                        return round($stock->out_quantity, 2);
-                    }),
-                ];
+        $products = Product::with(['ProductCategory', 'stockAvailable'])
+            ->whereHas('stockAvailable')
+            ->get();
+        $grouped = $products->groupBy(function ($product) {
+            return $product->ProductCategory->product_category ?? 'Unknown';
+        });
+        $responseData = $grouped->map(function ($products, $categoryName) {
+            $stock_in = $products->sum(function ($product) {
+                return $product->stockAvailable->sum('quantity');
             });
-        } elseif ($this->role == 'sub_supervisor') {
-            $products = Product::whereHas('godownStock')->get();
-
-            $responseData = $products->map(function ($product) {
-                return [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'shadeNo' => $product->shadeNo,
-                    'product_purchase_shade_no' => $product->purchase_shade_no,
-                    'stock_in' => $product->godownStock->sum(function ($stock) {
-                        return round($stock->pcs, 2);
-                    }),
-                    'stock_out' => $product->godownStock->sum(function ($stock) {
-                        return round($stock->out_pcs, 2);
-                    }),
-                ];
+            $stock_out = $products->sum(function ($product) {
+                return $product->stockAvailable->sum('out_quantity');
             });
-        }
-
-        log::info($responseData);
+            return [
+                'category' => $categoryName,
+                'stock_in' => round($stock_in, 2),
+                'stock_out' => round($stock_out, 2),
+            ];
+        })->values();
         return $this->successResponse($responseData, 'Bar graph data retrieved successfully.', 200);
     }
+
 
 
 
@@ -109,8 +119,13 @@ class ProductController extends ApiController
 
                 $productCategory = $row[1];
                 $shadeNo = trim($row[3]);
-                $purchaseShadeNo = trim($row[4] ?? $shadeNo); // default fallback
-
+                if (empty($shadeNo) || !isset($shadeNo)) {
+                    return response()->json(['error' => 'shadeNo is empty or invalid'], 422);
+                }
+                $purchaseShadeNo = trim($row[4]);
+                if (empty($purchaseShadeNo) || !isset($purchaseShadeNo)) {
+                    return response()->json(['error' => 'purchaseShadeNo is empty or invalid'], 422);
+                }
                 // ✅ Check in current CSV for duplicate shadeNo or purchase_shade_no
                 if (
                     in_array($shadeNo, $seenShadeNos) &&
@@ -130,12 +145,10 @@ class ProductController extends ApiController
                 $seenPurchaseShadeNos[] = $purchaseShadeNo;
 
                 // ✅ Check in database for duplicates
-                $existingProduct = Product::where(function ($query) use ($shadeNo, $purchaseShadeNo) {
-                    $query->where('shadeNo', $shadeNo)
-                        ->orWhere('purchase_shade_no', $shadeNo)
-                        ->orWhere('shadeNo', $purchaseShadeNo)
-                        ->orWhere('purchase_shade_no', $purchaseShadeNo);
-                })->first();
+                $existingProduct = Product::where('shadeNo', $shadeNo)
+                          ->where('purchase_shade_no', $purchaseShadeNo)
+                          ->first();
+
 
                 if ($existingProduct) {
                     $existingRecords[] = [
@@ -189,13 +202,12 @@ class ProductController extends ApiController
     }
     public function store(ProductRequest $request)
     {
-        $products= Product::where('product_category_id',$request->product_category_id)->where('shadeNo', $request->shadeNo)
+        $products = Product::where('product_category_id', $request->product_category_id)->where('shadeNo', $request->shadeNo)
             ->where('purchase_shade_no', $request->purchase_shade_no)
             ->first();
-            if($products)
-            {
-                return $this->errorResponse('Product already exists.', 409);
-            }
+        if ($products) {
+            return $this->errorResponse('Product already exists.', 409);
+        }
         $products = Product::create($request->validated());
         return $this->successResponse($products, 'Product created successfully.', 201);
     }

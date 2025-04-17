@@ -35,8 +35,8 @@ class GodownAccessoryStore extends FormRequest
             'out_products.*.lot_no' => 'nullable|string|max:255',
             'out_products.*.items' => 'nullable|numeric|min:0',
             'out_products.*.length' => 'nullable|numeric|min:0',
-            'out_products.*.length_unit' => 'nullable|string|max:50',
-            'out_products.*.box_bundle' => 'nullable|numeric|min:0',
+            'out_products.*.length_unit' => 'nullable|string|in:cm,mm,m,in,ft',
+            'out_products.*.box_bundle' => 'nullable|numeric|min:1',
             'out_products.*.box_bundle_unit' => 'nullable|string|max:255',
             'out_products.*.quantity' => 'nullable|numeric|min:1',
         ];

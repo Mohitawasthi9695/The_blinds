@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\AccessoryTransferController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CutAccessoryController;
+use App\Http\Controllers\CutStockController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\GatePassController;
 use App\Http\Controllers\GodownRollerStockController;
@@ -12,6 +15,7 @@ use App\Http\Controllers\StockInvoiceController;
 use App\Http\Controllers\StockOutController;
 use App\Http\Controllers\StockoutInoviceController;
 use App\Http\Controllers\StocksInController;
+use App\Http\Controllers\StockTransferController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WarehouseAccessoryController;
 use App\Http\Controllers\GodownAccessoryController;
@@ -61,7 +65,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/godownstock', [GodownRollerStockController::class,'index']);
     Route::get('/godownstock/{id}', [GodownRollerStockController::class,'show']);
-    Route::get('/godownstock/cutstock/{id}', [GodownRollerStockController::class,'GetCutStock']);
+    Route::get('/godownstock/cutstock/{id}', [CutStockController::class,'getCutStock']);
+    Route::get('/godownstock/cutstock', [CutStockController::class,'index']);
+    Route::delete('/godownstock/cutstock/{id}', [CutStockController::class,'destroy']);
     Route::put('/godownstock/{id}', [GodownRollerStockController::class,'update']);
     Route::delete('/godownstock/{id}', [GodownRollerStockController::class,'destroy']);
     Route::get('/godownverticalstock',[GodownRollerStockController::class,'VerticalStock']);
@@ -103,18 +109,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/accessoryout/{id}', [GodownAccessoryController::class, 'GetStockOut']);
     
     // api for tansfer the stock
-    Route::get('/gettranferstocks/{id}', [GodownRollerStockController::class, 'GetTransferStocks']);
-    Route::post('/godowns/transfergatepass', [GatePassController::class, 'StoreTransferGatePass']);
-    Route::get('/godowns/transferstocks', [GodownRollerStockController::class, 'GetTransferedStock']);
+    Route::get('/gettranferstocks/{id}', [StockTransferController::class, 'GetTransferStocks']);
+    Route::post('/godowns/transfergatepass', [StockTransferController::class, 'StoreTransferGatePass']);
+    Route::get('/godowns/transferstocks', [StockTransferController::class, 'GetTransferedStock']);
 
     // api for accessory trsfer
-    Route::get('/gettranferaccessory/{id}', [GodownAccessoryController::class, 'GetTransferAccessory']);
-    Route::post('/godowns/transfer/accessorygatepass', [GatePassController::class, 'StoreTransferAccessory']);
+    Route::get('/gettranferaccessory/{id}', [AccessoryTransferController::class, 'checkStock']);
+    Route::get('/gettranferaccessory', [AccessoryTransferController::class, 'getStock']);
+    Route::post('/godowns/transfer/accessorygatepass', [AccessoryTransferController::class, 'StoreTransferAccessory']);
     
-    Route::get('/sales', [StockOutController::class, 'Sales']);
+
+    //api for cut accessory
+     Route::get('cutaccessory',[CutAccessoryController::class,'index']);
+     Route::post('cutaccessory',[CutAccessoryController::class,'store']);
+     Route::put('cutaccessory/{id}',[CutAccessoryController::class,'update']);
+     Route::delete('cutaccessory/{id}',[CutAccessoryController::class,'destroy']);
+
+
     Route::get('/stockin', [StocksInController::class, 'CountStockIn']);
-    Route::get('/StockOutDash', [StockOutController::class, 'StockOutDash']);
-    Route::get('stockOuttoday', [StockoutInoviceController::class, 'stockOuttoday']);
+    Route::get('/StockOutDash', [StockOutController::class, 'StockOutCustomer']);
     Route::get('/barData', [ProductController::class, 'BarGraphData']);
+    Route::get('/pieData', [ProductController::class, 'PieGraphData']);
+    Route::get('/rating', [StockOutController::class, 'StockOutProductRating']);
     Route::get('/categorystock', [StocksInController::class, 'CategoryStockData']);
 });

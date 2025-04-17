@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StockOutRequest;
 use App\Models\CutStock;
+use App\Models\GodownAccessory;
 use App\Models\GodownHoneyCombStock;
 use App\Models\GodownRollerStock;
 use App\Models\GodownVerticalStock;
@@ -336,6 +337,17 @@ class StockoutInoviceController extends ApiController
         }
         DB::transaction(function () use ($stockOutInvoice) {
             foreach ($stockOutInvoice->stockOutDetails as $detail) {
+
+                foreach ($detail->accessoryoutstock as $outstock) {
+                    $availableStock = GodownAccessory::find($outstock->godown_accessory_id);
+                    if ($availableStock){
+                        $availableStock->update([
+                            'out_quantity' => max($availableStock->out_quantity - $outstock->quantity, 0),
+                            'status' => 1,
+                        ]);
+                    }
+                }
+                
                 $availableStock = null;
 
                 // Determine which stock table to update based on product_category_id
@@ -358,11 +370,5 @@ class StockoutInoviceController extends ApiController
 
         return $this->successResponse(null, 'StockOutInvoice and associated records deleted successfully.');
     }
-
-    public function stockOuttoday()
-    {
-        
-    }
-
 
 }

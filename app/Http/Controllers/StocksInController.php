@@ -147,7 +147,7 @@ class StocksInController extends ApiController
 
                 if (!$product) {
                     DB::rollBack();
-                    return response()->json(['error' => "Product with shadeNo {$purchase_shade_no} not found"], 422);
+                    return response()->json(['error' => "Product with PurchaseshadeNo {$purchase_shade_no} not found"], 422);
                 }
                 if (!$invoice) {
                     DB::rollBack();
@@ -308,6 +308,7 @@ class StocksInController extends ApiController
             'total_quantity' => StocksIn::whereBetween('date', [$startDate, $endDate])->sum('quantity'),
             'total_out_quantity' => GodownRollerStock::whereBetween('date', [$startDate, $endDate])->sum('quantity') ?? 0,
         ];
+        
     }
     public function CategoryStockData()
     {

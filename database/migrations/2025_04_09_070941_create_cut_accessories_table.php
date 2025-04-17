@@ -18,14 +18,13 @@ return new class extends Migration
             $table->date('date')->nullable();
             $table->string('lot_no')->nullable();
             $table->string('type')->nullable();
-            $table->string('length')->nullable();
+            $table->string('length')->nullable();            
             $table->string('length_unit')->nullable();
             $table->string('quantity')->nullable();
             $table->string('out_quantity')->default(0)->nullable();
-            $table->string('transfer')->nullable();
             $table->string('remark')->nullable();
             $table->string('rack')->nullable();
-            $table->boolean('status')->default(0);
+            $table->boolean('status')->default(1);
             $table->timestamps();
         });
         DB::unprepared('
